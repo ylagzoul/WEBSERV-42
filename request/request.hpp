@@ -25,6 +25,8 @@ class Request
         std::map<std::string, std::string>  headers;
         std::string bodyFile;
         std::string fullLine;
+        bool getEndBody;
+
 
 };
 void    readRequest(Request &req, int fd);

@@ -1,24 +1,57 @@
 #include "request.hpp"
 
+void    fillCheck(Request &req, std::string reqLine)
+{
+    std::stringstream splitReq(reqLine);
+    std::string slice;
+    std::vector<std::string> array;
+    while(splitReq >> slice)
+        array.push_back(slice);
+    if (array.size() != 3 || (array[0] != "POST" && array[0] != "GET" && array[0] != "DELETE"))
+    {
+        req.status = 400;
+        throw std::runtime_error("Bad Request");
+    }
+    if (array[2] != "HTTP/1.1" && array[2] != "HTTP/1.0")
+    {
+        req.status = 400;
+        throw std::runtime_error("Bad Request");
+    }
+    req.method = array[0];
+    req.path = array[1];
+    req.httpVersion = array[2];
+}
+
 void    getRequestLine(Request &req, int fd)
 {
-    (void) req;
-    if (req.fullLine.find('\n') == std::string::npos)
+    size_t pos = req.fullLine.find('\n');
+    if (pos == std::string::npos)
     {
         readRequest(req, fd);
-        std::stringstream splitReq(req.fullLine);
-        std::string slice;
-        std::vector<std::string> v1;
-        while(splitReq >> slice)
-            v1.push_back(slice);
-        if (v1[0] != "POST" && v1[0] != "GET" && v1[0] != "DELETE")
-        {
-            req.status = 400;
-            throw std::runtime_error("Bad Request");
-        }
-        req.method = v1[0];
         return ;
     }
+    fillCheck(req, req.fullLine.substr(0, pos));
+    req.fullLine.erase(0, pos + 1);
+}
+
+void    getHeaders(Request &req, int fd)
+{
+    size_t pos = req.fullLine.find("\n\n");
+    size_t pos2 = req.fullLine.find('\n');
+
+    if (pos == std::string::npos)
+    {
+        if (pos2 != std::string::npos)
+        {
+            std::string tmp = req.fullLine;
+            char        del = ':';
+            req.headers.insert(std::make_pair(tmp.substr(0, tmp.find(del)), tmp.substr(tmp.find(del) + 1, pos2)));
+            req.fullLine.erase(0, pos2 + 1);
+        }
+        readRequest(req, fd);
+        return ;
+    }
+    req.getEndBody = true;
 }
 
 void    readRequest(Request &req, int fd)
@@ -31,7 +64,11 @@ void    readRequest(Request &req, int fd)
         return ;
     }
     req.fullLine += buffer;
-    getRequestLine(req, fd);
+    if (req.method.empty())
+        getRequestLine(req, fd);
+    if (req.getEndBody == false)
+        getHeaders(req, fd);
+    
 }
 
 
@@ -48,8 +85,16 @@ int main()
     try
     {
         readRequest(req, fd);
-        cout << req.fullLine << std::endl;
+        // cout << req.fullLine << std::endl;
         cout << req.method << std::endl;
+        cout << req.path << std::endl;
+        cout << req.httpVersion << std::endl;
+        for (std::map<std::string, std::string>::iterator it = req.headers.begin();
+         it != req.headers.end();
+            ++it)
+        {
+            std::cout << it->first << ":" << it->second;
+        }
     }
     catch(const std::exception& e)
     {
