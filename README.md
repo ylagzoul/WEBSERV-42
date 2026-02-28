@@ -1,2 +1,0 @@
-# WEBSERV-42
-HTTP/1.1

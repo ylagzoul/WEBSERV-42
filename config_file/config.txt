@@ -1,0 +1,15 @@
+server   {
+    listen 127.0.0.1:8080;
+    host 127.0.0.1;
+    server_name mysite;
+
+    error_page 404 /errors/404.html;
+    client_max_body_size 1000000;
+
+    location / {
+        root ./www;
+        index index.html;
+        methods GET POST;
+        autoindex on;
+    }
+}
