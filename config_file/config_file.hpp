@@ -10,6 +10,7 @@ class Config {
     private:
         int         size;
         std::string *str;
+        // std::string *word;
         std::string line;
         // ll
         std::string listen;
@@ -35,6 +36,6 @@ class Config {
 };
 
 
-
+bool ft_str_char(const char *str, char c);
 
 #endif
