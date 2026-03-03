@@ -36,7 +36,8 @@ void Config::config_file(Config& conf)
         while (getline(file, line))
         {
             splite(conf);
-            if ((str[0] == "server" && str[1] == "\0") || (str[0] == "server" && str[1] == "{" && str[2] == "\0"))
+            if ((str[0] == "server" && str[1] == "\0") 
+                || (str[0] == "server" && str[1] == "{" && str[2] == "\0"))
             {
                 while (getline(file, line))                                                                                                                                                    
                 {
@@ -45,10 +46,7 @@ void Config::config_file(Config& conf)
                 }
             }
             else
-            {
-                std::cout << "line server\n";
-                throw erorr();
-            }
+                throw std::runtime_error("line server");
         }
     }
     catch (const std::exception& e) 
