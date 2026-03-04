@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
+#include <cstdlib>
 #include <fstream>
 #include <vector>
 
@@ -25,7 +26,9 @@ class Request
         std::map<std::string, std::string>  headers;
         std::string bodyFile;
         std::string fullLine;
-        bool getEndBody;
+        bool        getEndBody;
+        bool        getEndFile;
+        int fdFile;
 
 
 };

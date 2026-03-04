@@ -1,7 +1,7 @@
 POST / HTTP/1.0
 Host: localhost:5500
 Connection: keep-alive
-Content-Length: 9
+Content-Length: 20
 Cache-Control: max-age=0
 sec-ch-ua: Brave;v=143, Chromium;v=143, Not A(Brand;v=24
 sec-ch-ua-mobile: ?0
@@ -17,50 +17,6 @@ Sec-Fetch-Site: same-site
 Sec-Fetch-Mode: navigate
 Sec-Fetch-User: ?1
 Sec-Fetch-Dest: document
+qwertyuiopasdfgh666
 Referer: http://localhost:6600/
 Accept-Encoding: gzip, deflate, br, zstd
-
-------WebKitFormBoundaryzQKhhmwY0ASUm66m
-Content-Disposition: form-data; name=name
-
-hello
-------WebKitFormBoundaryzQKhhmwY0ASUm66m
-Content-Disposition: form-data; name=bin
-
-on
-------WebKitFormBoundaryzQKhhmwY0ASUm66m
-Content-Disposition: form-data; name=myfile; filename=megaphone.cpp
-Content-Type: text/x-c++src
-
-#include <iostream>
-
-void    to_upper(std::string *s)
-{
-    size_t    i;
-
-    i = 0;
-    while (i < s->size())
-    {
-        (*s)[i] = toupper((*s)[i]);
-        i++;
-    }
-}
-
-int    main(int argc, char *argv[])
-{
-    std::string    s;
-    if (argc == 1)
-        return (std::cout << * LOUD AND UNBEARABLE FEEDBACK NOISE * << std::endl, 0);
-    argv++;
-    s = ;
-    while (*argv)
-    {
-        s += *argv;
-        argv++;
-    }
-    to_upper(&s);
-    std::cout  << s << std::endl;
-    return (0);
-}
-
-------WebKitFormBoundaryzQKhhmwY0ASUm66m--
