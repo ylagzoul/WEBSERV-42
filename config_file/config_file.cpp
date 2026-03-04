@@ -3,19 +3,13 @@
 
 void Config::splite(Config &conf)
 {
-    int i = 0;
     std::string word;
     std::stringstream ss(conf.line);
 
+    conf.str.clear();
     while (ss >> word)
-        i++;
-
-    conf.str = new std::string[i];
-    std::stringstream ss1(conf.line);
-    i = 0;
-    while (ss1 >> word)
-        conf.str[i++] = word;
-    conf.size = i;
+        conf.str.push_back(word);
+    conf.size = conf.str.size();
 }
 
 
@@ -25,6 +19,8 @@ void Config::function(Config &conf)
         ft_listen(conf);
     else if (conf.str[0] == "server_name")
         ft_server_name(conf);
+    else if (str[0] == "error_page")
+        ft_error_page(conf);
 }
 
 
@@ -37,8 +33,8 @@ void Config::config_file(Config& conf)
         while (getline(file, line))
         {
             splite(conf);
-            if ((str[0] == "server" && str[1] == "\0") 
-                || (str[0] == "server" && str[1] == "{" && str[2] == "\0"))
+            if ((str[0] == "server" && str.size() == 1) 
+                || (str[0] == "server" && str.size() >= 2 && str[1] == "{" && str.size() == 2))
             {
                 if (str[1] == "{" )
                     ser_num++;
@@ -76,3 +72,4 @@ int main()
     std::cout << "listen  = " << obj.get_listen() << std::endl;
     std::cout << "server_name  = " << obj.get_server_name() << std::endl;
 }
+

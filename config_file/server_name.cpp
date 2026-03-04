@@ -26,5 +26,6 @@ void Config::ft_server_name(Config& conf)
         else if (i < lenth -1 && ft_str_char(".-", c) && ft_str_char(".-",str[1][i+1]))
             throw std::runtime_error("error name1");
     }
+    str[1].erase(str[1].begin() + lenth - 1);
     server_name = str[1];
 }

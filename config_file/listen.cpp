@@ -1,3 +1,4 @@
+
 #include "config_file.hpp"
 
 void Config::ft_listen_prot_Ip(Config &conf)
@@ -66,8 +67,8 @@ void Config::ft_listen_prot(Config &conf)
 }
 void Config::ft_listen(Config &conf)
 {
-    int size_s = conf.str[1].size();
-    if (size != 2 || conf.str[1][size_s - 1] != ';')
+    int size_s = str[1].size();
+    if (size != 2 || str[1][size_s - 1] != ';')
         throw std::runtime_error("error listen ");
     else
     {
@@ -77,6 +78,7 @@ void Config::ft_listen(Config &conf)
             ft_listen_Ip(conf);
         else
             ft_listen_prot(conf);
-        listen = conf.str[1];
+        str[1].erase(str[1].begin() + size_s-1);
+        listen = str[1];
     }
 }

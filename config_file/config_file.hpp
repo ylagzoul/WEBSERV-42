@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 
 class Config {
@@ -11,10 +12,10 @@ class Config {
         std::string listen;
         std::string server_name;
 
-        int         size;
-        int         ser_num;
-        std::string *str;
-        std::string line;
+        int                      size;
+        int                      ser_num;
+        std::vector<std::string> str;
+        std::string              line;
     public:
         void config_file(Config& conf);
         void splite(Config &conf);
@@ -26,6 +27,8 @@ class Config {
         void ft_listen_Ip(Config &conf);
 
         void ft_server_name(Config& conf);
+
+        void ft_error_page(Config &conf);
 
         // get && set
         std::string get_listen(void);
