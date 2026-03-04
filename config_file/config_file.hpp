@@ -12,6 +12,7 @@ class Config {
         std::string server_name;
 
         int         size;
+        int         ser_num;
         std::string *str;
         std::string line;
     public:

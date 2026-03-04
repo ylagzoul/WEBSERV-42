@@ -64,7 +64,6 @@ void Config::ft_listen_prot(Config &conf)
         i++;
     }
 }
-
 void Config::ft_listen(Config &conf)
 {
     int size_s = conf.str[1].size();
@@ -72,9 +71,9 @@ void Config::ft_listen(Config &conf)
         throw std::runtime_error("error listen ");
     else
     {
-        if (str[1].find(':'))
+        if (str[1].find(':') != std::string::npos)
             ft_listen_prot_Ip(conf);
-        else if (str[1].find('.'))
+        else if (str[1].find('.') != std::string::npos)
             ft_listen_Ip(conf);
         else
             ft_listen_prot(conf);

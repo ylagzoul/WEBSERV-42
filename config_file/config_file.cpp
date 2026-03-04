@@ -30,6 +30,7 @@ void Config::function(Config &conf)
 
 void Config::config_file(Config& conf)
 {
+    ser_num = 0;
     try {
         std::ifstream file("config.txt");
 
@@ -39,11 +40,21 @@ void Config::config_file(Config& conf)
             if ((str[0] == "server" && str[1] == "\0") 
                 || (str[0] == "server" && str[1] == "{" && str[2] == "\0"))
             {
+                if (str[1] == "{" )
+                    ser_num++;
                 while (getline(file, line))                                                                                                                                                    
                 {
                     splite(conf);
                     function(conf);
+                    if (str[0] == "}")
+                    {
+                        ser_num--;
+                        break ;
+                    }
                 }
+                std::cout << ser_num << std::endl;
+                if (ser_num != 0)
+                    throw std::runtime_error("erorr {} server");
             }
             else
                 throw std::runtime_error("line server");

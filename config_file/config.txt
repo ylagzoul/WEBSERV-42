@@ -1,4 +1,4 @@
 server {
-    listen 12.1.22.22:8000;
-    server_name mysite;
+    listen 8000;
+    server_name *.example.com;
 }
