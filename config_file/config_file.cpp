@@ -16,11 +16,13 @@ void Config::splite(Config &conf)
 void Config::function(Config &conf)
 {
     if (conf.str[0] == "listen")
-        ft_listen(conf);
+        ft_listen();
     else if (conf.str[0] == "server_name")
-        ft_server_name(conf);
+        ft_server_name();
+    else if (str[0] == "root")
+        ft_root();
     else if (str[0] == "error_page")
-        ft_error_page(conf);
+            ft_error_page();
 }
 
 
@@ -28,7 +30,7 @@ void Config::config_file(Config& conf)
 {
     ser_num = 0;
     try {
-        std::ifstream file("config.txt");
+        std::ifstream file("file_config_file/config.txt");
 
         while (getline(file, line))
         {
@@ -48,7 +50,6 @@ void Config::config_file(Config& conf)
                         break ;
                     }
                 }
-                std::cout << ser_num << std::endl;
                 if (ser_num != 0)
                     throw std::runtime_error("erorr {} server");
             }
@@ -71,5 +72,7 @@ int main()
 
     std::cout << "listen  = " << obj.get_listen() << std::endl;
     std::cout << "server_name  = " << obj.get_server_name() << std::endl;
+    std::cout << "root  = " << obj.get_root() << std::endl;
+    std::cout << "error_page  = " << obj.get_error_page(404) << std::endl;
 }
 

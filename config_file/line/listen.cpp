@@ -1,7 +1,7 @@
 
-#include "config_file.hpp"
+#include "../config_file.hpp"
 
-void Config::ft_listen_prot_Ip(Config &conf)
+void Config::ft_listen_prot_Ip()
 {
     int i = 0;
     int n = 0;
@@ -23,15 +23,15 @@ void Config::ft_listen_prot_Ip(Config &conf)
         i++;
     }
     str[1] = ip;
-    ft_listen_Ip(conf);
+    ft_listen_Ip();
     str[1] = port;
-    ft_listen_prot(conf);
+    ft_listen_prot();
     str[1] = ip_and_port;
 }
 
-void Config::ft_listen_Ip(Config &conf)
+void Config::ft_listen_Ip()
 {
-    int i = 0;
+    size_t i = 0;
     int nums = 0;
     int n = 0;
     while (i < str[1].size() - 1 && str[1][i])
@@ -55,9 +55,9 @@ void Config::ft_listen_Ip(Config &conf)
         throw std::runtime_error("big");
 }
 
-void Config::ft_listen_prot(Config &conf)
+void Config::ft_listen_prot()
 {
-    int i = 0;
+    size_t i = 0;
     while (i < str[1].size()-1 && str[1][i])
     {
         if (!isdigit(str[1][i]))
@@ -65,7 +65,7 @@ void Config::ft_listen_prot(Config &conf)
         i++;
     }
 }
-void Config::ft_listen(Config &conf)
+void Config::ft_listen()
 {
     int size_s = str[1].size();
     if (size != 2 || str[1][size_s - 1] != ';')
@@ -73,11 +73,11 @@ void Config::ft_listen(Config &conf)
     else
     {
         if (str[1].find(':') != std::string::npos)
-            ft_listen_prot_Ip(conf);
+            ft_listen_prot_Ip();
         else if (str[1].find('.') != std::string::npos)
-            ft_listen_Ip(conf);
+            ft_listen_Ip();
         else
-            ft_listen_prot(conf);
+            ft_listen_prot();
         str[1].erase(str[1].begin() + size_s-1);
         listen = str[1];
     }

@@ -5,12 +5,24 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <map>
+#include <cstdlib>
+
+// class Location {
+//     private:
+//         Config conf;
+
+// };
 
 
 class Config {
     private:
         std::string listen;
         std::string server_name;
+        std::string root;
+        std::map<int,std::string> error_page;
+        // std::string blockName;
+        // std::vector<Location> location;
 
         int                      size;
         int                      ser_num;
@@ -21,25 +33,22 @@ class Config {
         void splite(Config &conf);
         void function(Config &conf);
 
-        void ft_listen(Config &conf);
-        void ft_listen_prot_Ip(Config &conf);
-        void ft_listen_prot(Config &conf);
-        void ft_listen_Ip(Config &conf);
+        void ft_listen();
+        void ft_listen_prot_Ip();
+        void ft_listen_prot();
+        void ft_listen_Ip();
 
-        void ft_server_name(Config& conf);
+        void ft_server_name();
+        void ft_root();
 
-        void ft_error_page(Config &conf);
+        void ft_error_page();
 
-        // get && set
+        // get
         std::string get_listen(void);
         std::string get_server_name(void);
+        std::string get_root(void);
+        std::string get_error_page(int num);
 
-        // class erorr : public std::exception {
-        //     public:
-        //         const char *what() const throw() {
-        //             return ("error\n");
-        //         }
-        // };
 };
 
 
