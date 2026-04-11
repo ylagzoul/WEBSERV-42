@@ -1,4 +1,4 @@
-NAME    = youssef
+NAME    = config_file
 CC      = c++
 FLAG    = -Wextra -Wall -Werror -std=c++98
 SRC     = config_file.cpp Helpful_functions/get_set_conf.cpp Helpful_functions/ft_ft.cpp line/listen.cpp line/server_name.cpp line/error_page.cpp

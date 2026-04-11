@@ -14,10 +14,7 @@ void Config::ft_listen_prot_Ip()
         if (str[1][i] != ':' && n == 0)
             ip += str[1][i];
         else if (str[1][i] == ':' && n == 0)
-        {
-            ip += ';';
             n = 1;
-        }
         else
             port += str[1][i];
         i++;
@@ -26,7 +23,6 @@ void Config::ft_listen_prot_Ip()
     ft_listen_Ip();
     str[1] = port;
     ft_listen_prot();
-    str[1] = ip_and_port;
 }
 
 void Config::ft_listen_Ip()
@@ -34,11 +30,11 @@ void Config::ft_listen_Ip()
     size_t i = 0;
     int nums = 0;
     int n = 0;
-    while (i < str[1].size() - 1 && str[1][i])
+    while (i < str[1].size() && str[1][i])
     {
         if (!isdigit(str[1][i]) && str[1][i] != '.')
-            throw std::runtime_error("0-9 || '.'");
-        else if (str[1][i] == '.' && ft_str_char(".;", str[1][i+1]))
+            throw std::runtime_error("0-9");
+        else if (str[1][i] == '.' && ft_str_char(".", str[1][i+1]))
             throw std::runtime_error("..");
         else if (str[1][i] == '.')
         {
@@ -53,17 +49,21 @@ void Config::ft_listen_Ip()
     }
     if (n != 3)
         throw std::runtime_error("big");
+    listen_Ip.push_back(str[1]);
 }
 
 void Config::ft_listen_prot()
 {
     size_t i = 0;
-    while (i < str[1].size()-1 && str[1][i])
+    while (i < str[1].size() && str[1][i])
     {
         if (!isdigit(str[1][i]))
             throw std::runtime_error("Element not digit");
         i++;
     }
+    if (atoi(str[1].c_str()) > 65535)
+        throw std::runtime_error("invalid max port");
+    listen_Port.push_back(str[1]);
 }
 void Config::ft_listen()
 {
@@ -72,13 +72,19 @@ void Config::ft_listen()
         throw std::runtime_error("error listen ");
     else
     {
+
+        str[1].erase(size_s-1);
         if (str[1].find(':') != std::string::npos)
             ft_listen_prot_Ip();
         else if (str[1].find('.') != std::string::npos)
+        {
+            listen_Port.push_back("80");
             ft_listen_Ip();
+        }
         else
+        {
+            listen_Ip.push_back("0");
             ft_listen_prot();
-        str[1].erase(str[1].begin() + size_s-1);
-        listen = str[1];
+        }
     }
 }

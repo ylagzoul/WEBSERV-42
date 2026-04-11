@@ -1,5 +1,26 @@
 #include "../config_file.hpp"
 
+void Config::ft_methods()
+{
+    int size_s = str[size - 1].size();
+    str[size - 1].erase(size_s - 1);
+    int i  = 1;
+    while (i < size)
+    {
+        if (str[i] == "GET" && methods["GET"] == false) {
+            methods["GET"] = true;
+        }
+        else if (str[i] == "POST" && methods["POST"] == false) {
+            methods["POST"] = true;
+        }
+        else if (str[i] == "DELETE" && methods["DELETE"] == false) {
+            methods["DELETE"] = true;
+        }
+        else
+            throw std::runtime_error("invalid method");
+        i++;
+    }
+}
 
 void Config::ft_root()
 {
