@@ -4,9 +4,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <poll.h>
+#include <vector>
 #include "server.hpp"
 
-Servere::Servere()
+Server::Server()
 {
     sendNum = 0;
     sendSize = 0;
@@ -25,7 +26,7 @@ int re()
 
 int main()
 {
-    std::vector<Servere> data;
+    std::vector<Server> data;
     int n;
     std::string response;
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -47,7 +48,7 @@ int main()
     server_poll.events = POLLIN;
     fds.push_back(server_poll);
 
-    Servere obj;
+    Server obj;
     data.push_back(obj);
 
     while (true)
