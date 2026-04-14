@@ -11,7 +11,7 @@
 class Location;
 
 class Config {
-    private:
+    public:
         std::vector<std::string> listen_Ip;
         std::vector<std::string> listen_Port;
         std::string server_name;
@@ -25,9 +25,9 @@ class Config {
         
         int                      size;
         int                      ser_num;
+        int                      autoIndex;
         std::vector<std::string> str;
         std::string              line;
-    public:
         std::vector<Location> location;
         void config_file();
         void splite();

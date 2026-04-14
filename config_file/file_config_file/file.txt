@@ -32,24 +32,3 @@ server {
         upload on;
     }
 }
-
-server {
-    listen 127.0.0.1:9090;
-
-    root /var/www/test;
-
-    error_page 404 /errors/404.html;
-
-    location / {
-        methods GET;
-        root /var/www/test;
-        index index.html;
-        autoindex off;
-    }
-
-    location /files {
-        methods GET;
-        root /var/www/files;
-        autoindex on;
-    }
-}

@@ -110,6 +110,8 @@ int main()
 {
     Config obj;
     obj.config_file();
+    obj.get_server_name();
+
     // std::cout << "index = " << obj.get_index() << std::endl;
     // std::cout << "get_autoindex = " << obj.get_autoindex() << std::endl;
     std::cout << "listen  = " << obj.get_listen_Ip()[0] << std::endl;

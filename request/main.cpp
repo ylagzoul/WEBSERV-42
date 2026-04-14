@@ -230,34 +230,34 @@ void    readRequest(Request &req, int fd)
         getChunkedBody(req, fd);
 }
 
-int main()
-{
-    Request req;
+// int main()
+// {
+//     Request req;
 
-    int fd = open("httpRequest.http", O_RDONLY, 0644);
-    if (fd == -1)
-    {
-        cout << "fd Error" << std::endl;
-        return 1;
-    }
-    try
-    {
-        readRequest(req, fd);
-        // cout << req.fullLine;
-        // cout << "method: " << req.method << std::endl;
-        // cout << "path: " << req.path << std::endl;
-        // cout << "httpVersion: " << req.httpVersion << std::endl;
-        cout << req.host << std::endl;
-        // for (std::map<std::string, std::string>::iterator it = req.headers.begin();
-        //  it != req.headers.end();
-        //     ++it)
-        // {
-        //     std::cout << it->first << ":" << it->second << std::endl;
-        // }
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-    }
+//     int fd = open("httpRequest.http", O_RDONLY, 0644);
+//     if (fd == -1)
+//     {
+//         cout << "fd Error" << std::endl;
+//         return 1;
+//     }
+//     try
+//     {
+//         readRequest(req, fd);
+//         // cout << req.fullLine;
+//         // cout << "method: " << req.method << std::endl;
+//         // cout << "path: " << req.path << std::endl;
+//         // cout << "httpVersion: " << req.httpVersion << std::endl;
+//         cout << req.host << std::endl;
+//         // for (std::map<std::string, std::string>::iterator it = req.headers.begin();
+//         //  it != req.headers.end();
+//         //     ++it)
+//         // {
+//         //     std::cout << it->first << ":" << it->second << std::endl;
+//         // }
+//     }
+//     catch(const std::exception& e)
+//     {
+//         std::cerr << e.what() << '\n';
+//     }
 
-}
+// }

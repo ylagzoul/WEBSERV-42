@@ -7,6 +7,10 @@ void Config::ft_autoindex()
         throw std::runtime_error("autoindex");
     str[1].erase(size_s - 1);
     autoindex = str[1];
+    if (autoindex == "on")
+        autoIndex = 1;
+    else
+        autoIndex = 0;
 }
 
 

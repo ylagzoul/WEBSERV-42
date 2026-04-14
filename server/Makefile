@@ -1,22 +1,28 @@
 NAME = server
+
+CFLAGS = -Wextra -Wall -Werror -std=c++98 -g3
+
 CC = c++
-FLAGE = -Wextra -Wall -Werror -std=c++98
-SRC = main.cpp server.cpp
-OBJ = $(SRC:%.cpp=%.o)
-HEADERS = server.hpp
+
+SRC = ../request/main.cpp ../request/request.cpp server.cpp
+
+SRC_H = ../request/request.hpp server.hpp
+
+OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(GLAG) $(OBJ) -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
 
-%.o: %.cpp $(HEADERS)
-	$(CC) $(FLAG) -c $< -o $@
+%.o: %.cpp $(SRC_H)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 clean:
-	rm -rf $(OBJ)
+	rm -f $(OBJ)
 
 fclean: clean
-	rm -rf $(NAME)
+	rm -f $(NAME)
 
 re: fclean all

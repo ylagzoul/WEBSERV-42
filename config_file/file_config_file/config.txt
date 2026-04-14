@@ -6,8 +6,8 @@ server {
     index indeshx.html;
     methods GET POST GET;
     error_page 500 /errors/500.html;
-    location / {
-        methods GET POST POST;
+    location /upload {
+        methods GET POST;
         root /var/www/main;
         index index.html;
         autoindex off;
