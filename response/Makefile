@@ -8,7 +8,7 @@ CF_SRCFL = \
 			../config_file/line/server_name.cpp \
 			../config_file/line/error_page.cpp
 
-HEADERS = Response.hpp ../config_file/config_file.hpp
+HEADERS = Response.hpp ../config_file/config_file.hpp ../server/server.hpp
 
 SRCFL = $(RS_SRCFL) $(CF_SRCFL)
 OBJFL = $(SRCFL:.cpp=.o)
