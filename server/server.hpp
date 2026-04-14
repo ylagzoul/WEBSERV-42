@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-class Servere {
+class Server {
     public:
         int sendSize;
         int sendNum;
