@@ -1,4 +1,4 @@
-#include "../config_file.hpp"
+#include "../../server/server.hpp"
 
 void Config::ft_methods()
 {
@@ -33,10 +33,10 @@ void Config::ft_root()
 
 void Config::ft_server_name()
 {
-    for (int j = 0;j < size;j++)
-    {
-        server_name.push_back(str[j]);
-    }
+    // for (int j = 0;j < size;j++)
+    // {
+    //     server_name.push_back(str[j]);
+    // }
     int lenth = str[1].size();
     char c;
     int a = 0;

@@ -1,4 +1,5 @@
-#include "Response.hpp"
+#include "../server/server.hpp"
+
 
 void generateResponse(Request &req, payloadData &data, std::string &ret_resp)
 {

@@ -1,5 +1,5 @@
 #include "server.hpp"
-
+#include <iostream>
 
 Data::Data()
 {
@@ -133,6 +133,5 @@ int main()
         }
         obj.i++;
     }
-
     close(server_fd);
 }
