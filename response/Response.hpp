@@ -1,8 +1,6 @@
 #ifndef RESPONSE_HPP
 # define RESPONSE_HPP
 
-#include "../config_file/config_file.hpp"
-#include "../server/server.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -16,6 +14,9 @@
 #include <sys/socket.h>
 
 //Tmp request//
+
+class Config;
+class Server;
 
 class Request
 {

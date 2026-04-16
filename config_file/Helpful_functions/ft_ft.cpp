@@ -1,4 +1,4 @@
-#include "../config_file.hpp"
+#include "../../server/server.hpp"
 
 bool ft_str_char(const char *str, char c)
 {

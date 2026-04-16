@@ -1,4 +1,5 @@
-#include "Response.hpp"
+#include "../server/server.hpp"
+
 
 void generateResponse(Request &req, payloadData &data, std::string &ret_resp)
 {
@@ -301,6 +302,7 @@ int handleResponse(Request &req, Config &conf, payloadData &data)
 
 std::string respond(Server serv, Config &conf)
 {
+    
     std::string ret_resp;
     payloadData data;
     // //////////////////tmp

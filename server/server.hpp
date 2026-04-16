@@ -1,6 +1,16 @@
 #ifndef SERVER_HPP
-# define SERVER_HPP
+#define SERVER_HPP
 #include <iostream>
+#include <iostream>
+#include <cstring>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <poll.h>
+#include <vector>
+// #include "../request/request.hpp"
+#include "../response/Response.hpp"
+#include "../config_file/config_file.hpp"
 
 typedef enum e_state
 {
@@ -12,10 +22,17 @@ typedef enum e_state
 
 } t_state;
 
-class Server {
+class Record { 
     public:
-        int sendSize;
-        int sendNum;
+        int fd;
+        t_state status;
+        t_state method;
+};
+
+class Data {
+    public:
+        Data();
+        std::string response;
         int maxSend;
         bool sendNext;
         bool rspEnd;
@@ -25,11 +42,11 @@ class Server {
         bool recvNext;
 };
 
-class Record { 
+class Server {
     public:
-        int fd;
-        t_state status;
-        t_state method;
+        Server();
+        size_t i;
+        std::vector<Data> data;
 };
 
 #endif

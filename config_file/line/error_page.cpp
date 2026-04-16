@@ -1,4 +1,4 @@
-#include "../config_file.hpp"
+#include "../../server/server.hpp"
 
 void Config::ft_autoindex()
 {

@@ -1,14 +1,15 @@
-#include "config_file.hpp"
+#include "../server/server.hpp"
 
 
 Config::Config()
 {
+    server_name = "";
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELET"] = false;
 }
 
-void Config::splite()
+void Config::splite() 
 {
     std::string word;
     std::stringstream ss(line);
@@ -59,7 +60,7 @@ void Config::config_file()
         {
             line = sstr;
             splite();
-            if ((str[0] == "server" && str.size() == 1) 
+            if ((str[0] == "server" && str.size() == 1) // problem {
                 || (str[0] == "server" && str.size() >= 2 && str[1] == "{" && str.size() == 2))
             {
                 blockName = "server";
@@ -104,3 +105,50 @@ void Config::config_file()
         exit(1);
     }
 } 
+
+
+// int main()
+// {
+//     Config obj;
+//     obj.config_file();
+//     obj.get_server_name();
+
+//     // std::cout << "index = " << obj.get_index() << std::endl;
+//     // std::cout << "get_autoindex = " << obj.get_autoindex() << std::endl;
+//     std::cout << "listen  = " << obj.get_listen_Ip()[0] << std::endl;
+//     std::cout << "listen  = " << obj.get_listen_Port()[0] << std::endl;
+
+//     std::cout << "listen  = " << obj.get_listen_Ip()[1] << std::endl;
+//     std::cout << "listen  = " << obj.get_listen_Port()[1] << std::endl;
+
+//     std::cout << "listen  = " << obj.get_listen_Ip()[2] << std::endl;
+//     std::cout << "listen  = " << obj.get_listen_Port()[2] << std::endl;
+
+//     std::cout << "ft_root  = " << obj.get_root() << std::endl;
+
+//     std::cout << "ft_root  = " << obj.get_error_page(500) << std::endl;
+//     std::cout << "ft_root  = " << obj.get_error_page(501) << std::endl;
+//     std::cout << "index  = " << obj.get_index()[0] << std::endl;
+//     // std::cout << "index  = " << obj.get_index()[1] << std::endl;
+//     // std::cout << "index  = " << obj.get_index()[2] << std::endl;
+//     // std::cout << "index  = " << obj.get_index()[3] << std::endl;
+//     // std::cout << "ft_root  = " << obj.get_index() << std::endl;
+//     // std::cout << "server_name  = " << obj.get_server_name() << std::endl;
+//     // std::cout << "root  = " << obj.get_root() << std::endl;
+//     std::cout << "methods  = " << obj.get_methods("GET") << std::endl;
+//     std::cout << "methods  = " << obj.get_methods("POST") << std::endl;
+//     std::cout << "location_methods  = " << obj.get_methods("GET") << std::endl;
+//     std::cout << "location_methods  = " << obj.get_methods("POST") << std::endl;
+//     // std::cout << "error_page  = " << obj.get_error_page(404) << std::endl;
+//     // std::cout << "error_page  = " << obj.location[0].conf.get_error_page(404) << std::endl;
+//     // std::cout << "error_page  = " << obj.location[1].conf.get_error_page(404) << std::endl;
+//     // // std::cout << "error_page  = " << obj.location[2].conf.get_error_page(404) << std::endl;
+//     // std::cout << "location_methods  = " << obj.location[0].conf.get_methods_POST("POST") << std::endl;
+//     // std::cout << "location_methods  = " << obj.location[0].conf.get_methods("GET") << std::endl;
+//     // std::cout << "location_root = " << obj.location[0].conf.get_root() << std::endl;
+//     // std::cout << "location_root = " << obj.location[1].conf.get_root() << std::endl;
+//     // std::cout << "location_root = " << obj.location[2].conf.get_root() << std::endl;
+//     // std::cout << "index = " << obj.location[0].conf.get_index() << std::endl;
+//     // std::cout << "get_autoindex = " << obj.location[0].conf.get_autoindex() << std::endl;
+// }
+
