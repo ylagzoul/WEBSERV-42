@@ -72,7 +72,6 @@ void Config::ft_listen()
         throw std::runtime_error("error listen ");
     else
     {
-
         str[1].erase(size_s-1);
         if (str[1].find(':') != std::string::npos)
             ft_listen_prot_Ip();
@@ -83,7 +82,7 @@ void Config::ft_listen()
         }
         else
         {
-            listen_Ip.push_back("0");
+            listen_Ip.push_back("0.0.0.0");
             ft_listen_prot();
         }
     }

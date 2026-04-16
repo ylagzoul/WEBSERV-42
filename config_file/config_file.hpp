@@ -14,7 +14,7 @@ class Config {
     public:
         std::vector<std::string> listen_Ip;
         std::vector<std::string> listen_Port;
-        std::string server_name;
+        std::vector<std::string> server_name;
         std::string root;
         std::map<std::string, bool> methods;
         std::map<int,std::string> error_page;

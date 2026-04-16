@@ -3,12 +3,13 @@
 
 Config::Config()
 {
+    server_name = "";
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELET"] = false;
 }
 
-void Config::splite()
+void Config::splite() 
 {
     std::string word;
     std::stringstream ss(line);
@@ -59,7 +60,7 @@ void Config::config_file()
         {
             line = sstr;
             splite();
-            if ((str[0] == "server" && str.size() == 1) 
+            if ((str[0] == "server" && str.size() == 1) // problem {
                 || (str[0] == "server" && str.size() >= 2 && str[1] == "{" && str.size() == 2))
             {
                 blockName = "server";
