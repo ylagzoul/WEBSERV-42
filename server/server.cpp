@@ -20,6 +20,7 @@ int main()
 {
     Config conf;
     Server obj;
+    // vector<Record> rec;
     
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     int n;

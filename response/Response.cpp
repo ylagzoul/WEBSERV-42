@@ -1,6 +1,5 @@
 #include "../server/server.hpp"
 
-
 void generateResponse(Request &req, payloadData &data, std::string &ret_resp)
 {
     (void)ret_resp;
@@ -10,7 +9,7 @@ void generateResponse(Request &req, payloadData &data, std::string &ret_resp)
     res << "Content-Type: " << data.contentType << "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     res << "\r\n";
-    res << data.bodyStr;
+    // res << data.bodyStr;
     ret_resp = res.str();
 }
 
@@ -139,7 +138,7 @@ void listFiles(payloadData &data)
     "</html>\n";
     data.contentType = data.mime["html"];
     closedir(dir);
-} 
+}
 
 int autoIndex(Config conf, std::string reqPath)
 {
@@ -223,15 +222,41 @@ int handleDelete(payloadData &data)
     return 0;
 }
 
-int handlePost(payloadData &data)
+int handlePost(Record log, payloadData &data)
 {
+    log.fd += 0;
+    data.bodySize += 0;
     data.bodySize += 0;
     return 0;
 }
 
-int handleGet(payloadData &data, Config &conf, std::string reqPath)
+int getFileData(Record &log, payloadData &data)
 {
-    int fd;
+    const int size = 8000;
+    char buffer[size];
+    int b = 0;
+    b = read(log.fd, buffer, sizeof(buffer));
+    if (b == -1)
+    {
+        data.status_code = "500";
+        data.message = "Internal Server Error";
+        return 1;
+    }
+    log.buffer = buffer;
+    if (b < 8000)
+    {
+        log.status = CLOSED_RS;
+        close(log.fd);
+    }
+    else
+    {
+        log.status = ACTIVE_RS;
+    }
+    return 0;
+}
+
+int handleGet(Record &log, payloadData &data, Config &conf, std::string reqPath)
+{
     int check;
     std::string extension;
     check = validateFile(data, conf ,reqPath);
@@ -239,11 +264,12 @@ int handleGet(payloadData &data, Config &conf, std::string reqPath)
         return 1;
     if (check)
         return 0;
-    fd = open(data.realPath.c_str(), O_RDONLY);
-    if (fd == -1)
+    log.fd = open(data.realPath.c_str(), O_RDONLY);
+    if (log.fd == -1)
     {
         data.status_code = "500";
         data.message = "Internal Server Error";
+        log.status = CLOSED_RS;
         return 1;
     }
     size_t pos = data.realPath.find_last_of('.');
@@ -254,22 +280,11 @@ int handleGet(payloadData &data, Config &conf, std::string reqPath)
         if (data.mime.count(extension))
             data.contentType = data.mime[extension];
     }
-    int size = 8192;
-    char buffer[size];
-    // neeeed the serv part to handle get properly
-    int b = 0;
-    while ((b = read(fd, buffer, sizeof(buffer))) > 0)
-        data.bodyStr.append(buffer, b);
-    if (b == -1)
-    {
-        data.status_code = "500";
-        data.message = "Internal Server Error";
-        return 1;
-    }
+    getFileData(log, data);
     return 0;
 }
 
-int handleResponse(Request &req, Config &conf, payloadData &data)
+int handleResponse(Record &log, Request &req, Config &conf, payloadData &data)
 {    
     if (getStatusCode(req, data))
     {
@@ -282,7 +297,7 @@ int handleResponse(Request &req, Config &conf, payloadData &data)
     resolvePath(data, conf, req.path);
     
     //!!!! check get and post and delete if they are allowed in the locations in config !!!!
-    if (req.method == "GET" && handleGet(data, conf, req.path))
+    if (req.method == "GET" && handleGet(log, data, conf, req.path))
     {
         errorPage(data);
         return 1;
@@ -292,7 +307,7 @@ int handleResponse(Request &req, Config &conf, payloadData &data)
         errorPage(data);
         return 1;
     }
-    else if (req.method == "POST" && handlePost(data))
+    else if (req.method == "POST" && handlePost(log, data))
     {
         errorPage(data);
         return 1;
@@ -300,7 +315,7 @@ int handleResponse(Request &req, Config &conf, payloadData &data)
     return 0;
 }
 
-std::string respond(Server serv, Config &conf)
+std::string respond(Record &log, Server serv, Config &conf)
 {
     
     std::string ret_resp;
@@ -311,22 +326,52 @@ std::string respond(Server serv, Config &conf)
 
     req.status = 0;
     req.method = "GET";
-    req.path = "response";
+    req.path = "file";
     req.httpVersion = "HTTP/1.0"; 
     req.headers["Host"] = "localhost";
     req.headers["Connection"] = "Keep-Alive";
+    t_state check = log.status;
     // //////////////////
-
-
-    loadExtensions(data);
-    data.connection = "close";
-    if (handleResponse(req, conf, data))
+    
+    if (log.status == NEW_RS)
     {
-        data.contentType = data.mime["html"];
-        //behavior
+        loadExtensions(data);
+        data.connection = "close";
+        if (handleResponse(log, req, conf, data))
+        {
+            data.contentType = data.mime["html"];        
+            data.bodySize = data.bodyStr.length();
+            log.status = ERROR_RS;
+        }
     }
-    data.bodySize = data.bodyStr.length();
-    generateResponse(req, data, ret_resp);
+    else if (log.status == ACTIVE_RS)
+    {
+        if (log.method == GET_RS)
+        {
+            if (getFileData(log, data))
+            {
+                errorPage(data);
+                data.bodySize = data.bodyStr.length();
+                log.status = ERROR_RS;
+            }
+        }
+        // else if (POST_RS)
+        // {
+        //     // Behaviour
+        // }
+    }
+    if (check == NEW_RS || (check == NEW_RS && log.status == ERROR_RS))
+    {
+        generateResponse(req, data, ret_resp);
+        if (log.status == ERROR_RS)
+            ret_resp += data.bodyStr;
+        else
+            ret_resp += log.buffer;
+    }
+    else if (log.status == ERROR_RS)
+        ret_resp = std::string();
+    else
+        ret_resp = log.buffer;
     // ----------------------------------Teeeest--------------------------------------
 
     // int fd = open("/home/abouhki/Desktop/webserv_p/response/body.html", O_WRONLY);

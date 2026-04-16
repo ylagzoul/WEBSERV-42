@@ -17,6 +17,7 @@
 
 class Config;
 class Server;
+class Record;
 
 class Request
 {
@@ -51,6 +52,6 @@ class payloadData
 
 void generateResponse(Request &req, payloadData &data, std::string &ret_resp);
 
-std::string respond(Server serv, Config &conf);
+std::string respond(Record &rec, Server serv, Config &conf);
 
 #endif

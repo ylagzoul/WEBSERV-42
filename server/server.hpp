@@ -14,19 +14,23 @@
 
 typedef enum e_state
 {
-    NEW_RS = 100,
-    ACTVE_RS = 101,
-    CLOSED_RS = 102,
-    GET_RS = 103,
-    POST_RS = 104
+    NEW_RS,
+    ACTIVE_RS,
+    CLOSED_RS,
+    GET_RS,
+    POST_RS,
+    ERROR_RS
 
 } t_state;
 
 class Record { 
     public:
+        Record(){number = 0; fd = -1; status = NEW_RS;};
+        int number;
         int fd;
         t_state status;
         t_state method;
+        std::string buffer;
 };
 
 class Data {
@@ -44,7 +48,7 @@ class Data {
 
 class Server {
     public:
-        Server();
+        Server(){};
         size_t i;
         std::vector<Data> data;
 };
