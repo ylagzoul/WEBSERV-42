@@ -50,6 +50,6 @@ class payloadData
 
 void generateResponse(Request &req, payloadData &data, std::string &ret_resp);
 
-std::string respond(Request &req, Config &conf);
+std::string respond(Server serv, Config &conf);
 
 #endif

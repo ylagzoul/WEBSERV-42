@@ -1,16 +1,9 @@
-#include <iostream>
-#include <cstring>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <poll.h>
-#include <vector>
 #include "server.hpp"
 
-Server::Server()
+
+Data::Data()
 {
-    sendNum = 0;
-    sendSize = 0;
+    rspEnd = true;
     maxSend = 0;
     sendNext = true;
     reqEnd = "\r\n\r\n";
@@ -18,18 +11,18 @@ Server::Server()
     recvNum = 0;
 }
 
-int re()
+Server::Server()
 {
-    return (800);
+    i = 0;
 }
-
 
 int main()
 {
-    std::vector<Server> data;
-    int n;
-    std::string response;
+    Config conf;
+    Server obj;
+    
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int n;
 
     sockaddr_in addr;
     socklen_t len = sizeof(addr);
@@ -48,96 +41,97 @@ int main()
     server_poll.events = POLLIN;
     fds.push_back(server_poll);
 
-    Server obj;
-    data.push_back(obj);
+    Data dt;
+    obj.data.push_back(dt);
 
     while (true)
     {
         poll(fds.data(),fds.size(),-1);
-        for (size_t i = 0;i < fds.size();i++)
+        if (obj.i == fds.size())
+            obj.i = 0;
+        if (fds[obj.i].revents & (POLLIN | POLLOUT | POLLHUP))
         {
-            if (fds[i].revents & (POLLIN | POLLOUT | POLLHUP))
+            if (fds[obj.i].fd == server_fd)
             {
-                if (fds[i].fd == server_fd)
+                int client_fd = accept(server_fd, (sockaddr*)&addr, &len);
+                pollfd client_poll;
+                client_poll.fd = client_fd;
+                client_poll.events = POLLIN;
+                fds.push_back(client_poll);
+                obj.data.push_back(dt);
+            }
+            else
+            {
+                if (fds[obj.i].revents & POLLIN)
                 {
-                    int client_fd = accept(server_fd, (sockaddr*)&addr, &len);
-                    pollfd client_poll;
-                    client_poll.fd = client_fd;
-                    client_poll.events = POLLIN;
-                    fds.push_back(client_poll);
-                    std::cout << "new client " << std::endl;
+                    std::string buffer;
+                    do
+                    {
+                        char cpyBuffer[1024] = {0};
+                        obj.data[obj.i].recvNum = recv(fds[obj.i].fd, cpyBuffer, 1024, 0);
+                        if (obj.data[obj.i].recvNum > 0)
+                        {
+                            std::string str(cpyBuffer,obj.data[obj.i].recvNum);
+                            if (str.substr(obj.data[obj.i].recvNum - 2) != obj.data[obj.i].reqEnd)
+                            {
+                                obj.data[obj.i].recvNext = false;
+                                //or function mradouan();
+                                buffer += str;
+                            }
+                            else
+                                buffer = str;
+                        }
+                        else if (obj.data[obj.i].recvNum == 0)
+                        {
+                            obj.data[obj.i].recvNext = true;
+                            fds[obj.i].events = POLLHUP;
+                        }
+                        else
+                        {
+                            obj.data[obj.i].recvNext = true;
+                            fds[obj.i].revents = POLLERR;
+                        }
+                    } while (obj.data[obj.i].recvNext == false);
+                    //function mradouan();
+                    std::cout << "Request:\n" << buffer << std::endl;
+                }
+                else if ((fds[obj.i].revents & POLLOUT) && (obj.data[obj.i].rspEnd))
+                {
+                    if (obj.data[obj.i].sendNext == true)
+                        obj.data[obj.i].response = respond(obj, conf);
+                    n += send(fds[obj.i].fd, obj.data[obj.i].response.substr(n).c_str(), obj.data[obj.i].response.size(), 0);
+                    if (n > 0)
+                    {
+                        if (n != obj.data[obj.i].maxSend)
+                        {
+                            obj.data[obj.i].response = obj.data[obj.i].response.substr(n).c_str();
+                            obj.data[obj.i].sendNext = false;
+                        }
+                        else
+                            obj.data[obj.i].sendNext = true;
+                    }
+                    else if (n == -1)
+                    {
+                        fds[obj.i].revents = POLLERR;
+                        obj.data[obj.i].sendNext = true;
+                        std::cout << "Send error\n";
+                    }
+                    n = 0;
                 }
                 else
                 {
-                    if (fds[i].revents & POLLIN)
-                    {
-                        std::string buffer;
-                        do
-                        {
-                            char cpyBuffer[1024] = {0};
-                            data[i].recvNum = recv(fds[i].fd, cpyBuffer, 1024, 0);
-                            if (data[i].recvNum > 0)
-                            {
-                                std::string str(cpyBuffer,data[i].recvNum);
-                                if (str.substr(data[i].recvNum - 2) != data[i].reqEnd)
-                                {
-                                    data[i].recvNext = false;
-                                    //or function mradouan();
-                                    buffer += str;
-                                }
-                                else
-                                    buffer = str;
-                            }
-                            else if (data[i].recvNum == 0)
-                            {
-                                data[i].recvNext = true;
-                                fds[i].events = POLLHUP;
-                            }
-                            else
-                            {
-                                data[i].recvNext = true;
-                                fds[i].revents = POLLERR;
-                            }
-                        } while (data[i].recvNext == false);
-                        //function mradouan();
-                        std::cout << "Request:\n" << buffer << std::endl;
-                    }
-                    else if ((fds[i].revents & POLLOUT) && (data[i].rspEnd))
-                    {   
-                        response = re(); 
-                        do
-                        {
-                            data[i].sendNum += send(fds[i].fd, response.substr(data[i].sendNum).c_str(), response.size()-data[i].sendNum, 0);
-                            if (n > 0)
-                            {
-                                if (data[i].sendNum != data[i].maxSend)
-                                    data[i].sendNext = false;
-                                else
-                                    data[i].sendNext = true;
-                            }
-                            else if (data[i].sendNum == -1)
-                            {
-                                fds[i].revents = POLLERR;
-                                data[i].sendNext = true;
-                                std::cout << "Send error\n";
-                            }
-                        } while (data[i].sendNext == false);
-                        data[i].sendNum = 0;
-                    }
-                    else
-                    {
-                        close(fds[i].fd); 
-                        fds.erase(fds.begin() + i);
-                        std::cout << "The connection was cut off";
-                    }
+                    close(fds[obj.i].fd); 
+                    fds.erase(fds.begin() + obj.i);
+                    std::cout << "The connection was cut off";
                 }
             }
-            else if (fds[i].revents & POLLERR)
-            {
-                close(fds[i].fd);
-                std::cout << "Socket error\n";
-            }
         }
+        else if (fds[obj.i].revents & POLLERR)
+        {
+            close(fds[obj.i].fd);
+            std::cout << "Socket error\n";
+        }
+        obj.i++;
     }
 
     close(server_fd);
