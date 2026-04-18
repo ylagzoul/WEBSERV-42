@@ -30,16 +30,17 @@ class Request
         std::map<std::string, std::string>  headers;
         std::string bodyFile;
         std::string fullLine;
-        int status;
+        int         status;
         bool        getEndHeaders;
+        bool        finFlag;
         bool        getEndFile;
-        int bodyType;
-        int fdFile;
-        int contentLength;
+        int         bodyType;
+        int         fdFile;
+        int         contentLength;
 
 };
 
-void    readRequest(Request &req, int fd);
+void    readRequest(std::vector<Request> &req, char buffer[], size_t len);
 std::string tolowerStr(std::string str);
 
 

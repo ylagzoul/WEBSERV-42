@@ -1,6 +1,6 @@
 NAME = request
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98 -g3
+CFLAGS = -Wextra -Wall -Werror -std=c++98 -fsanitize=address -g3
 
 CC = c++
 
