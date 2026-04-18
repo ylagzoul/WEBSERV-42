@@ -4,12 +4,15 @@
 Config::Config()
 {
     server_name = "";
+    root = "/home";
+    autoIndex = 0; 
+
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELET"] = false;
 }
 
-void Config::splite() 
+void Config::splite()
 {
     std::string word;
     std::stringstream ss(line);
@@ -17,6 +20,15 @@ void Config::splite()
     while (ss >> word)
         str.push_back(word);
     size = str.size();
+}
+
+void Config::check_default()
+{
+    if (listen_Port.size() == 0)
+    {
+        listen_Ip.push_back("0.0.0.0");
+        listen_Port.push_back("80");
+    }
 }
 
 
@@ -99,6 +111,7 @@ void Config::config_file()
             }
             else
                 throw std::runtime_error("line server");
+            check_default();
         }
     }
     catch (const std::exception& e) 

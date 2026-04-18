@@ -13,29 +13,10 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-//Tmp request//
-
 class Config;
 class Server;
 class Record;
-
-class Request
-{
-    public:
-        Request():bodyFile(0){}
-        int status;
-        std::string method;
-        std::string path;
-        std::string httpVersion;
-        std::map<std::string, std::string> headers;
-        std::ostream bodyFile;
-        std::string bodyFilePath;
-        std::string fullLine;
-        size_t size;
-        bool getEndBody;
-};
-
-// Tmp configfile//
+class Request;
 
 class playloadData
 {
@@ -55,6 +36,6 @@ class playloadData
 
 void generateResponse(Request &req, playloadData &data, std::string &ret_resp);
 
-std::string respond(Record &rec, Server serv, Config &conf);
+std::string respond(Record &rec, Server serv, Config &conf, Request &req);
 
 #endif

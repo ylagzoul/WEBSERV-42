@@ -231,7 +231,7 @@ int handlePost(Record log, playloadData &data)
 
 int getFileData(Record &log, playloadData &data)
 {
-    const int size = 100;
+    const int size = 8000;
     char buffer[size + 1];
     int b = 0;
     b = read(log.fd, buffer, sizeof(buffer) - 1);
@@ -368,22 +368,21 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
     return 0;
 }
 
-std::string respond(Record &log, Server serv, Config &conf)
+std::string respond(Record &log, Server serv, Config &conf, Request &req)
 {
     std::string ret_resp;
     playloadData data;
-    Request req;
+    // Request req;
     (void)serv;
 
-    req.status = 0;
-    req.method = "GET";
-    req.path = "file";
-    req.httpVersion = "HTTP/1.0"; 
-    req.headers["Host"] = "localhost";
-    req.headers["Connection"] = "Keep-Alive";
+    // req.status = 0;
+    // req.method = "GET";
+    // req.path = "file";
+    // req.httpVersion = "HTTP/1.0"; 
+    // req.headers["Host"] = "localhost";
+    // req.headers["Connection"] = "Keep-Alive";
+    
     t_state check = log.status;
-
-    //&
     if (log.status == NEW_RS)
     {
         loadExtensions(data);
