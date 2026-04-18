@@ -183,6 +183,10 @@ void getHeaders(Request &req)
 //         readRequest(req, fd);
 // }
 
+
+
+
+
 void    getFixedBody(Request &req)
 {
     static int bodyLen;
