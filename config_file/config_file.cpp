@@ -3,7 +3,10 @@
 
 Config::Config()
 {
+    
     server_name = "";
+    root = "/home";
+    
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELET"] = false;
@@ -17,6 +20,15 @@ void Config::splite()
     while (ss >> word)
         str.push_back(word);
     size = str.size();
+}
+
+void Config::check_default()
+{
+    if (listen_Port.size() == 0)
+    {
+        listen_Ip.push_back("0.0.0.0");
+        listen_Port.push_back("80");
+    }
 }
 
 
@@ -54,7 +66,7 @@ void Config::config_file()
 {
     ser_num = 0;
     try {
-        std::ifstream file("file_config_file/config.txt");
+        std::ifstream file("../config_file/file_config_file/config.txt");
         std::string sstr;
         while (getline(file, sstr))
         {
@@ -97,6 +109,7 @@ void Config::config_file()
             }
             else
                 throw std::runtime_error("line server");
+            check_default();
         }
     }
     catch (const std::exception& e) 

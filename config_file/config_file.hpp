@@ -46,6 +46,8 @@ class Config {
         void ft_index();
         void ft_autoindex();
 
+        void check_default();
+
         // get
         std::vector<std::string> get_listen_Ip(void);
         std::vector<std::string> get_listen_Port(void);

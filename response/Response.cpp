@@ -254,7 +254,7 @@ int handleGet(payloadData &data, Config &conf, std::string reqPath)
         if (data.mime.count(extension))
             data.contentType = data.mime[extension];
     }
-    int size = 8192;
+    const int size = 8192;
     char buffer[size];
     // neeeed the serv part to handle get properly
     int b = 0;
