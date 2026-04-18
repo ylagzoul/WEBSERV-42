@@ -29,6 +29,7 @@ class Request
         std::string httpVersion;
         std::map<std::string, std::string> headers;
         std::ostream bodyFile;
+        std::string bodyFilePath;
         std::string fullLine;
         size_t size;
         bool getEndBody;
@@ -36,7 +37,7 @@ class Request
 
 // Tmp configfile//
 
-class payloadData
+class playloadData
 {
     public:
         std::string status_code;
@@ -45,12 +46,14 @@ class payloadData
         std::string contentType;
         std::string realPath;
         std::string bodyStr;
+        std::string location;
+        std::map<std::string, bool> locationMethods;
         size_t bodySize;
         int listFd;
         std::map <std::string, std::string> mime;
 };
 
-void generateResponse(Request &req, payloadData &data, std::string &ret_resp);
+void generateResponse(Request &req, playloadData &data, std::string &ret_resp);
 
 std::string respond(Record &rec, Server serv, Config &conf);
 

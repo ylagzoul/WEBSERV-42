@@ -1,0 +1,16 @@
+1. log.status == ERROR_RS : is that gonna help you as a server
+
+
+-----------------
+for req
+2. /images//////////////upload////////////// pars uri to be -> /images/upload/
+3. Percent Encoding
+-----------------
+
+
+-----------------
+for conf
+/var/www
+GET GET
+-----------------
+

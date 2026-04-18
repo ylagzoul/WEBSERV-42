@@ -1,6 +1,6 @@
 #include "../server/server.hpp"
 
-void generateResponse(Request &req, payloadData &data, std::string &ret_resp)
+void generateResponse(Request &req, playloadData &data, std::string &ret_resp)
 {
     (void)ret_resp;
     std::stringstream res;
@@ -13,7 +13,7 @@ void generateResponse(Request &req, payloadData &data, std::string &ret_resp)
     ret_resp = res.str();
 }
 
-void errorPage(payloadData &data)
+void errorPage(playloadData &data)
 {
     data.bodyStr =
      "<!DOCTYPE html>\n"
@@ -31,7 +31,7 @@ void errorPage(payloadData &data)
     "</html>\n";
 }
 
-int getStatusCode(Request &req, payloadData &data)
+int getStatusCode(Request &req, playloadData &data)
 {
     if (req.status == 400)
     {
@@ -53,7 +53,7 @@ int getStatusCode(Request &req, payloadData &data)
     return 0;
 }
 
-void loadExtensions(payloadData &data)
+void loadExtensions(playloadData &data)
 {
     data.mime["html"] = "text/html";
     data.mime["css"] = "text/css";
@@ -81,7 +81,7 @@ void loadExtensions(payloadData &data)
     data.mime["mov"] = "video/quicktime";
 }
 
-void resolvePath(payloadData &data, Config &conf, std::string &path)
+void resolvePath(playloadData &data, Config &conf, std::string &path)
 {
     std::stringstream fullPath(conf.root + path);
     std::vector<std::string> realNames;
@@ -104,7 +104,7 @@ void resolvePath(payloadData &data, Config &conf, std::string &path)
         data.realPath += '/' + realNames[i];
 }
 
-void listFiles(payloadData &data)
+void listFiles(playloadData &data)
 {
     DIR *dir;
     dir = opendir(data.realPath.c_str());
@@ -155,7 +155,7 @@ int autoIndex(Config conf, std::string reqPath)
     return 0;
 }
 
-int validateFile(payloadData &data, Config &conf, std::string reqPath)
+int validateFile(playloadData &data, Config &conf, std::string reqPath)
 {
     struct stat info;
 
@@ -188,7 +188,7 @@ int validateFile(payloadData &data, Config &conf, std::string reqPath)
     return 0;
 }
 
-int handleDelete(payloadData &data)
+int handleDelete(playloadData &data)
 {
     struct stat info;
 
@@ -222,28 +222,29 @@ int handleDelete(payloadData &data)
     return 0;
 }
 
-int handlePost(Record log, payloadData &data)
+int handlePost(Record log, playloadData &data)
 {
-    log.fd += 0;
-    data.bodySize += 0;
-    data.bodySize += 0;
+    log.fd+=0;
+    data.bodySize+=0;
     return 0;
 }
 
-int getFileData(Record &log, payloadData &data)
+int getFileData(Record &log, playloadData &data)
 {
-    const int size = 8000;
-    char buffer[size];
+    const int size = 100;
+    char buffer[size + 1];
     int b = 0;
-    b = read(log.fd, buffer, sizeof(buffer));
+    b = read(log.fd, buffer, sizeof(buffer) - 1);
+    // std::cout << b << std::endl;
     if (b == -1)
     {
         data.status_code = "500";
         data.message = "Internal Server Error";
         return 1;
     }
+    buffer[b] = '\0';
     log.buffer = buffer;
-    if (b < 8000)
+    if (b < size)
     {
         log.status = CLOSED_RS;
         close(log.fd);
@@ -251,11 +252,12 @@ int getFileData(Record &log, payloadData &data)
     else
     {
         log.status = ACTIVE_RS;
+        log.method = GET_RS;
     }
     return 0;
 }
 
-int handleGet(Record &log, payloadData &data, Config &conf, std::string reqPath)
+int handleGet(Record &log, playloadData &data, Config &conf, std::string reqPath)
 {
     int check;
     std::string extension;
@@ -284,7 +286,45 @@ int handleGet(Record &log, payloadData &data, Config &conf, std::string reqPath)
     return 0;
 }
 
-int handleResponse(Record &log, Request &req, Config &conf, payloadData &data)
+void findLongestMatch(playloadData &data, Config &conf, Request &req) //tests
+{
+    std::map<int, std::string> locs;
+    for(size_t i = 0; i < conf.location.size(); i++)
+    {
+        std::string name = conf.location[i].location_name;
+        size_t f = req.path.find(name); 
+        if (f == 0 && (req.path.length() == name.length() || req.path[name.length()] == '/'
+            || name == "/"))
+            locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
+    }
+    if (locs.empty())
+    {
+        data.location = conf.root;
+    }
+    else
+        data.location = locs.rbegin()->second;
+}
+
+void getImportantData(Config &conf, playloadData &data)
+{
+    // std::cout << data.location << std::endl;
+    for(size_t i = 0; i < conf.location.size(); i++)
+    {
+        if (conf.location[i].location_name == data.location)
+        {
+            // std::cout << conf.location[i].location_name << std::endl;
+            // std::cout << conf.location[i].conf.methods["GET"] << std::endl;
+            data.locationMethods = conf.location[i].conf.methods;
+            break ;
+        }
+    }
+    if (data.locationMethods.empty())
+    {
+        data.locationMethods = conf.methods;
+    }
+}
+
+int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 {    
     if (getStatusCode(req, data))
     {
@@ -295,8 +335,21 @@ int handleResponse(Record &log, Request &req, Config &conf, payloadData &data)
         data.connection = "Keep-Alive";
 
     resolvePath(data, conf, req.path);
-    
     //!!!! check get and post and delete if they are allowed in the locations in config !!!!
+    findLongestMatch(data, conf, req);
+    getImportantData(conf, data);
+    // if (req.method == "GET") 
+    // {
+    //     if (data.locationMethods["GET"])
+    //     {
+    //         std::cout << "yoyo\n";
+    //     }
+    //     else if (handleGet(log, data, conf, req.path))//uri
+    //     {
+    //         errorPage(data);
+    //         return 1;
+    //     }
+    // }
     if (req.method == "GET" && handleGet(log, data, conf, req.path))
     {
         errorPage(data);
@@ -317,10 +370,8 @@ int handleResponse(Record &log, Request &req, Config &conf, payloadData &data)
 
 std::string respond(Record &log, Server serv, Config &conf)
 {
-    
     std::string ret_resp;
-    payloadData data;
-    // //////////////////tmp
+    playloadData data;
     Request req;
     (void)serv;
 
@@ -331,8 +382,8 @@ std::string respond(Record &log, Server serv, Config &conf)
     req.headers["Host"] = "localhost";
     req.headers["Connection"] = "Keep-Alive";
     t_state check = log.status;
-    // //////////////////
-    
+
+    //&
     if (log.status == NEW_RS)
     {
         loadExtensions(data);
@@ -350,8 +401,8 @@ std::string respond(Record &log, Server serv, Config &conf)
         {
             if (getFileData(log, data))
             {
-                errorPage(data);
-                data.bodySize = data.bodyStr.length();
+                // errorPage(data);
+                // data.bodySize = data.bodyStr.length();
                 log.status = ERROR_RS;
             }
         }
@@ -360,7 +411,7 @@ std::string respond(Record &log, Server serv, Config &conf)
         //     // Behaviour
         // }
     }
-    if (check == NEW_RS || (check == NEW_RS && log.status == ERROR_RS))
+    if (check == NEW_RS)
     {
         generateResponse(req, data, ret_resp);
         if (log.status == ERROR_RS)
@@ -372,11 +423,7 @@ std::string respond(Record &log, Server serv, Config &conf)
         ret_resp = std::string();
     else
         ret_resp = log.buffer;
-    // ----------------------------------Teeeest--------------------------------------
-
-    // int fd = open("/home/abouhki/Desktop/webserv_p/response/body.html", O_WRONLY);
-    // write(fd, ret_resp.c_str(), ret_resp.length());
-    // -------------------------------------------------------------------------------
-
+    if (log.status == CLOSED_RS || log.status == ERROR_RS)
+        log.buffer.clear();
     return (ret_resp);
 }

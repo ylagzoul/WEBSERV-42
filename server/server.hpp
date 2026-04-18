@@ -14,7 +14,7 @@
 
 typedef enum e_state
 {
-    NEW_RS,
+    NEW_RS = 100,
     ACTIVE_RS,
     CLOSED_RS,
     GET_RS,
