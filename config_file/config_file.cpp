@@ -3,16 +3,16 @@
 
 Config::Config()
 {
-    
     server_name = "";
     root = "/home";
-    
+    autoIndex = 0; 
+
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELET"] = false;
 }
 
-void Config::splite() 
+void Config::splite()
 {
     std::string word;
     std::stringstream ss(line);
@@ -99,6 +99,8 @@ void Config::config_file()
                         this->location.push_back(obj);
                         blockName = "server";
                     }
+                    else if (size == 0)
+                        continue;
                     else
                     {
                         // if (str[0] == "}")
