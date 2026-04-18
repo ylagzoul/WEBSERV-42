@@ -1,7 +1,7 @@
 NAME = server
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98 -g3
-
+CFLAGS = -Wextra -Wall -Werror -std=c++98  -g3
+#-fsanitize=address
 CC = c++
 
 SRC = server.cpp \
