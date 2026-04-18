@@ -11,6 +11,9 @@ Data::Data()
     recvNum = 0;
 }
 
+
+
+
 Server::Server()
 {
     clientId = 0;
