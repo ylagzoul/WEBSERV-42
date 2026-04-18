@@ -40,7 +40,7 @@ class Request
 
 };
 
-void    readRequest(std::vector<Request> &req, char buffer[], size_t len);
+void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len);
 std::string tolowerStr(std::string str);
 
 

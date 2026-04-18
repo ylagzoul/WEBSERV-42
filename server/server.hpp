@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <vector>
-// #include "../request/request.hpp"
+#include "../request/request.hpp"
 #include "../response/Response.hpp"
 #include "../config_file/config_file.hpp"
 
@@ -45,7 +45,7 @@ class Data {
 class Server {
     public:
         Server();
-        size_t i;
+        size_t clientId;
         std::vector<Data> data;
 };
 

@@ -1,10 +1,11 @@
 NAME = server
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98  -g3
+CFLAGS = -Wextra -Wall -Werror -std=c++98  -fsanitize=address -g3
 #-fsanitize=address
 CC = c++
 
 SRC = server.cpp \
+			../request/request.cpp \
 			../response/Response.cpp \
 			../config_file/config_file.cpp \
 			../config_file/Helpful_functions/get_set_conf.cpp \

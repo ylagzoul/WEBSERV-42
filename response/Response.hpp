@@ -18,20 +18,20 @@
 class Config;
 class Server;
 
-class Request
-{
-    public:
-        Request():bodyFile(0){}
-        int status;
-        std::string method;
-        std::string path;
-        std::string httpVersion;
-        std::map<std::string, std::string> headers;
-        std::ostream bodyFile;
-        std::string fullLine;
-        size_t size;
-        bool getEndBody;
-};
+// class Request
+// {
+//     public:
+//         Request():bodyFile(0){}
+//         int status;
+//         std::string method;
+//         std::string path;
+//         std::string httpVersion;
+//         std::map<std::string, std::string> headers;
+//         std::ostream bodyFile;
+//         std::string fullLine;
+//         size_t size;
+//         bool getEndBody;
+// };
 
 // Tmp configfile//
 
