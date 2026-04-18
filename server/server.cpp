@@ -125,10 +125,10 @@ int main()
 {
     Config obj;
     obj.config_file();
-    obj.get_server_name();
+    // obj.get_server_name();
 
     // std::cout << "index = " << obj.get_index() << std::endl;
-    // std::cout << "get_autoindex = " << obj.get_autoindex() << std::endl;
+    std::cout << "autoindex = " << obj.autoIndex << std::endl;
     std::cout << "listen  = " << obj.get_listen_Ip()[0] << std::endl;
     std::cout << "listen  = " << obj.get_listen_Port()[0] << std::endl;
 
@@ -149,10 +149,10 @@ int main()
     // std::cout << "ft_root  = " << obj.get_index() << std::endl;
     // std::cout << "server_name  = " << obj.get_server_name() << std::endl;
     // std::cout << "root  = " << obj.get_root() << std::endl;
-    std::cout << "methods  = " << obj.get_methods("GET") << std::endl;
-    std::cout << "methods  = " << obj.get_methods("POST") << std::endl;
-    // std::cout << "location_methods  = " << obj.get_methods("GET") << std::endl;
-    // std::cout << "location_methods  = " << obj.get_methods("POST") << std::endl;
+    // std::cout << "methods  = " << obj.get_methods("GET") << std::endl;
+    // std::cout << "methods  = " << obj.get_methods("POST") << std::endl;
+    std::cout << "location_methods  = " << obj.get_methods("GET") << std::endl;
+    std::cout << "location_methods  = " << obj.get_methods("POST") << std::endl;
     // std::cout << "error_page  = " << obj.get_error_page(404) << std::endl;
     // std::cout << "error_page  = " << obj.location[0].conf.get_error_page(404) << std::endl;
     // std::cout << "error_page  = " << obj.location[1].conf.get_error_page(404) << std::endl;
