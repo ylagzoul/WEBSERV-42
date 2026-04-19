@@ -79,6 +79,7 @@ int main()
                         readRequest(req, obj.clientId - 1, buffer, bytes);
                         std::cout << "d00000000000000000000000000000000\n";
                         std::cout << "method "<<req[obj.clientId-1].method << std::endl;
+                        std::cout << "path "<<req[obj.clientId-1].path << std::endl;
                     }
                     else if (bytes == 0)
                         fds[obj.clientId].events = POLLHUP;
