@@ -81,7 +81,7 @@ void loadExtensions(playloadData &data)
     data.mime["mov"] = "video/quicktime";
 }
 
-void resolvePath(playloadData &data, Config &conf, std::string &path)
+void resolvePath(playloadData &data, Config &conf, std::string &path) // path
 {
     std::stringstream fullPath(conf.root + path);
     std::vector<std::string> realNames;
@@ -235,7 +235,6 @@ int getFileData(Record &log, playloadData &data)
     char buffer[size + 1];
     int b = 0;
     b = read(log.fd, buffer, sizeof(buffer) - 1);
-    // std::cout << b << std::endl;
     if (b == -1)
     {
         data.status_code = "500";
@@ -327,21 +326,26 @@ void getImportantData(Config &conf, playloadData &data)
     }
 }
 
-
-
 int checkErrorFile(playloadData &data, Config &conf)
 {
     int code = atoi(data.status_code.c_str());
     std::string file = conf.location[data.locationIndex].conf.root;
-    std::string page = data.errorPages[code];
     if (file[file.length() - 1] != '/')
         file += '/';
+    std::string page = data.errorPages[code];
+    if (page.empty())
+    {
+        if (conf.error_page[code].empty())
+            return 1;
+        else
+            page = conf.error_page[code];
+    }
     if (page[0] == '/')
         page = page.substr(1);
     file += page;
-
     struct stat info;
-    stat(data.realPath.c_str(), &info);
+    stat(file.c_str(), &info);
+    
     if (S_ISDIR(info.st_mode))
         return 1;
     if (info.st_size > 64 * 1024)
@@ -356,7 +360,17 @@ int checkErrorFile(playloadData &data, Config &conf)
         data.bodyStr.append(buff, bytes);
     if (bytes < 0)
         return 1;
+    //  std::cout << file << "  body: " << data.bodyStr << std::endl;
+    // exit(0);
     return 0;
+}
+
+void chooseErrorHandler(Config &conf, playloadData &data)
+{
+    if (data.errorPages.empty())
+        defaultErrorPage(data);
+    else if (checkErrorFile(data, conf))
+        defaultErrorPage(data);
 }
 
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
@@ -367,10 +381,7 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 
     if (getStatusCode(req, data))
     {
-        if (data.errorPages.empty())
-            defaultErrorPage(data);
-        else if (checkErrorFile(data, conf))
-            defaultErrorPage(data);
+        chooseErrorHandler(conf, data);
         return 1;
     }
     if (req.headers["Connection"] == "Keep-Alive")
@@ -382,12 +393,12 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         {
             data.status_code = "405";
             data.message = "Method Not Allowed";
-            defaultErrorPage(data);
+            chooseErrorHandler(conf, data);
             return 1;
         }
         else if (handleGet(log, data, conf, req.path))
         {
-            defaultErrorPage(data);
+            chooseErrorHandler(conf, data);
             return 1;
         }
     }
@@ -397,12 +408,12 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         {
             data.status_code = "405";
             data.message = "Method Not Allowed";
-            defaultErrorPage(data);
+            chooseErrorHandler(conf, data);
             return 1;
         }
         else if (handlePost(log, data))
         {
-            defaultErrorPage(data);
+            chooseErrorHandler(conf, data);
             return 1;
         }
     }
@@ -412,12 +423,12 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         {
             data.status_code = "405";
             data.message = "Method Not Allowed";
-            defaultErrorPage(data);
+            chooseErrorHandler(conf, data);
             return 1;
         }
         else if (handleDelete(data))
         {
-            defaultErrorPage(data);
+            chooseErrorHandler(conf, data);
             return 1;
         }
     }
@@ -453,10 +464,8 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
                 log.status = ERROR_RS;
             }
         }
-        // else if (POST_RS)
-        // {
-        //     // Behaviour
-        // }
+        else if (log.method == POST_RS);
+            // Behaviour
     }
     if (check == NEW_RS)
     {

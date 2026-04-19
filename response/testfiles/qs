@@ -1,6 +1,8 @@
+
+
 1. log.status == ERROR_RS : is that gonna help you as a server
-
-
+2. I should handle . .. in path
+3. /
 -----------------
 for req
 2. /images//////////////upload////////////// pars uri to be -> /images/upload/

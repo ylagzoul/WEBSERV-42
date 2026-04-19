@@ -6,18 +6,17 @@
 // req.bodyFile = "hello world!";
 // req.headers["User-Agent"] = "curl/7.16.3";
 
-int main()
+int main(int ac, char **av)
 {
     Config conf;
     conf.config_file();
-    conf.root = "/home/abouhki/Desktop/or_WEBSERV/response/testFolder/";
     Server server;
 
     Request req;
-
+    (void)ac;
     req.status = 0;
     req.method = "GET";
-    req.path = "file";
+    req.path = av[1];
     req.httpVersion = "HTTP/1.0"; 
     req.headers["Host"] = "localhost";
     req.headers["Connection"] = "Keep-Alive";
