@@ -2,6 +2,7 @@ server {
     listen 127.0.0.1:8080;
 
     root /var/www/main;
+    server_name = a..com b.com c.com
 
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;

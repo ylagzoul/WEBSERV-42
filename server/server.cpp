@@ -23,6 +23,8 @@ int main()
 {
     Config conf;
     Server obj;
+    std::vector<Record> recs;
+    recs.push_back(Record());
     std::vector<Request> req;
     
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -87,10 +89,10 @@ int main()
                         fds[obj.clientId].revents = POLLERR;
 
                 }
-                else if ((fds[obj.clientId].revents & POLLOUT) && (obj.data[obj.clientId].rspEnd))
+                else if ((fds[obj.clientId].revents & POLLOUT))
                 {
                     if (obj.data[obj.clientId].sendNext == true)
-                        obj.data[obj.clientId].response = respond(obj, conf);
+                        obj.data[obj.clientId].response = respond(recs[obj.clientId-1], obj, conf,req[obj.clientId-1]);
                     n += send(fds[obj.clientId].fd, obj.data[obj.clientId].response.substr(n).c_str(), obj.data[obj.clientId].response.size(), 0);
                     if (n > 0)
                     {

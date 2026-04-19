@@ -66,7 +66,7 @@ void Config::config_file()
 {
     ser_num = 0;
     try {
-        std::ifstream file("../config_file/file_config_file/config.txt");
+        std::ifstream file("../config_file/file_config_file/config.nginx");
         std::string sstr;
         while (getline(file, sstr))
         {
