@@ -2,7 +2,6 @@
 
 void generateResponse(Request &req, playloadData &data, std::string &ret_resp)
 {
-    (void)ret_resp;
     std::stringstream res;
     res << req.httpVersion << ' ' << data.status_code << ' ' << data.message + "\r\n";
     res << "Content-Length: " << data.bodySize << "\r\n";
@@ -222,10 +221,10 @@ int handleDelete(playloadData &data)
     return 0;
 }
 
-int handlePost(Record log, playloadData &data)
+int handlePost(Record log, playloadData &data, Config &conf)
 {
-    log.fd += 0;
-    data.bodySize += 0;
+    (void)log;
+    
     return 0;
 }
 
