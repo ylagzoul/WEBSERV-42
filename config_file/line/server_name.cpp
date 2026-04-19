@@ -2,6 +2,9 @@
 
 void Config::ft_methods()
 {
+    methods["GET"] = false;
+    methods["POST"] = false;
+    methods["DELETE"] = false;
     int size_s = str[size - 1].size();
     str[size - 1].erase(size_s - 1);
     int i  = 1;

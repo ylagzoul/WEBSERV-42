@@ -381,7 +381,7 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
     // req.httpVersion = "HTTP/1.0"; 
     // req.headers["Host"] = "localhost";
     // req.headers["Connection"] = "Keep-Alive";
-    
+    std::cout << '-' << conf.root << '-' << std::endl;
     t_state check = log.status;
     if (log.status == NEW_RS)
     {

@@ -80,27 +80,29 @@ void Config::config_file()
                 {
                     line = sstr;
                     splite();
-                    if (str[0] == "location")
+                    if (size == 0)
+                        continue;
+                    else if (str[0] == "location")
                     {
+                        // if (size == 0)
+                        //     continue;
                         if (size != 3 || blockName == "location" || str[2] != "{")
                             throw std::runtime_error("error loction");
                         Location obj;
                         obj.conf = *this;
                         obj.location_name = str[1];
-                        blockName = "location";
-                        while(getline(file, sstr) && obj.conf.blockName == "location")
+                        while(getline(file, sstr))
                         {
                             obj.conf.line = sstr;
                             obj.conf.splite();
+                            if (obj.conf.size == 0)
+                                continue;
                             if (obj.conf.str[0] == "}")
                                 break;
                             obj.conf.function();
                         }
                         this->location.push_back(obj);
-                        blockName = "server";
                     }
-                    else if (size == 0)
-                        continue;
                     else
                     {
                         // if (str[0] == "}")
