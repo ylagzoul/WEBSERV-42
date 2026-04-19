@@ -2,42 +2,46 @@ server {
     listen 0.0.0.1:8001;
     listen 127.0.0.1;
     listen 65535;
-    root /home/abouhki/Desktop/or_WEBSERV/;
+    root /Users/macbook/Desktop/ylagou/server; 
     index indeshx.html;
-    methods POST;
+    methods GET;
     error_page 500 /errors/500.html;
+    error_page 501 /errors/501.html;
 
     location /upload {
-        methods POST;
+        methods POST GET;
         root /var/www/main;
         index index.html;
         autoindex off;
     }
 
-        location / {
+    location / {
         methods GET POST DELETE;
         root /var/www;
         index index.html;
+        error_page 506 /errors/506.html;
+
         autoindex off;
     }
 
     location /images {
         methods GET;
-        root /var/www;
+        root /var/www11111;
         index index.html;
         autoindex on;
+        error_page 506 /errors/506.html;
     }
 
     location /images/upload/images {
-        methods GET;
-        root /var/www;
+        methods DELETE;
         index index.html;
+        error_page 510 /errors/510.html;
         autoindex on;
     }
 
     location /images/upload/ {
-        methods GET;
-        root /var/www;
+        error_page 500 /errors/500.html;
+        root /var/www4444444;
         index index.html;
         autoindex on;
     }

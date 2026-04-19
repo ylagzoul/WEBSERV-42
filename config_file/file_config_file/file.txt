@@ -1,35 +1,44 @@
 server {
-    listen 127.0.0.1:8080;
-
-    root /var/www/main;
-    server_name = a..com b.com c.com
-
-    error_page 404 /errors/404.html;
+    listen 0.0.0.1:8001;
+    listen 127.0.0.1;
+    listen 65535;
+    root /var/www/main; 
+    index indeshx.html;
+    methods GET;
     error_page 500 /errors/500.html;
 
-    location / {
-        methods GET POST;
+    location /upload {
+        methods POST;
         root /var/www/main;
+        index index.html;
+        autoindex off;
+    }
+
+    location / {
+        methods GET POST DELETE;
+        root /var/www;
         index index.html;
         autoindex off;
     }
 
     location /images {
         methods GET;
-        root /var/www/images;
+        root /var/www;
+        index index.html;
         autoindex on;
     }
 
-    location /blog {
+    location /images/upload/images {
         methods GET;
-        root /var/www/blog;
+        root /var/www;
         index index.html;
-        autoindex off;
+        autoindex on;
     }
 
-    location /upload {
-        methods POST;
-        root /var/www/uploads;
-        upload on;
+    location /images/upload/ {
+        methods GET;
+        root /var/www;
+        index index.html;
+        autoindex on;
     }
 }
