@@ -11,10 +11,10 @@ int main()
     Config conf;
     conf.config_file();
     conf.root = "/home/abouhki/Desktop/or_WEBSERV/response/testFolder/";
-
     Server server;
 
     Request req;
+
     req.status = 0;
     req.method = "GET";
     req.path = "file";

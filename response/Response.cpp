@@ -13,7 +13,7 @@ void generateResponse(Request &req, playloadData &data, std::string &ret_resp)
     ret_resp = res.str();
 }
 
-void errorPage(playloadData &data)
+void defaultErrorPage(playloadData &data)
 {
     data.bodyStr =
      "<!DOCTYPE html>\n"
@@ -231,7 +231,7 @@ int handlePost(Record log, playloadData &data)
 
 int getFileData(Record &log, playloadData &data)
 {
-    const int size = 8000;
+    const int size = 8192;
     char buffer[size + 1];
     int b = 0;
     b = read(log.fd, buffer, sizeof(buffer) - 1);
@@ -317,6 +317,7 @@ void getImportantData(Config &conf, playloadData &data)
             else
                 data.errorPages = conf.error_page;
             data.locationMethods = conf.location[i].conf.methods;
+            data.locationIndex = i;
             break ;
         }
     }
@@ -326,11 +327,36 @@ void getImportantData(Config &conf, playloadData &data)
     }
 }
 
-int checkErrorFile(playloadData &data)
+
+
+int checkErrorFile(playloadData &data, Config &conf)
 {
     int code = atoi(data.status_code.c_str());
-    std::string file = data.errorPages[code];
-    // exist , permission , read
+    std::string file = conf.location[data.locationIndex].conf.root;
+    std::string page = data.errorPages[code];
+    if (file[file.length() - 1] != '/')
+        file += '/';
+    if (page[0] == '/')
+        page = page.substr(1);
+    file += page;
+
+    struct stat info;
+    stat(data.realPath.c_str(), &info);
+    if (S_ISDIR(info.st_mode))
+        return 1;
+    if (info.st_size > 64 * 1024)
+        return 1;
+    data.bodySize = info.st_size;
+    int fd = open(file.c_str(), O_RDONLY);
+    if (fd == -1)
+        return 1;
+    char buff[8192];
+    int bytes = 0;
+    while ((bytes = read(fd, buff, sizeof(buff) - 1)) > 0)
+        data.bodyStr.append(buff, bytes);
+    if (bytes < 0)
+        return 1;
+    return 0;
 }
 
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
@@ -341,27 +367,27 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 
     if (getStatusCode(req, data))
     {
-        if (!data.errorPages.empty())
-            checkErrorFile(data);
-        else
-            errorPage(data);
+        if (data.errorPages.empty())
+            defaultErrorPage(data);
+        else if (checkErrorFile(data, conf))
+            defaultErrorPage(data);
         return 1;
     }
     if (req.headers["Connection"] == "Keep-Alive")
         data.connection = "Keep-Alive";
-    
+
     if (req.method == "GET") 
     {
         if (!data.locationMethods["GET"])
         {
             data.status_code = "405";
             data.message = "Method Not Allowed";
-            errorPage(data);
+            defaultErrorPage(data);
             return 1;
         }
         else if (handleGet(log, data, conf, req.path))
         {
-            errorPage(data);
+            defaultErrorPage(data);
             return 1;
         }
     }
@@ -371,12 +397,12 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         {
             data.status_code = "405";
             data.message = "Method Not Allowed";
-            errorPage(data);
+            defaultErrorPage(data);
             return 1;
         }
         else if (handlePost(log, data))
         {
-            errorPage(data);
+            defaultErrorPage(data);
             return 1;
         }
     }
@@ -386,12 +412,12 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         {
             data.status_code = "405";
             data.message = "Method Not Allowed";
-            errorPage(data);
+            defaultErrorPage(data);
             return 1;
         }
         else if (handleDelete(data))
         {
-            errorPage(data);
+            defaultErrorPage(data);
             return 1;
         }
     }
@@ -422,7 +448,7 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
         {
             if (getFileData(log, data))
             {
-                // errorPage(data);
+                // defaultErrorPage(data);
                 // data.bodySize = data.bodyStr.length();
                 log.status = ERROR_RS;
             }

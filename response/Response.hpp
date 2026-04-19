@@ -30,7 +30,9 @@ class playloadData
         std::map<int, std::string> errorPages;
         std::string location;
         std::map<std::string, bool> locationMethods;
+        std::string error;
         size_t bodySize;
+        int locationIndex;
         int listFd;
         std::map <std::string, std::string> mime;
 };
