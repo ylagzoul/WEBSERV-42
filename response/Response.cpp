@@ -224,8 +224,8 @@ int handleDelete(playloadData &data)
 
 int handlePost(Record log, playloadData &data)
 {
-    log.fd+=0;
-    data.bodySize+=0;
+    log.fd += 0;
+    data.bodySize += 0;
     return 0;
 }
 
@@ -312,8 +312,10 @@ void getImportantData(Config &conf, playloadData &data)
     {
         if (conf.location[i].location_name == data.location)
         {
-            // std::cout << conf.location[i].location_name << std::endl;
-            // std::cout << conf.location[i].conf.methods["GET"] << std::endl;
+            if (!conf.location[i].conf.error_page.empty())
+                data.errorPages = conf.location[i].conf.error_page;
+            else
+                data.errorPages = conf.error_page;
             data.locationMethods = conf.location[i].conf.methods;
             break ;
         }
@@ -324,46 +326,74 @@ void getImportantData(Config &conf, playloadData &data)
     }
 }
 
+int checkErrorFile(playloadData &data)
+{
+    int code = atoi(data.status_code.c_str());
+    std::string file = data.errorPages[code];
+    // exist , permission , read
+}
+
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
-{    
+{
+    resolvePath(data, conf, req.path);
+    findLongestMatch(data, conf, req);
+    getImportantData(conf, data);
+
     if (getStatusCode(req, data))
     {
-        errorPage(data);
+        if (!data.errorPages.empty())
+            checkErrorFile(data);
+        else
+            errorPage(data);
         return 1;
     }
     if (req.headers["Connection"] == "Keep-Alive")
         data.connection = "Keep-Alive";
-
-    resolvePath(data, conf, req.path);
-    //!!!! check get and post and delete if they are allowed in the locations in config !!!!
-    findLongestMatch(data, conf, req);
-    getImportantData(conf, data);
-    // if (req.method == "GET") 
-    // {
-    //     if (data.locationMethods["GET"])
-    //     {
-    //         std::cout << "yoyo\n";
-    //     }
-    //     else if (handleGet(log, data, conf, req.path))//uri
-    //     {
-    //         errorPage(data);
-    //         return 1;
-    //     }
-    // }
-    if (req.method == "GET" && handleGet(log, data, conf, req.path))
+    
+    if (req.method == "GET") 
     {
-        errorPage(data);
-        return 1;
+        if (!data.locationMethods["GET"])
+        {
+            data.status_code = "405";
+            data.message = "Method Not Allowed";
+            errorPage(data);
+            return 1;
+        }
+        else if (handleGet(log, data, conf, req.path))
+        {
+            errorPage(data);
+            return 1;
+        }
     }
-    else if (req.method == "DELETE" && handleDelete(data))
+    else if (req.method == "POST") 
     {
-        errorPage(data);
-        return 1;
+        if (!data.locationMethods["POST"])
+        {
+            data.status_code = "405";
+            data.message = "Method Not Allowed";
+            errorPage(data);
+            return 1;
+        }
+        else if (handlePost(log, data))
+        {
+            errorPage(data);
+            return 1;
+        }
     }
-    else if (req.method == "POST" && handlePost(log, data))
+    else if (req.method == "DELETE") 
     {
-        errorPage(data);
-        return 1;
+        if (!data.locationMethods["DELETE"])
+        {
+            data.status_code = "405";
+            data.message = "Method Not Allowed";
+            errorPage(data);
+            return 1;
+        }
+        else if (handleDelete(data))
+        {
+            errorPage(data);
+            return 1;
+        }
     }
     return 0;
 }
@@ -372,15 +402,7 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
 {
     std::string ret_resp;
     playloadData data;
-    // Request req;
     (void)serv;
-
-    // req.status = 0;
-    // req.method = "GET";
-    // req.path = "file";
-    // req.httpVersion = "HTTP/1.0"; 
-    // req.headers["Host"] = "localhost";
-    // req.headers["Connection"] = "Keep-Alive";
     
     t_state check = log.status;
     if (log.status == NEW_RS)

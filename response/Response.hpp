@@ -27,6 +27,7 @@ class playloadData
         std::string contentType;
         std::string realPath;
         std::string bodyStr;
+        std::map<int, std::string> errorPages;
         std::string location;
         std::map<std::string, bool> locationMethods;
         size_t bodySize;

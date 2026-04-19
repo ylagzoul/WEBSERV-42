@@ -2,9 +2,9 @@ server {
     listen 0.0.0.1:8001;
     listen 127.0.0.1;
     listen 65535;
-    root /var/www/main;
+    root /home/abouhki/Desktop/or_WEBSERV/;
     index indeshx.html;
-    methods GET POST;
+    methods POST;
     error_page 500 /errors/500.html;
 
     location /upload {

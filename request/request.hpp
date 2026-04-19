@@ -22,7 +22,7 @@ using std::cout;
 class Request 
 {
     public:
-        Request();
+        Request(){}; //attention when merging!!
         std::string method;
         std::string path;
         std::string httpVersion;
