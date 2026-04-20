@@ -82,7 +82,7 @@ void loadExtensions(playloadData &data)
 
 void resolvePath(playloadData &data, Config &conf, std::string &path) // path
 {
-    std::stringstream fullPath(conf.root + path);
+    std::stringstream fullPath(conf.location[data.locationIndex].conf.root + data.uri);
     std::vector<std::string> realNames;
     std::string tmp;
 
@@ -223,8 +223,9 @@ int handleDelete(playloadData &data)
 
 int handlePost(Record log, playloadData &data, Config &conf)
 {
-    (void)log;
-    
+    (void) log;
+    (void) data;
+    (void) conf;
     return 0;
 }
 
@@ -301,6 +302,9 @@ void findLongestMatch(playloadData &data, Config &conf, Request &req) //tests
     }
     else
         data.location = locs.rbegin()->second;
+    //  = upload
+    //  = req.path = testvv/txt.txt/
+    data.uri = req.path.substr(data.location.length());
 }
 
 void getImportantData(Config &conf, playloadData &data)
@@ -374,8 +378,8 @@ void chooseErrorHandler(Config &conf, playloadData &data)
 
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 {
-    resolvePath(data, conf, req.path);
     findLongestMatch(data, conf, req);
+    resolvePath(data, conf, req.path);
     getImportantData(conf, data);
 
     if (getStatusCode(req, data))
@@ -410,7 +414,7 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
             chooseErrorHandler(conf, data);
             return 1;
         }
-        else if (handlePost(log, data))
+        else if (handlePost(log, data, conf))
         {
             chooseErrorHandler(conf, data);
             return 1;
