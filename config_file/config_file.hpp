@@ -20,6 +20,7 @@ class Config {
         std::map<int,std::string> error_page;
         std::string blockName;
         size_t client_max_body_size;
+        std::string uploadPath;
         std::vector<std::string> index;
         std::string autoindex;
         

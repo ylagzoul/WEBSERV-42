@@ -345,7 +345,7 @@ int checkErrorFile(playloadData &data, Config &conf)
     file += page;
     struct stat info;
     stat(file.c_str(), &info);
-    
+
     if (S_ISDIR(info.st_mode))
         return 1;
     if (info.st_size > 64 * 1024)
@@ -360,7 +360,7 @@ int checkErrorFile(playloadData &data, Config &conf)
         data.bodyStr.append(buff, bytes);
     if (bytes < 0)
         return 1;
-    //  std::cout << file << "  body: " << data.bodyStr << std::endl;
+    // std::cout << file << "  body: " << data.bodyStr << std::endl;
     // exit(0);
     return 0;
 }
@@ -464,8 +464,11 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
                 log.status = ERROR_RS;
             }
         }
-        else if (log.method == POST_RS);
+        else if (log.method == POST_RS)
+        {
             // Behaviour
+
+        }
     }
     if (check == NEW_RS)
     {

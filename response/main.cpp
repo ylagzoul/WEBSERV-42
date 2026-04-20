@@ -11,7 +11,7 @@ int main(int ac, char **av)
     Config conf;
     conf.config_file();
     Server server;
-
+    conf.uploadPath = "";
     Request req;
     (void)ac;
     req.status = 0;

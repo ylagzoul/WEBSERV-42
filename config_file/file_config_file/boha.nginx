@@ -5,6 +5,7 @@ server {
     root /home/boha/Desktop/owebserv/; 
     index indeshx.html;
     methods GET;
+    upload_dir
     error_page 400 /errors/400.html;
     error_page 403 /errors/403.html;
     error_page 404 /errors/404.html;
@@ -29,5 +30,4 @@ server {
         error_page 500 /errors/500.html;
         autoindex off;
     }
-
 }
