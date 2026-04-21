@@ -12,6 +12,8 @@
 #include "../response/Response.hpp"
 #include "../config_file/config_file.hpp"
 
+# define DEFAULTBODY 1024
+
 typedef enum e_state
 {
     NEW_RS = 100,

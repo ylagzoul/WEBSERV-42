@@ -41,11 +41,20 @@ void Config::ft_client_max_body_size()
     }
     client_max_body_size = atoi(str[1].c_str());
     if (c == 'G')
-        client_max_body_size = client_max_body_size * 1024;
+        client_max_body_size = client_max_body_size * DEFAULTBODY * DEFAULTBODY * DEFAULTBODY;
     else if (c == 'K')
-        client_max_body_size = client_max_body_size / 1024;
+        client_max_body_size = client_max_body_size  * DEFAULTBODY;
+    else if (c == 'M')
+        client_max_body_size = client_max_body_size * DEFAULTBODY * DEFAULTBODY; 
+}
 
-    std::cout << client_max_body_size << std::endl;
+void Config::ft_upload_path()
+{
+    int size_s = str[1].size();
+    if (size != 2  || str[1][size_s - 1] != ';')
+        throw std::runtime_error("upload_path");
+    str[1].erase(size_s - 1);
+    uploadPath = str[1];
 }
 
 

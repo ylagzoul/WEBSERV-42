@@ -1,0 +1,18 @@
+max port
+max ip //end
+
+empte file
+methods GET DELETE          ;// not error
+// Default:	client_max_body_size 1m;
+
+HTTP response status codes
+100 <= status_code <= 599 // in error_page
+
+
+
+
+
+
+server
+
+اش خاص ندير في حالة صيفط لية boha error_page

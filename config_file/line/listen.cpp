@@ -48,6 +48,9 @@ void Config::ft_listen_Ip()
     }
     if (n != 3)
         throw std::runtime_error("big");
+    else if (nums > 255)
+        throw std::runtime_error("big rang 256");
+
     listen_Ip.push_back(str[1]);
 }
 
@@ -64,10 +67,11 @@ void Config::ft_listen_prot()
         throw std::runtime_error("invalid max port");
     listen_Port.push_back(str[1]);
 }
+
 void Config::ft_listen()
 {
     int size_s = str[1].size();
-    if (size != 2 || str[1][size_s - 1] != ';')
+    if (size != 2 || str[1][size_s - 1] != ';' || str[1] == ";")
         throw std::runtime_error("error listen ");
     else
     {
