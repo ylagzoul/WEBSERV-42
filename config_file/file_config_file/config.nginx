@@ -1,5 +1,6 @@
 server {
-    listen 10.30.0.33;
+
+    listen 10.30.15.33:65555;
     root /Users/macbook/Desktop/ylagou/server; 
     index indeshx.html;
     methods GET;
@@ -47,5 +48,5 @@ server {
         root /var/www4444444;
         index index.html;
         autoindex on;
-    }
+    } 
 }

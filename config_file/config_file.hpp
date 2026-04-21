@@ -1,5 +1,5 @@
 #ifndef CONFIG_FILE_HPP
-#define CONFIG_FILE_HPP
+# define CONFIG_FILE_HPP
 
 #include <iostream>
 #include <fstream>
@@ -7,6 +7,9 @@
 #include <vector>
 #include <map>
 #include <cstdlib>
+
+# define MAXPORT 65535
+# define MAXIP 256
 
 class Location;
 
@@ -24,6 +27,8 @@ class Config {
         std::vector<std::string> index;
         std::string autoindex;
         
+        bool emptyFile;
+
         int                      size;
         int                      ser_num;
         int                      autoIndex;
