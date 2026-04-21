@@ -1,17 +1,20 @@
 server {
-    listen 0.0.0.1:8001;
-    listen 127.0.0.1;
-    listen 65535;
+    listen 10.30.0.33;
     root /Users/macbook/Desktop/ylagou/server; 
     index indeshx.html;
     methods GET;
     error_page 500 /errors/500.html;
     error_page 501 /errors/501.html;
+        client_max_body_size 10K;
+
+
 
     location /upload {
         methods POST GET;
         root /var/www/main;
         index index.html;
+        client_max_body_size 10K;
+        upload_path ./www/uploads;
         autoindex off;
     }
 
@@ -20,7 +23,6 @@ server {
         root /var/www;
         index index.html;
         error_page 506 /errors/506.html;
-
         autoindex off;
     }
 
@@ -30,6 +32,7 @@ server {
         index index.html;
         autoindex on;
         error_page 506 /errors/506.html;
+        
     }
 
     location /images/upload/images {

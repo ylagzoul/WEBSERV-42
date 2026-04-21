@@ -6,6 +6,7 @@ Config::Config()
     server_name = "";
     root = "/home";
     autoIndex = 0; 
+    client_max_body_size = DEFAULTBODY;
 
     methods["GET"] = false;
     methods["POST"] = false;
@@ -40,6 +41,8 @@ void Config::function()
         ft_server_name();
     else if (str[0] == "client_max_body_size" && blockName == "server")
         ft_client_max_body_size();
+    else if (str[0] == "upload_path")
+        ft_upload_path();
     else if (str[0] == "root")
         ft_root();
     else if (str[0] == "methods")
