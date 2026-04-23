@@ -38,7 +38,7 @@ class playloadData
         std::map <std::string, std::string> mime;
 };
 
-void generateResponse(Request &req, playloadData &data, std::string &ret_resp);
+void generateResponse(Request &req, playloadData &data);
 
 std::string respond(Record &rec, Server serv, Config &conf, Request &req);
 

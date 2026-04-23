@@ -80,7 +80,7 @@ void loadExtensions(playloadData &data)
     data.mime["mov"] = "video/quicktime";
 }
 
-void resolvePath(playloadData &data, Config &conf, std::string &path) // path
+void resolvePath(playloadData &data, Config &conf) // path
 {
     std::stringstream fullPath(conf.location[data.locationIndex].conf.root + data.uri);
     std::vector<std::string> realNames;
@@ -304,12 +304,14 @@ void findLongestMatch(playloadData &data, Config &conf, Request &req) //tests
         data.location = locs.rbegin()->second;
     //  = upload
     //  = req.path = testvv/txt.txt/
+    std::cout << req.path.length() << '\n' << data.location << '\n';
     data.uri = req.path.substr(data.location.length());
+    std::cout << data.uri << std::endl;
+    exit(0);
 }
 
 void getImportantData(Config &conf, playloadData &data)
 {
-    // std::cout << data.location << std::endl;
     for(size_t i = 0; i < conf.location.size(); i++)
     {
         if (conf.location[i].location_name == data.location)
@@ -363,8 +365,6 @@ int checkErrorFile(playloadData &data, Config &conf)
         data.bodyStr.append(buff, bytes);
     if (bytes < 0)
         return 1;
-    // std::cout << file << "  body: " << data.bodyStr << std::endl;
-    // exit(0);
     return 0;
 }
 
@@ -379,7 +379,7 @@ void chooseErrorHandler(Config &conf, playloadData &data)
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 {
     findLongestMatch(data, conf, req);
-    resolvePath(data, conf, req.path);
+    resolvePath(data, conf);
     getImportantData(conf, data);
 
     if (getStatusCode(req, data))
