@@ -5,6 +5,8 @@
 3. /
 4. name of the file should I upload
 5. where should I put it
+
+6.root without / at the begin
 -----------------
 for req
 2. /images//////////////upload////////////// pars uri to be -> /images/upload/
@@ -16,6 +18,9 @@ for req
 for conf
 /var/www
 GET GET
+
+
+2. /images//////////////upload////////////// pars uri to be -> /images/upload/
 -----------------
 
 

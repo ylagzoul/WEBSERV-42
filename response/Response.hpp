@@ -32,6 +32,8 @@ class playloadData
         std::map<int, std::string> errorPages;
         std::string location;
         std::map<std::string, bool> locationMethods;
+        std::string locationRoot;
+        std::string locationUpload;
         size_t bodySize;
         int locationIndex;
         int listFd;

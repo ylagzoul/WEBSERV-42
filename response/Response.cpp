@@ -80,12 +80,19 @@ void loadExtensions(playloadData &data)
     data.mime["mov"] = "video/quicktime";
 }
 
+// ft_2slachat
+
 void resolvePath(playloadData &data, Config &conf) // path
 {
-    std::stringstream fullPath(conf.location[data.locationIndex].conf.root + data.uri);
+    (void)conf;
+    std::stringstream fullPath(data.locationRoot + data.uri);
     std::vector<std::string> realNames;
     std::string tmp;
-
+    std::string rootUploadDir = data.locationRoot + data.locationUpload;
+    std::string compare;
+    // std::string tmpPath;
+    // struct stat info;
+    // stat(data.realPath.c_str(), &info);// cgi
     while (std::getline(fullPath, tmp, '/'))
     {
         if (tmp == "" || tmp == ".")
@@ -100,7 +107,18 @@ void resolvePath(playloadData &data, Config &conf) // path
     }
 
     for (size_t i = 0; i < realNames.size(); i++)
+    {
+        // tmpPath += '/' + realNames[i];
         data.realPath += '/' + realNames[i];
+    }
+    compare = data.realPath.substr(0, rootUploadDir.length());
+
+    std::cout << data.realPath << "\n\n";
+    std::cout << rootUploadDir << "\n\n";
+    std::cout << compare << "\n\n";
+
+    if (compare == rootUploadDir); // its good;
+    exit(0);
 }
 
 void listFiles(playloadData &data)
@@ -302,12 +320,9 @@ void findLongestMatch(playloadData &data, Config &conf, Request &req) //tests
     }
     else
         data.location = locs.rbegin()->second;
-    //  = upload
-    //  = req.path = testvv/txt.txt/
-    std::cout << req.path.length() << '\n' << data.location << '\n';
     data.uri = req.path.substr(data.location.length());
-    std::cout << data.uri << std::endl;
-    exit(0);
+    // std::cout << req.path.length() << '\n' << data.location << '\n';
+    // std::cout << data.uri << std::endl;
 }
 
 void getImportantData(Config &conf, playloadData &data)
@@ -322,6 +337,8 @@ void getImportantData(Config &conf, playloadData &data)
                 data.errorPages = conf.error_page;
             data.locationMethods = conf.location[i].conf.methods;
             data.locationIndex = i;
+            data.locationRoot = conf.location[i].conf.root;
+            data.locationUpload = conf.uploadPath;//conf.location[i].conf.uploadPath
             break ;
         }
     }
@@ -379,8 +396,8 @@ void chooseErrorHandler(Config &conf, playloadData &data)
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 {
     findLongestMatch(data, conf, req);
-    resolvePath(data, conf);
     getImportantData(conf, data);
+    resolvePath(data, conf);
 
     if (getStatusCode(req, data))
     {

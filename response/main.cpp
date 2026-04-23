@@ -1,16 +1,15 @@
 #include "../server/server.hpp"
 
-int main(int ac, char **av)
+int main()
 {
     Config conf;
     conf.config_file();
     Server server;
-    conf.uploadPath = "";
+    conf.uploadPath = "upload";
     Request req;
-    (void)ac;
     req.status = 0;
     req.method = "GET";
-    req.path = av[1];
+    req.path = "/response/upload/file.txt/file";
     req.httpVersion = "HTTP/1.0"; 
     req.headers["Host"] = "localhost";
     req.headers["Connection"] = "Keep-Alive";
