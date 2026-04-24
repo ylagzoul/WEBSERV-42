@@ -114,7 +114,7 @@ void resolvePath(playloadData &data, Config &conf) // path
     
     compare = data.realPath.substr(0, rootUploadDir.length());
 
-    std::cout << data.realPath << "\n\n";
+    // std::cout << data.realPath << "\n\n";
     // std::cout << rootUploadDir << "\n\n";
     // std::cout << compare << "\n\n";
 

@@ -148,3 +148,27 @@ int main()
 
     close(server_fd);
 }
+
+
+// response main
+
+// int main()
+// {
+//     Config conf;
+//     conf.config_file();
+//     Server server;
+//     conf.uploadPath = "upload";
+//     Request req;
+//     req.status = 0;
+//     req.method = "GET";
+//     req.path = "/response/testfiles/kile";
+//     req.httpVersion = "HTTP/1.0"; 
+//     req.headers["Host"] = "localhost";
+//     req.headers["Connection"] = "Keep-Alive";
+
+//     std::vector<Record> logs;
+//     logs.push_back(Record());
+
+//     std::string res = respond(logs[0], server, conf, req);
+//     std::cout  << res << std::endl;
+// }
