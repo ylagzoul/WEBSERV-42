@@ -1,11 +1,14 @@
 #include "../server/server.hpp"
 
 
+
 Config::Config()
 {
+    emptyFile = false;
     server_name = "";
     root = "/home";
     autoIndex = 0; 
+    client_max_body_size = DEFAULTBODY;
 
     methods["GET"] = false;
     methods["POST"] = false;
@@ -40,6 +43,8 @@ void Config::function()
         ft_server_name();
     else if (str[0] == "client_max_body_size" && blockName == "server")
         ft_client_max_body_size();
+    else if (str[0] == "upload_path")
+        ft_upload_path();
     else if (str[0] == "root")
         ft_root();
     else if (str[0] == "methods")
@@ -56,10 +61,7 @@ void Config::function()
             blockName = "server";
     }
     else
-    {
-        std::cout << str[0] << std::endl;
-        throw std::runtime_error("name");
-    }
+        throw std::runtime_error("erorr in element");
 }
 
 void Config::config_file()
@@ -67,14 +69,25 @@ void Config::config_file()
     ser_num = 0;
     try {
         std::ifstream file("../config_file/file_config_file/config.nginx");
+        if (!file)
+            std::cout << "Error opening file\n";
+        
         std::string sstr;
         while (getline(file, sstr))
         {
+            emptyFile = true;
             line = sstr;
             splite();
-            if ((str[0] == "server" && str.size() == 1) // problem {
-                || (str[0] == "server" && str.size() >= 2 && str[1] == "{" && str.size() == 2))
+            if ((str.size() == 1 && str[0] == "server") || (str.size() == 2 && str[0] == "server" && str[1] == "{"))
             {
+                if (str.size() == 1)
+                {
+                    getline(file, sstr);
+                    line = sstr;
+                    splite();
+                    if (str.size() != 1 || str[0] != "{")
+                        throw std::runtime_error("error in opening curly brace in server");
+                }
                 blockName = "server";
                 while (getline(file, sstr))                                                                                                                                               
                 {
@@ -84,10 +97,8 @@ void Config::config_file()
                         continue;
                     else if (str[0] == "location")
                     {
-                        // if (size == 0)
-                        //     continue;
                         if (size != 3 || blockName == "location" || str[2] != "{")
-                            throw std::runtime_error("error loction");
+                            throw std::runtime_error("location start error");
                         Location obj;
                         obj.conf = *this;
                         obj.location_name = str[1];
@@ -98,23 +109,40 @@ void Config::config_file()
                             if (obj.conf.size == 0)
                                 continue;
                             if (obj.conf.str[0] == "}")
+                            {
+                                if (obj.conf.str.size() > 1)
+                                    throw std::runtime_error("error in closing curly brace in location");
                                 break;
+                            }
                             obj.conf.function();
                         }
                         this->location.push_back(obj);
                     }
                     else
                     {
-                        // if (str[0] == "}")
-                        //     break ;
+                        if (str[0] == "}")
+                        {
+                            if (str.size() > 1)
+                                throw std::runtime_error("error in closing curly brace in server");
+                            break ;
+                        }
                         this->function();
                     }
                 }
             }
             else
-                throw std::runtime_error("line server");
+                throw std::runtime_error("Server start error");
             check_default();
+            while (getline(file, sstr))
+            {
+                line = sstr;
+                splite();
+                if (str.size() > 0)
+                    throw std::runtime_error("An error occurred after the server finished");
+            }
         }
+        if (emptyFile == false)
+            throw std::runtime_error("empty config file");
     }
     catch (const std::exception& e) 
     {

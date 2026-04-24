@@ -32,14 +32,14 @@ void Config::ft_listen_Ip()
     while (i < str[1].size() && str[1][i])
     {
         if (!isdigit(str[1][i]) && str[1][i] != '.')
-            throw std::runtime_error("0-9");
+            throw std::runtime_error("element not digit in IP");
         else if (str[1][i] == '.' && ft_str_char(".", str[1][i+1]))
             throw std::runtime_error("..");
         else if (str[1][i] == '.')
         {
             n++;
-            if (nums > 255)
-                throw std::runtime_error("big rang 256");
+            if (nums > MAXIP)
+                throw std::runtime_error("I exceeded the maximum IP limit");
             nums = 0;
         }
         else
@@ -48,6 +48,9 @@ void Config::ft_listen_Ip()
     }
     if (n != 3)
         throw std::runtime_error("big");
+    else if (nums > MAXIP)
+        throw std::runtime_error("I exceeded the maximum IP limit");
+
     listen_Ip.push_back(str[1]);
 }
 
@@ -57,17 +60,18 @@ void Config::ft_listen_prot()
     while (i < str[1].size() && str[1][i])
     {
         if (!isdigit(str[1][i]))
-            throw std::runtime_error("Element not digit");
+            throw std::runtime_error("Element not digit in Port");
         i++;
     }
-    if (atoi(str[1].c_str()) > 65535)
+    if (atoi(str[1].c_str()) > MAXPORT)
         throw std::runtime_error("invalid max port");
     listen_Port.push_back(str[1]);
 }
+
 void Config::ft_listen()
 {
     int size_s = str[1].size();
-    if (size != 2 || str[1][size_s - 1] != ';')
+    if (size != 2 || str[1][size_s - 1] != ';' || str[1] == ";")
         throw std::runtime_error("error listen ");
     else
     {

@@ -1,5 +1,5 @@
 #ifndef CONFIG_FILE_HPP
-#define CONFIG_FILE_HPP
+# define CONFIG_FILE_HPP
 
 #include <iostream>
 #include <fstream>
@@ -7,6 +7,9 @@
 #include <vector>
 #include <map>
 #include <cstdlib>
+
+# define MAXPORT 65535
+# define MAXIP 256
 
 class Location;
 
@@ -19,11 +22,13 @@ class Config {
         std::map<std::string, bool> methods;
         std::map<int,std::string> error_page;
         std::string blockName;
-        size_t client_max_body_size;
+        double client_max_body_size;
         std::string uploadPath;
         std::vector<std::string> index;
         std::string autoindex;
         
+        bool emptyFile;
+
         int                      size;
         int                      ser_num;
         int                      autoIndex;
@@ -46,6 +51,7 @@ class Config {
         void ft_client_max_body_size(void);
         void ft_index();
         void ft_autoindex();
+        void ft_upload_path();
 
         void check_default();
 
