@@ -223,6 +223,7 @@ void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t
     req[userId].fullLine.append(buffer, len);
     while (1)
     {
+        std::cout<<"here \n";
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
         if (req[userId].getEndHeaders == false)

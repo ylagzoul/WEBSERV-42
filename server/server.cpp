@@ -36,7 +36,7 @@ int main()
     conf.config_file();
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(3003);
+    addr.sin_port = htons(3004);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     bind(server_fd, (sockaddr*)&addr, len);
