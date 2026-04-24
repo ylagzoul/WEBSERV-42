@@ -1,9 +1,9 @@
 max port; ==> this good
 max ip //end;  ==> this good
 
-empte file
+empte file ==> this good
 methods GET DELETE          ;// not error
-Default:	client_max_body_size 1m;  ==> this good
+Default:	client_max_body_size 1m; // ==> this good
 
 HTTP response status codes
 100 <= status_code <= 599 // in error_page
