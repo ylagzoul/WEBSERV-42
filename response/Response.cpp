@@ -111,14 +111,15 @@ void resolvePath(playloadData &data, Config &conf) // path
         // tmpPath += '/' + realNames[i];
         data.realPath += '/' + realNames[i];
     }
+    
     compare = data.realPath.substr(0, rootUploadDir.length());
 
     std::cout << data.realPath << "\n\n";
-    std::cout << rootUploadDir << "\n\n";
-    std::cout << compare << "\n\n";
+    // std::cout << rootUploadDir << "\n\n";
+    // std::cout << compare << "\n\n";
 
-    if (compare == rootUploadDir); // its good;
-    exit(0);
+    // if (compare == rootUploadDir); // its good;
+    // exit(0);
 }
 
 void listFiles(playloadData &data)
@@ -353,7 +354,7 @@ int checkErrorFile(playloadData &data, Config &conf)
     int code = atoi(data.status_code.c_str());
     std::string file = conf.location[data.locationIndex].conf.root;
     if (file[file.length() - 1] != '/')
-        file += '/';
+        file += '/' ;
     std::string page = data.errorPages[code];
     if (page.empty())
     {
@@ -484,11 +485,10 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
                 log.status = ERROR_RS;
             }
         }
-        else if (log.method == POST_RS)
-        {
-            // Behaviour
-
-        }
+        // else if (log.method == POST_RS)
+        // {
+        //     // Behaviour
+        // }
     }
     if (check == NEW_RS)
     {

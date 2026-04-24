@@ -9,7 +9,7 @@ int main()
     Request req;
     req.status = 0;
     req.method = "GET";
-    req.path = "/response/upload/file.txt/file";
+    req.path = "/response/testfiles/kile";
     req.httpVersion = "HTTP/1.0"; 
     req.headers["Host"] = "localhost";
     req.headers["Connection"] = "Keep-Alive";
