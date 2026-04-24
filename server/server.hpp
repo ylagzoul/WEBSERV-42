@@ -48,7 +48,7 @@ class Data {
 
 class Server {
     public:
-        Server();
+        Server(){}//attention /!\;
         size_t clientId;
         std::vector<Data> data;
 };
