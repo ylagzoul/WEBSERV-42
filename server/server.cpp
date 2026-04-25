@@ -16,138 +16,156 @@ Server::Server()
     clientId = 0;
 }
 
-// int main()
-// {
-//     Config conf;
-//     Server obj;
+int main()
+{
+    Config conf;
+    Server obj;
 
-//     std::vector<Record> recs;
-//     std::vector<Request> req;
+    std::vector<Record> recs;
+    std::vector<Request> req;
 
-//     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-//     sockaddr_in addr;
-//     socklen_t len = sizeof(addr);
+    int opt = 1;
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-//     conf.config_file();
+    sockaddr_in addr;
+    socklen_t len = sizeof(addr);
 
-//     addr.sin_family = AF_INET;
-//     addr.sin_port = htons(3004);
-//     addr.sin_addr.s_addr = INADDR_ANY;
+    conf.config_file();
 
-//     bind(server_fd, (sockaddr*)&addr, len);
-//     listen(server_fd, 10);
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(3051);
+    addr.sin_addr.s_addr = INADDR_ANY;
 
-//     std::vector<pollfd> fds;
+    bind(server_fd, (sockaddr*)&addr, len);
+    listen(server_fd, 10);
 
-//     pollfd server_poll;
-//     server_poll.fd = server_fd;
-//     server_poll.events = POLLIN;
-//     fds.push_back(server_poll);
+    std::vector<pollfd> fds;
 
-//     obj.data.push_back(Data());
-//     recs.push_back(Record());
-//     req.push_back(Request());
+    pollfd server_poll;
+    server_poll.fd = server_fd;
+    server_poll.events = POLLIN;
+    fds.push_back(server_poll);
 
-//     while (true)
-//     {
-//         int ret = poll(fds.data(), fds.size(), -1);
+    obj.data.push_back(Data());
+    recs.push_back(Record());
+    req.push_back(Request());
 
-//         if (ret == -1)
-//         {
-//             std::cout << "poll error\n";
-//             continue;
-//         }
+    while (true)
+    {
+        int ret = poll(fds.data(), fds.size(), -1);
 
-//         for (size_t i = 0; i < fds.size(); )
-//         {
-//             pollfd &p = fds[i];
+        if (ret == -1)
+        {
+            std::cout << "poll error\n";
+            continue;
+        }
 
-//             if (p.revents == 0)
-//             {
-//                 i++;
-//                 continue;
-//             }
+        for (size_t i = 0; i < fds.size(); )
+        {
+            pollfd &p = fds[i];
 
-//             if (p.fd == server_fd && (p.revents & POLLIN))
-//             {
-//                 int client_fd = accept(server_fd, (sockaddr*)&addr, &len);
-//                 if (client_fd != -1)
-//                 {
-//                     pollfd client_poll;
-//                     client_poll.fd = client_fd;
-//                     client_poll.events = POLLIN;
-//                     fds.push_back(client_poll);
+            if (p.revents == 0)
+            {
+                i++;
+                continue;
+            }
 
-//                     recs.push_back(Record());
-//                     req.push_back(Request());
-//                     obj.data.push_back(Data());
-//                 }
+            if (p.fd == server_fd && (p.revents & POLLIN))
+            {
+                int client_fd = accept(server_fd, (sockaddr*)&addr, &len);
+                if (client_fd != -1)
+                {
+                    pollfd client_poll;
+                    client_poll.fd = client_fd;
+                    client_poll.events = POLLIN;
+                    fds.push_back(client_poll);
 
-//                 p.revents = 0;
-//                 i++;
-//                 continue;
-//             }
+                    recs.push_back(Record());
+                    req.push_back(Request());
+                    obj.data.push_back(Data());
+                }
+                else if (client_fd < 0)
+                {
+                    close(p.fd);
+                    fds.erase(fds.begin() + i);
+                    continue;
+                }
 
-//             if (p.revents & POLLIN)
-//             {
-//                 char buffer[1024] = {0};
-//                 int bytes = recv(p.fd, buffer, 1024, 0);
+                p.revents = 0;
+                i++;
+                continue;
+            }
 
-//                 if (bytes > 0)
-//                 {
-//                     int index = i - 1;
-//                     obj.clientId = i;
-//                     readRequest(req, index, buffer, bytes, conf);
+            if (p.revents & POLLIN)
+            {
+                char buffer[1024] = {0};
+                int bytes = recv(p.fd, buffer, 1024, 0);
 
-//                     // بعد القراءة نسمح بالكتابة
-//                     p.events |= POLLOUT;
-//                 }
-//                 else
-//                 {
-//                     close(p.fd);
-//                     fds.erase(fds.begin() + i);
-//                     continue;
-//                 }
-//             }
+                if (bytes > 0)
+                {
+                    int index = i - 1;
+                    obj.clientId = i;
+                    readRequest(req, index, buffer, bytes, conf);
+                    
 
-//             if (p.revents & POLLOUT)
-//             {
-//                 int index = i - 1;
+                    // بعد القراءة نسمح بالكتابة
+                    p.events |= POLLOUT;
+                }
+                else
+                {
+                    close(p.fd);
+                    fds.erase(fds.begin() + i);
+                    continue;
+                }
+            }
 
-//                 if (obj.data[i].sendNext)
-//                 {
-//                     obj.clientId = i;
-//                     obj.data[i].response =
-//                         respond(recs[index], obj, conf, req[index]);
-//                 }
+            if (p.revents & POLLOUT)
+            {
+                int index = i - 1;
 
-//                 int sent = send(p.fd,
-//                                 obj.data[i].response.c_str(),
-//                                 obj.data[i].response.size(),
-//                                 0);
+                if (obj.data[i].sendNext)
+                {
+                    obj.clientId = i;
+                    obj.data[i].response =
+                        respond(recs[index], obj, conf, req[index]);
+                    std::cout << obj.data[i].response << "\n\n";
+                    // exit(1);
+                }
 
-//                 if (sent > 0)
-//                 {
-//                     obj.data[i].response = obj.data[i].response.substr(sent);
-//                     obj.data[i].sendNext = obj.data[i].response.empty();
-//                 }
-//             }
+                int sent = send(p.fd,
+                                obj.data[i].response.c_str(),
+                                obj.data[i].response.size(),
+                                0);
 
-//             if (p.revents & (POLLHUP | POLLERR))
-//             {
-//                 close(p.fd);
-//                 fds.erase(fds.begin() + i);
-//                 continue;
-//             }
+                if (sent > 0)
+                {
+                    obj.data[i].response = obj.data[i].response.substr(sent);
+                    obj.data[i].sendNext = obj.data[i].response.empty();
+                }
+                if (sent < 0)
+                {
+                    close(p.fd);
+                    fds.erase(fds.begin() + i);
+                    continue;
+                }
+            }
 
-//             p.revents = 0;
-//             i++;
-//         }
-//     }
+            if ((p.revents & (POLLHUP | POLLERR)))
+            {
+                close(p.fd);
+                fds.erase(fds.begin() + i);
+                continue;
+            }
 
-//     close(server_fd);
-// }
+            p.revents = 0;
+            i++;
+        }
+    }
+
+    close(server_fd);
+}
 
 
 // response main
@@ -265,33 +283,33 @@ Server::Server()
 // }
 
 
-using namespace std;
+// using namespace std;
 
-int main()
-{
-    vector<Request> req;
-    Config con;
-    con.client_max_body_size = 14;
-    for (size_t i = 0; i < 3; i++)
-        req.push_back(Request());
-    int i = 0;
-        char buffer[] = "POST /paj//home HTTP/1.0\r\n\
-Content-Length: 2\r\n\
-\r\n\r\nkd";
+// int main()
+// {
+//     vector<Request> req;
+//     Config con;
+//     con.client_max_body_size = 14;
+//     for (size_t i = 0; i < 3; i++)
+//         req.push_back(Request());
+//     int i = 0;
+//         char buffer[] = "POST /paj//home HTTP/1.0\r\n
+// Content-Length: 2\r\n
+// \r\n\r\nkd";
 
-    string str = buffer;
+//     string str = buffer;
 
-    readRequest(req, i, buffer, str.length(), con);
-    // readRequest(req, i, buffer, str.length(), con);
+//     readRequest(req, i, buffer, str.length(), con);
+//     // readRequest(req, i, buffer, str.length(), con);
         
 
-    cout << req[0].path << endl;
-    cout << req[0].status << endl;
-    cout << req[0].method << endl;
-    cout << req[0].clientState << endl;
+//     cout << req[0].path << endl;
+//     cout << req[0].status << endl;
+//     cout << req[0].method << endl;
+//     cout << req[0].clientState << endl;
 
 
-}
+// }
 
 // int main()
 // {
