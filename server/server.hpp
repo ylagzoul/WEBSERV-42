@@ -48,7 +48,7 @@ class Data {
 
 class Server {
     public:
-        Server(){};//attention when merging!!
+        Server();
         size_t clientId;
         std::vector<Data> data;
 };

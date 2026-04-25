@@ -220,9 +220,7 @@ void    getFixedBody(Request &req)
 
 void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len)
 {
-     cout << "SSSSSSSSS55\n";
     req[userId].fullLine.append(buffer, len);
-    cout << "SSSSSSSSS55111\n";
     while (1)
     {
         if (req[userId].method.empty())
@@ -239,6 +237,5 @@ void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t
         if (req[userId].finFlag)
             break ;
     }
-    std::cout << "d00000000000000000000000000000000\n";
     return ;
 }
