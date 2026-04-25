@@ -48,12 +48,13 @@ class Request
         std::map<std::string, std::string>  headers;
         std::string bodyFile;
         std::string fullLine;
+        std::string bodyPath;
+        int         bodyFd;
         int         status;
         bool        getEndHeaders;
         bool        finFlag;
         bool        getEndFile;
         int         bodyType;
-        int         fdFile;
         size_t          contentLength;
         t_client_state  clientState;
         t_req_state     reqState;

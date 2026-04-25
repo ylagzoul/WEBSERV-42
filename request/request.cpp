@@ -1,12 +1,19 @@
 #include "../server/server.hpp"
 
-Request::Request() : status(200), getEndHeaders(false), getEndFile(false), fdFile(-1), clientState(CLIENT_OF), reqState(DEFAULT_ST){};
+Request::Request() :  bodyFd(-1), status(200), getEndHeaders(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST){};
 
 std::string tolowerStr(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
         str[i] = std::tolower(str[i]);
     return (str);
+}
+
+std::string toStr(int nb)
+{
+    std::stringstream ss;
+    ss << nb;
+    return (ss.str());
 }
 
 bool checkPath(std::string &path)
@@ -215,10 +222,10 @@ void getHeaders(Request &req)
 void    getFixedBody(Request &req, Config con)
 {
     static size_t bodyLen;
-    if (req.fdFile == -1)
+    if (req.bodyFd == -1)
     {
-        req.fdFile = open("out.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
-        if (req.fdFile == -1)
+        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+        if (req.bodyFd == -1)
         {
             std::cerr << "Error opening file\n";
             throw std::runtime_error("Error file \n");
@@ -236,7 +243,7 @@ void    getFixedBody(Request &req, Config con)
     {
         if (bodyLen != 0)
         {
-            write(req.fdFile, req.fullLine.c_str(), req.fullLine.length());
+            write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length());
             req.fullLine.clear();
         }
         return ;
@@ -244,22 +251,23 @@ void    getFixedBody(Request &req, Config con)
     int sizePa = (req.contentLength+req.fullLine.length())-bodyLen;
     std::string d = req.fullLine.substr(0, sizePa);
     
-    write(req.fdFile, d.c_str(), sizePa);
-    close(req.fdFile);
+    write(req.bodyFd, d.c_str(), sizePa);
+    close(req.bodyFd);
     req.getEndFile = true;
 }
 
 void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
 {
     req[userId].fullLine.append(buffer, len);
+    req[userId].bodyPath = "client" + toStr(userId + 1);
     while (1)
     {
-        std::cout<<"here \n";
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
         size_t pos = req[userId].fullLine.find("\r\n\r\n");
         if (pos == std::string::npos)
             break ;
+        getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
         if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
