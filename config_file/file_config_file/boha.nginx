@@ -2,7 +2,7 @@ server {
     listen 0.0.0.1:8001;
     listen 127.0.0.1;
     listen 65535;
-    root /home/abouhki/Desktop/or_WEBSERV/response; 
+    root /home/abouhki/Desktop/or_WEBSERV/response;
     index indeshx.html;
     methods GET;
     error_page 400 /errors/400.html;
@@ -18,7 +18,7 @@ server {
         error_page 403 /errors/403.html;
         error_page 404 /errors/404.html;
         error_page 405 /errors/405.html;
-        autoindex off;
+        autoindex on;
     }
 
     location / {

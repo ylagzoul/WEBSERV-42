@@ -22,7 +22,7 @@ class playloadData
 {
     public:
         std::string status_code;
-        std::string message;
+        std::string resMessage;
         std::string connection;
         std::string contentType;
         std::string realPath;
@@ -37,6 +37,7 @@ class playloadData
         size_t bodySize;
         int locationIndex;
         int listFd;
+        int uploadOn;
         std::map <std::string, std::string> mime;
 };
 

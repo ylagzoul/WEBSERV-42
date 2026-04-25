@@ -3,12 +3,13 @@
 void generateResponse(Request &req, playloadData &data, std::string &ret_resp)
 {
     std::stringstream res;
-    res << req.httpVersion << ' ' << data.status_code << ' ' << data.message + "\r\n";
+    data.bodySize = data.bodyStr.length();
+    res << req.httpVersion << ' ' << data.status_code << ' ' << data.resMessage + "\r\n";
     res << "Content-Length: " << data.bodySize << "\r\n";
     res << "Content-Type: " << data.contentType << "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     res << "\r\n";
-    // res << data.bodyStr;
+    res << data.bodyStr;
     ret_resp = res.str();
 }
 
@@ -23,7 +24,7 @@ void defaultErrorPage(playloadData &data)
         "</head>\n"
         "<body>\n";
     data.bodyStr += "<h1 style=\"text-align: center;\">" + data.status_code + ' '
-                 + data.message + "</h1>\n";
+                 + data.resMessage + "</h1>\n";
     data.bodyStr += 
             "<hr>"
         "</body>\n"
@@ -35,19 +36,19 @@ int getStatusCode(Request &req, playloadData &data)
     if (req.status == 400)
     {
         data.status_code = "400";
-        data.message = "Bad Request";
+        data.resMessage = "Bad Request";
         return 1;
     }
     else if (req.method != "GET" && req.method != "POST" && req.method != "DELETE")
     {
         data.status_code = "405";
-        data.message = "Method Not Allowed";
+        data.resMessage = "Method Not Allowed";
         return 1;
     }
     else
     {
         data.status_code = "200";
-        data.message = "OK";
+        data.resMessage = "OK";
     }
     return 0;
 }
@@ -57,6 +58,7 @@ void loadExtensions(playloadData &data)
     data.mime["html"] = "text/html";
     data.mime["css"] = "text/css";
     data.mime["xml"] = "text/xml";
+    data.mime["txt"] = "text/plain";
     data.mime["plain"] = "text/plain";
 
     data.mime["png"] = "image/png";
@@ -80,47 +82,175 @@ void loadExtensions(playloadData &data)
     data.mime["mov"] = "video/quicktime";
 }
 
-// ft_2slachat
+// int autoIndex(Config conf, std::string reqPath)
+// {
+//     for(size_t i = 0; i < conf.location.size(); i++)
+//     {
+//         if (conf.location[i].conf.location == reqPath)
+//         {
+//             if (conf.location[i].conf.autoIndex)
+//                 return 1;
+//             else
+//                 return 0;
+//         }
+//     }
+//     return 0;
+// }
 
-void resolvePath(playloadData &data, Config &conf) // path
+void getContentType(playloadData &data)
 {
-    (void)conf;
-    std::stringstream fullPath(data.locationRoot + data.uri);
-    std::vector<std::string> realNames;
-    std::string tmp;
-    std::string rootUploadDir = data.locationRoot + data.locationUpload;
-    std::string compare;
-    // std::string tmpPath;
-    // struct stat info;
-    // stat(data.realPath.c_str(), &info);// cgi
-    while (std::getline(fullPath, tmp, '/'))
+    std::string extension;
+    size_t pos = data.realPath.find_last_of('.');
+    data.contentType = "application/octet-stream";
+    if (pos != std::string::npos)
     {
-        if (tmp == "" || tmp == ".")
-            continue;
-        if (tmp == "..")
+        extension = data.realPath.substr(pos + 1);
+        if (data.mime.count(extension))
+            data.contentType = data.mime[extension];
+    }
+}
+
+int handleDelete(playloadData &data)
+{
+    struct stat info;
+
+    if (access(data.realPath.c_str(), F_OK) == -1)
+    {
+        data.status_code = "404";
+        data.resMessage = "Not Found";
+        return 1;
+    }
+    stat(data.realPath.c_str(), &info);//fail
+    if (S_ISDIR(info.st_mode))
+    {
+        data.status_code = "403";
+        data.resMessage = "Forbidden";
+        return 1;
+    }
+    else if (access(data.realPath.c_str(), W_OK) == -1)
+    {
+        data.status_code = "403";
+        data.resMessage = "Forbidden";
+        return 1;
+    }
+    else if (remove(data.realPath.c_str()))
+    {
+        data.status_code = "500";
+        data.resMessage = "Internal Server Error";
+        return 1;
+    }
+    data.status_code = "204";
+    data.resMessage = "No Content";
+    return 0;
+}
+
+std::string getRandomName(Config &conf)
+{
+    time_t tStamp = time(NULL);
+    struct tm *currentTime = localtime(&tStamp);
+    char arr[9];
+
+    strftime(arr, sizeof(arr), "%H%M%S", currentTime);
+    std::string randName = arr;
+    randName += '_';
+    randName += (conf.count + 48);
+    conf.count++;
+    return randName;
+}
+
+int postBody(Record &log, playloadData &data)
+{
+    const int size = 61;
+    char buff[size];
+    int bytes = read(log.fileFd, buff, sizeof(buff));
+    if (bytes == -1)
+    {
+        data.status_code = "500";
+        data.resMessage = "Internal Server Error";
+        close(log.fd);
+        close(log.fileFd);
+        return 1;
+    }
+    write(log.fd, buff, bytes);
+    if (bytes < size)
+    {
+        log.status = CLOSED_RS;
+        close(log.fd);
+        close(log.fileFd);
+    }
+    else
+    {
+        log.status = ACTIVE_RS;
+        log.method = POST_RS;
+    }
+    return 0;
+}
+
+int handlePost(Record &log, playloadData &data, Request &req, Config &conf)
+{
+    struct stat info;
+    if (!data.uploadOn)
+    {
+        data.status_code = "403";
+        data.resMessage = "Forbidden";
+        return 1;
+    }
+    if (stat(data.realPath.c_str(), &info) != - 1)
+    {
+        if (S_ISDIR(info.st_mode))
         {
-            if (!realNames.empty())
-                realNames.pop_back();
+            log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
+            if (log.fileFd == -1)
+            {
+                data.status_code = "500";
+                data.resMessage = "Internal Server Error";
+                return 1;
+            }
+            std::string randName = getRandomName(conf);
+            std::string tmpStr = data.realPath + '/' + randName + ".txt";
+            log.fd = open(tmpStr.c_str(), O_RDWR | O_CREAT, 0666);
+            if (log.fd == -1)
+            {
+                data.status_code = "500";
+                data.resMessage = "Internal Server Error";
+                return 1;
+            }
+            if (postBody(log, data))
+                return 1;
+            data.contentType = data.mime["txt"];
         }
         else
-            realNames.push_back(tmp);
+        {
+            data.status_code = "403";
+            data.resMessage = "Forbidden";
+            return 1;
+        }
     }
-
-    for (size_t i = 0; i < realNames.size(); i++)
+    else
     {
-        // tmpPath += '/' + realNames[i];
-        data.realPath += '/' + realNames[i];
+        log.fd = open(data.realPath.c_str(), O_RDWR | O_CREAT, 0666);
+        if (log.fd == -1)
+        {
+            data.status_code = "403";
+            data.resMessage = "Forbidden";
+            return 1;
+        }
+        log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
+        if (log.fileFd == -1)
+        {
+            data.status_code = "500";
+            data.resMessage = "Internal Server Error";
+            return 1;
+        }
+        if (postBody(log, data))
+            return 1;
+        getContentType(data);
     }
-    
-    compare = data.realPath.substr(0, rootUploadDir.length());
-
-    // std::cout << data.realPath << "\n\n";
-    // std::cout << rootUploadDir << "\n\n";
-    // std::cout << compare << "\n\n";
-
-    // if (compare == rootUploadDir); // its good;
-    // exit(0);
+    data.status_code = "201";
+    data.resMessage = "Created";
+    return 0;
 }
+
 
 void listFiles(playloadData &data)
 {
@@ -129,7 +259,7 @@ void listFiles(playloadData &data)
     if (!dir)
     {
         data.status_code = "500";
-        data.message = "Internal Server Error";
+        data.resMessage = "Internal Server Error";
         return ;
     }
     struct dirent *rdir;
@@ -158,111 +288,22 @@ void listFiles(playloadData &data)
     closedir(dir);
 }
 
-int autoIndex(Config conf, std::string reqPath)
-{
-    for(size_t i = 0; i < conf.location.size(); i++)
-    {
-        if (conf.location[i].conf.server_name == reqPath)
-        {
-            if (conf.location[i].conf.autoIndex)
-                return 1;
-            else
-                return 0;
-        }
-    }
-    return 0;
-}
-
-int validateFile(playloadData &data, Config &conf, std::string reqPath)
-{
-    struct stat info;
-
-    if (access(data.realPath.c_str(), F_OK) == -1)
-    {
-        data.status_code = "404";
-        data.message = "Not Found";
-        return 1;
-    }
-    else if (access(data.realPath.c_str(), R_OK) == -1)
-    {
-        data.status_code = "403";
-        data.message = "Forbidden";
-        return 1;
-    }
-    stat(data.realPath.c_str(), &info);
-    if (S_ISDIR(info.st_mode))
-    {
-        if (autoIndex(conf, reqPath))
-            listFiles(data);
-        else
-        {
-            data.status_code = "403";
-            data.message = "Forbidden";
-        }
-        return 1;
-    }
-    else
-        data.bodySize = info.st_size;
-    return 0;
-}
-
-int handleDelete(playloadData &data)
-{
-    struct stat info;
-
-    if (access(data.realPath.c_str(), F_OK) == -1)
-    {
-        data.status_code = "404";
-        data.message = "Not Found";
-        return 1;
-    }
-    stat(data.realPath.c_str(), &info);
-    if (S_ISDIR(info.st_mode))
-    {
-        data.status_code = "403";
-        data.message = "Forbidden";
-        return 1;
-    }
-    else if (access(data.realPath.c_str(), W_OK) == -1)
-    {
-        data.status_code = "403";
-        data.message = "Forbidden";
-        return 1;
-    }
-    else if (remove(data.realPath.c_str()))
-    {
-        data.status_code = "500";
-        data.message = "Internal Server Error";
-        return 1;
-    }
-    data.status_code = "204";
-    data.message = "No Content";
-    return 0;
-}
-
-int handlePost(Record log, playloadData &data, Config &conf)
-{
-    (void) log;
-    (void) data;
-    (void) conf;
-    return 0;
-}
-
 int getFileData(Record &log, playloadData &data)
 {
     const int size = 8192;
     char buffer[size + 1];
-    int b = 0;
-    b = read(log.fd, buffer, sizeof(buffer) - 1);
-    if (b == -1)
+    int bytes = 0;
+    bytes = read(log.fd, buffer, size); // sizeof(buffer) - 1
+    if (bytes == -1)
     {
         data.status_code = "500";
-        data.message = "Internal Server Error";
+        data.resMessage = "Internal Server Error";
+        close(log.fd);
         return 1;
     }
-    buffer[b] = '\0';
+    buffer[bytes] = '\0';
     log.buffer = buffer;
-    if (b < size)
+    if (bytes < size)
     {
         log.status = CLOSED_RS;
         close(log.fd);
@@ -275,11 +316,43 @@ int getFileData(Record &log, playloadData &data)
     return 0;
 }
 
-int handleGet(Record &log, playloadData &data, Config &conf, std::string reqPath)
+int validateFile(playloadData &data, Config &conf)
+{
+    struct stat info;
+    if (access(data.realPath.c_str(), F_OK) == -1)
+    {
+        data.status_code = "404";
+        data.resMessage = "Not Found";
+        return 1;
+    }
+    else if (access(data.realPath.c_str(), R_OK) == -1)
+    {
+        data.status_code = "403";
+        data.resMessage = "Forbidden";
+        return 1;
+    }
+    stat(data.realPath.c_str(), &info);
+    if (S_ISDIR(info.st_mode))
+    {
+
+        if (conf.location[data.locationIndex].conf.autoIndex)
+            listFiles(data);
+        else
+        {
+            data.status_code = "403";
+            data.resMessage = "Forbidden";
+        }
+        return 1;
+    }
+    else
+        data.bodySize = info.st_size;
+    return 0;
+}
+
+int handleGet(Record &log, playloadData &data, Config &conf)
 {
     int check;
-    std::string extension;
-    check = validateFile(data, conf ,reqPath);
+    check = validateFile(data, conf);
     if (data.status_code != "200")
         return 1;
     if (check)
@@ -288,17 +361,9 @@ int handleGet(Record &log, playloadData &data, Config &conf, std::string reqPath
     if (log.fd == -1)
     {
         data.status_code = "500";
-        data.message = "Internal Server Error";
+        data.resMessage = "Internal Server Error";
         log.status = CLOSED_RS;
         return 1;
-    }
-    size_t pos = data.realPath.find_last_of('.');
-    data.contentType = "application/octet-stream";
-    if (pos != std::string::npos)
-    {
-        extension = data.realPath.substr(pos + 1);
-        if (data.mime.count(extension))
-            data.contentType = data.mime[extension];
     }
     getFileData(log, data);
     return 0;
@@ -317,13 +382,17 @@ void findLongestMatch(playloadData &data, Config &conf, Request &req) //tests
     }
     if (locs.empty())
     {
-        data.location = conf.root;
+        data.location = "/";
     }
     else
         data.location = locs.rbegin()->second;
     data.uri = req.path.substr(data.location.length());
+    if (data.uri[0] != '/')
+        data.uri.insert(0, "/");
+    // std::cout << data.uri << std::endl;
     // std::cout << req.path.length() << '\n' << data.location << '\n';
     // std::cout << data.uri << std::endl;
+    // exit(0);
 }
 
 void getImportantData(Config &conf, playloadData &data)
@@ -348,7 +417,7 @@ void getImportantData(Config &conf, playloadData &data)
         data.locationMethods = conf.methods;
     }
 }
-
+ 
 int checkErrorFile(playloadData &data, Config &conf)
 {
     int code = atoi(data.status_code.c_str());
@@ -394,6 +463,48 @@ void chooseErrorHandler(Config &conf, playloadData &data)
         defaultErrorPage(data);
 }
 
+void resolvePath(playloadData &data, Config &conf) // path
+{
+    (void)conf;
+    std::stringstream fullPath(data.locationRoot + data.uri);
+    std::vector<std::string> realNames;
+    std::string tmp;
+    // std::string tmpPath;
+    // struct stat info;
+    // stat(data.realPath.c_str(), &info);// cgi
+    while (std::getline(fullPath, tmp, '/'))
+    {
+        if (tmp == "" || tmp == ".")
+            continue;
+        if (tmp == "..")
+        {
+            if (!realNames.empty())
+                realNames.pop_back();
+        }
+        else
+            realNames.push_back(tmp);
+    }
+
+    for (size_t i = 0; i < realNames.size(); i++)
+    {
+        // tmpPath += '/' + realNames[i];
+        data.realPath += '/' + realNames[i];
+    }
+    data.uploadOn = 1;
+    if (data.locationUpload.empty())
+        return ;
+    if (data.locationRoot[data.locationRoot.length() - 1] != '/'
+        && data.locationUpload[0] != '/')
+        data.locationUpload.insert(0, "/");
+    std::string rootUploadDir = data.locationRoot + data.locationUpload;
+    // std::string compare = data.realPath.substr(0, rootUploadDir.length());
+    // if (compare == rootUploadDir)
+    //     data.uploadOn = 1;
+}
+// std::cout << data.realPath << "\n\n";
+    // std::cout << rootUploadDir << "\n\n"; //debug!!
+    // std::cout << compare << "\n\n";
+
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 {
     findLongestMatch(data, conf, req);
@@ -413,11 +524,11 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         if (!data.locationMethods["GET"])
         {
             data.status_code = "405";
-            data.message = "Method Not Allowed";
+            data.resMessage = "Method Not Allowed";
             chooseErrorHandler(conf, data);
             return 1;
         }
-        else if (handleGet(log, data, conf, req.path))
+        else if (handleGet(log, data, conf))
         {
             chooseErrorHandler(conf, data);
             return 1;
@@ -428,11 +539,11 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         if (!data.locationMethods["POST"])
         {
             data.status_code = "405";
-            data.message = "Method Not Allowed";
+            data.resMessage = "Method Not Allowed";
             chooseErrorHandler(conf, data);
             return 1;
         }
-        else if (handlePost(log, data, conf))
+        else if (handlePost(log, data, req, conf))
         {
             chooseErrorHandler(conf, data);
             return 1;
@@ -443,7 +554,7 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         if (!data.locationMethods["DELETE"])
         {
             data.status_code = "405";
-            data.message = "Method Not Allowed";
+            data.resMessage = "Method Not Allowed";
             chooseErrorHandler(conf, data);
             return 1;
         }
@@ -461,7 +572,6 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
     std::string ret_resp;
     playloadData data;
     (void)serv;
-    
     t_state check = log.status;
     if (log.status == NEW_RS)
     {
@@ -470,7 +580,7 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
         if (handleResponse(log, req, conf, data))
         {
             data.contentType = data.mime["html"];        
-            data.bodySize = data.bodyStr.length();
+            // data.bodySize = data.bodyStr.length();
             log.status = ERROR_RS;
         }
     }
@@ -480,15 +590,18 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
         {
             if (getFileData(log, data))
             {
-                // defaultErrorPage(data);
-                // data.bodySize = data.bodyStr.length();
+                // may be something
                 log.status = ERROR_RS;
             }
         }
-        // else if (log.method == POST_RS)
-        // {
-        //     // Behaviour
-        // }
+        else if (log.method == POST_RS)
+        {
+            if (postBody(log, data))
+            {
+                // may be something
+                log.status = ERROR_RS;
+            }
+        }
     }
     if (check == NEW_RS)
     {
@@ -499,7 +612,7 @@ std::string respond(Record &log, Server serv, Config &conf, Request &req)
             ret_resp += log.buffer;
     }
     else if (log.status == ERROR_RS)
-        ret_resp = std::string();
+        ret_resp.clear();
     else
         ret_resp = log.buffer;
     if (log.status == CLOSED_RS || log.status == ERROR_RS)

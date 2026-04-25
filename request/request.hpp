@@ -27,9 +27,11 @@ class Request
         std::string path;
         std::string httpVersion;
         std::string host;
-        std::map<std::string, std::string>  headers;
+        std::map<std::string, std::string> headers;
         std::string bodyFile;
         std::string fullLine;
+        std::string bodyPath;
+        int         bodyFd;
         int         status;
         bool        getEndHeaders;
         bool        finFlag;
@@ -40,7 +42,7 @@ class Request
 
 };
 
-void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len);
+void        readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len);
 std::string tolowerStr(std::string str);
 
 

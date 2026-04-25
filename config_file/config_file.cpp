@@ -13,6 +13,7 @@ Config::Config()
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELET"] = false;
+    count = 1; // merge
 }
 
 void Config::splite()
@@ -68,7 +69,7 @@ void Config::config_file()
 {
     ser_num = 0;
     try {
-        std::ifstream file("../config_file/file_config_file/config.nginx");
+        std::ifstream file("../config_file/file_config_file/boha.nginx");
         if (!file)
             std::cout << "Error opening file\n";
         

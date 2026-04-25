@@ -32,6 +32,7 @@ class Config {
         int                      size;
         int                      ser_num;
         int                      autoIndex;
+        int                      count; //in merge
         std::vector<std::string> str;
         std::string              line;
         std::vector<Location> location;

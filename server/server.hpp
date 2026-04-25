@@ -27,9 +27,10 @@ typedef enum e_state
 
 class Record { 
     public:
-        Record(){number = 0; fd = -1; status = NEW_RS;};
+        Record(){number = 0; fileFd = -1; fd = -1; status = NEW_RS;}
         int number;
         int fd;
+        int fileFd;
         t_state status;
         t_state method;
         std::string buffer;
