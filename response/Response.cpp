@@ -456,11 +456,11 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
     return 0;
 }
 
-std::string respond(Record &log, Server serv, Config &conf, Request &req)
+std::string respond(Record &log, Config &conf, Request &req) // mrege
 {
     std::string ret_resp;
     playloadData data;
-    (void)serv;
+    // (void)serv; // marege
     
     t_state check = log.status;
     if (log.status == NEW_RS)

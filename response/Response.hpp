@@ -42,6 +42,6 @@ class playloadData
 
 void generateResponse(Request &req, playloadData &data);
 
-std::string respond(Record &rec, Server serv, Config &conf, Request &req);
+std::string respond(Record &rec, Config &conf, Request &req); // mrege
 
 #endif
