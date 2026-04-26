@@ -144,7 +144,7 @@ void getHeaders(Request &req)
             req.finFlag = true;
             return ;
         }
-        req.headers[tolowerStr(key)] = tolowerStr(value);
+        req.headers[tolowerStr(key)] = value;
     }
     req.fullLine.erase(0, endLine + 2);
     return ;
@@ -264,12 +264,14 @@ void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t
     {
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
+        req[userId].reqState = ONE_ST;
         size_t pos = req[userId].fullLine.find("\r\n\r\n");
         if (pos == std::string::npos)
             break ;
         getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
+        req[userId].reqState = SECOND_ST;
         if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
             getFixedBody(req[userId], con);
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
