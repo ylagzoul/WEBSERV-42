@@ -3,24 +3,24 @@ server {
     listen 10.30.15.33:65;
     root /home/ylagzoul/Desktop/lagzouli_M/server/html; 
     index indeshx.html;
-    methods GET;
+    methods POST;
     error_page 500 /errors/500.html;
     error_page 501 /errors/501.html;
-        client_max_body_size 10K;
+    client_max_body_size 10K;
 
 
 
     location /upload {
         methods POST GET;
-        root /var/www/main;
+        root /home/ylagzoul/Desktop/lagzouli_M/server/;
         index index.html;
         client_max_body_size 10K;
         upload_path ./www/uploads;
-        autoindex off;
+        autoindex on;
     }
 
     location / {
-        methods GET POST DELETE;
+        methods POST DELETE;
         root /home/ylagzoul/Desktop/lagzouli_M/server/;
         index index.html;
         error_page 506 /errors/506.html;
@@ -30,7 +30,7 @@ server {
 
     location /images {
         methods GET;
-        root /var/www11111;
+        root /home/ylagzoul/Desktop/lagzouli_M/server/;
         index index.html;
         autoindex on;
         error_page 506 /errors/506.html;
@@ -46,7 +46,7 @@ server {
 
     location /images/upload/ {
         error_page 500 /errors/500.html;
-        root /var/www4444444;
+        root /home/ylagzoul/Desktop/lagzouli_M/server/;
         index index.html;
         autoindex on;
     } 

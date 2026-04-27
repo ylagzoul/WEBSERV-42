@@ -461,7 +461,7 @@ std::string respond(Record &log, Config &conf, Request &req) // mrege
     std::string ret_resp;
     playloadData data;
     // (void)serv; // marege
-    
+
     t_state check = log.status;
     if (log.status == NEW_RS)
     {

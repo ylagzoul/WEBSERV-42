@@ -62,7 +62,7 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         fds.erase(fds.begin() + i);
         return ;
     }
-    p.revents = 0;
+    // p.revents = 0;
     i++;
 }
 
@@ -70,18 +70,16 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
 {
     char buffer[1024] = {0};
     int bytes = recv(p.fd, buffer, 1024, 0);
-    std::cout <<"bytes    ==   "<< bytes << "\n\n";
-    std::cout << buffer << "\n\n";
     if (bytes > 0)
     {
-        clientId = i-1;
+        clientId = i;
         readRequest(req, clientId, buffer, bytes, conf);
-        std::cout << "WAW" << req[0].status << "\n\n\n";
-        // if (req[clientId].clientState == CLIENT_ON)
-        // {
+        std::cout << "WAW" << req[i].status << "\n\n\n";
+        if (req[clientId].method == "GET" && (req[clientId].clientState == CLIENT_ON || req[clientId].reqState == ONE_ST))
+        {
             std::cout << "mradoun raha had chi bazaf \n\n";
             p.events |= POLLOUT;
-        // }
+        }
         return (true);
     }
     else
@@ -96,21 +94,29 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
 bool Server::sendRespond(pollfd &p, size_t &i)
 {
     if (data[i].sendNext)
-        data[i].response = respond(recs[i-1], conf, req[i-1]);
-
+    {
+        data[i].response = respond(recs[i], conf, req[i]);
+        if (recs[i].status == CLOSED_RS || recs[i].status == ERROR_RS)
+        {
+            req[i] = Request();
+            recs[i] = Record();
+        }
+    }
     int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), 0);
-
+    std::cout << "send = " << sent<< "\n\n";
     if (sent > 0)
     {
         data[i].response = data[i].response.substr(sent);
         data[i].sendNext = data[i].response.empty();
     }
-    if (sent < 0)
+    if (sent <= 0)
     {
         close(p.fd);
         fds.erase(fds.begin() + i);
         return (false);
     }
+    if (data[i].sendNext)
+        p.events &= ~POLLOUT;
     return (true);
 }
 
@@ -131,33 +137,28 @@ int main()
         {
             pollfd &p = obj.fds[i];
 
-            if (p.revents == 0)
-            {
-                i++;
-                continue;
-            }
             if (p.fd == obj.server_fd && (p.revents & POLLIN))
             {
-                std::cout << "acceptNewClient\n\n";
                 obj.acceptNewCleint(p, i);
-                std::cout << "good acceptNewClient\n\n";
                 continue ;
             }
             if (p.revents & POLLIN)
             {
-                std::cout << "receiveRequest\n\n";
+
                 if (!obj.receiveRequest(p, i))
                     continue;
-                std::cout << "path = " << obj.req[0].path << std::endl;
-                std::cout << "good receiveRequest\n\n";
+
+                std::cout << "path = " << obj.req[i].path << "number : " << obj.req[i].status << "\n\n"; 
+
             }
             if (p.revents & POLLOUT)
             {
-                std::cout << "sendRespond\n\n"; 
+                std::cout << "hello in sevdrespond\n\n";
                 if (!obj.sendRespond(p, i))
+                {
                     continue ;
-                p.events |= POLLIN;
-                std::cout << "good sendRespond\n\n";
+                }
+                 std::cout << "bay kkkkk sevdrespond\n\n";
             }
             if ((p.revents & (POLLHUP | POLLERR)))
             {
@@ -166,11 +167,8 @@ int main()
                 obj.fds.erase(obj.fds.begin() + i);
                 continue;
             }
-            p.revents = 0;
             i++;
-            std::cout << "loop aboute with cleints\n\n";
         }
-        std::cout << "loop aboute with poll\n\n";
     }
     close(obj.server_fd);
 }
