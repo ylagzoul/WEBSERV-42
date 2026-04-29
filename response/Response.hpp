@@ -12,11 +12,12 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include "state.h"
 
 class Config;
-class Server;
 class Record;
 class Request;
+class Server;
 
 class playloadData
 {
@@ -41,7 +42,8 @@ class playloadData
         std::map <std::string, std::string> mime;
 };
 
-void generateResponse(Request &req, playloadData &data);
+
+void generateResponse(Request &req, playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
 
 std::string respond(Record &rec, Server serv, Config &conf, Request &req);
 

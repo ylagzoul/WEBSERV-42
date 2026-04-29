@@ -152,12 +152,12 @@ Server::Server()
 
 // response main
 
-Request ft_jibDikRequest()
+Request jibDikRequest()
 {
     Request req;
     req.status = 0;
-    req.method = "GET";
-    req.path = "/response/testfiles/";
+    req.method = "POST";
+    req.path = "/response/testfiles/file.txt";
     req.bodyPath = "/home/abouhki/goinfre/tmp/client1";
     req.httpVersion = "HTTP/1.0";
     req.headers["Host"] = "localhost";
@@ -171,8 +171,8 @@ int main()
     Config conf;
     conf.config_file();
     Server server;
-    conf.uploadPath = "upload";
-    std::vector<Request> req(1, ft_jibDikRequest());
+    conf.uploadPath = "/heeloooooooooooooooooooo";
+    std::vector<Request> req(1, jibDikRequest());
     // req[1].bodyPath = "/home/abouhki/goinfre/tmp/client2";
     // req[2].bodyPath = "/home/abouhki/goinfre/tmp/client3";
 
@@ -182,23 +182,31 @@ int main()
     logs.push_back(Record());
     logs.push_back(Record());
     logs.push_back(Record());
-
+    std::ofstream of("print1");
+    // std::ofstream of("print2");
+    // std::ofstream of("print3");
     std::string res;
     res = respond(logs[0], server, conf, req[0]);
     std::cout  << res << std::endl;
-    // sleep(5);
-    // res = respond(logs[1], server, conf, req[1]);
-    // std::cout  << res << std::endl;
-    // sleep(5);
-    // res = respond(logs[2], server, conf, req[2]);
-    // std::cout  << res << std::endl;
-    // sleep(5);
+    of << res << std::endl;
+    // sleep(3);
     // res = respond(logs[0], server, conf, req[0]);
     // std::cout  << res << std::endl;
-    // sleep(5);
-    // res = respond(logs[1], server, conf, req[1]);
+    // of << res << std::endl;
+    // sleep(3);
+    // res = respond(logs[0], server, conf, req[0]);
     // std::cout  << res << std::endl;
-    // sleep(5);
-    // res = respond(logs[2], server, conf, req[2]);
+    // of << res;
+    // sleep(3);
+    // res = respond(logs[0], server, conf, req[0]);
     // std::cout  << res << std::endl;
+    // of << res;
+    // res = respond(logs[0], server, conf, req[0]);
+    // std::cout  << res << std::endl;
+    // of << res;
+    // sleep(3);
+
+    // res = respond(logs[0], server, conf, req[0]);
+    // std::cout  << res << std::endl;
+    // of << res;
 }

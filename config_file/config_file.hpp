@@ -11,6 +11,9 @@
 # define MAXPORT 65535
 # define MAXIP 256
 
+# define LIST_FILES_PATH "/home/abouhki/goinfre/"
+# define BODY_FILES_PATH "/home/abouhki/goinfre/"
+
 class Location;
 
 class Config {
@@ -32,7 +35,7 @@ class Config {
         int                      size;
         int                      ser_num;
         int                      autoIndex;
-        int                      count; //in merge
+        size_t                    count; //in merge
         std::vector<std::string> str;
         std::string              line;
         std::vector<Location> location;

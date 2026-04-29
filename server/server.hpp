@@ -11,29 +11,22 @@
 #include "../request/request.hpp"
 #include "../response/Response.hpp"
 #include "../config_file/config_file.hpp"
+#include "state.h"
 
 # define DEFAULTBODY 1024
 
-typedef enum e_state
-{
-    NEW_RS = 100,
-    ACTIVE_RS,
-    CLOSED_RS,
-    GET_RS,
-    POST_RS,
-    ERROR_RS
-
-} t_state;
-
 class Record { 
     public:
-        Record(){number = 0; fileFd = -1; fd = -1; status = NEW_RS;}
-        int number;
+        Record(){number = 0; fileFd = -1; fd = -1; status = NEW_RS;/* method = NONE_RS;*/}
         int fd;
         int fileFd;
+        int number;
+        DIR *dir;
         t_state status;
         t_state method;
+        playloadData data;
         std::string buffer;
+        std::string fileName;
 };
 
 class Data {
