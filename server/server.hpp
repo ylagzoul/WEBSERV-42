@@ -45,8 +45,22 @@ class Data {
 class Server {
     public:
         Server();
-        size_t clientId;
-        std::vector<Data> data;
+
+        int server_fd;
+        int A;
+
+        size_t                  clientId;
+        std::vector<pollfd>     fds;
+        sockaddr_in             addr;
+        socklen_t               len;
+        std::vector<Data>       data;
+        std::vector<Record>     recs;
+        std::vector<Request>    req;
+        Config                  conf;
+
+        void acceptNewCleint(pollfd &p, size_t &i);
+        bool receiveRequest(pollfd &p, size_t &i);
+        bool sendRespond(pollfd &p, size_t &i);
 };
 
 #endif

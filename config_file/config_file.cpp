@@ -69,7 +69,7 @@ void Config::config_file()
 {
     ser_num = 0;
     try {
-        std::ifstream file("../config_file/file_config_file/boha.nginx");
+        std::ifstream file("../config_file/file_config_file/config.nginx");
         if (!file)
             std::cout << "Error opening file\n";
         

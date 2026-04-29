@@ -21,7 +21,7 @@ server {
 
     location / {
         methods GET POST DELETE;
-        root /home/boha/Desktop/;
+        root /home/boha/Desktop/O_webserv/server/;
         index index.html;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;

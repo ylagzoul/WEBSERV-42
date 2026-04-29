@@ -647,11 +647,10 @@ void generateResponse(Request &req, playloadData &data, std::string &ret_resp, R
         ret_resp = res.str(); 
 }
 
-std::string respond(Record &log, Server serv, Config &conf, Request &req)
+std::string respond(Record &log, Config &conf, Request &req)
 {
     std::string ret_resp;
     playloadData data;
-    (void)serv;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
     if (log.status == NEW_RS)

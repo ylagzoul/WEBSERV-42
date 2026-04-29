@@ -1,7 +1,7 @@
 server {
 
     listen 10.30.15.33:65;
-    root /home/abouhki/Desktop/or_WEBSERV/server/file_html; 
+    root /home/ylagzoul/Desktop/lagzouli_M/server/; 
     index indeshx.html;
     methods GET;
     error_page 500 /errors/500.html;
@@ -10,12 +10,21 @@ server {
 
     location / {
         methods POST GET;
-        root /home/abouhki/Desktop/or_WEBSERV/server/file_html;
+        root /home/ylagzoul/Desktop/lagzouli_M/server/;
         index index.html;
         client_max_body_size 10K;
         upload_path ./www/uploads;
         autoindex off;
     }
+
+    location / {
+        methods GET POST DELETE;
+        root /home/ylagzoul/Desktop/lagzouli_M/server/;
+        index index.html;
+        error_page 506 /errors/506.html;
+        autoindex off;
+    }
+
 
     location /images {
         methods GET;
