@@ -251,17 +251,16 @@ int handlePost(Record log, playloadData &data, Config &conf)
 int getFileData(Record &log, playloadData &data)
 {
     const int size = 8192;
-    char buffer[size + 1];
+    char buffer[size];
     int b = 0;
-    b = read(log.fd, buffer, sizeof(buffer) - 1);
+    b = read(log.fd, buffer, size);
     if (b == -1)
     {
         data.status_code = "500";
         data.message = "Internal Server Error";
         return 1;
     }
-    buffer[b] = '\0';
-    log.buffer = buffer;
+    log.buffer.append(buffer, b);
     if (b < size)
     {
         log.status = CLOSED_RS;
@@ -502,7 +501,9 @@ std::string respond(Record &log, Config &conf, Request &req) // mrege
         ret_resp = std::string();
     else
         ret_resp = log.buffer;
-    if (log.status == CLOSED_RS || log.status == ERROR_RS)
-        log.buffer.clear();
+    // if (log.status == CLOSED_RS || log.status == ERROR_RS)
+    //     log.buffer.clear();
+    log.buffer.clear();
+    std::cout << data.realPath << "\n\n\n\n\n\n\n\n";
     return (ret_resp);
 }

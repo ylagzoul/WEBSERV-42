@@ -44,9 +44,11 @@ Server::Server()
 
 void Server::acceptNewCleint(pollfd &p, size_t &i)
 {
+    std::cout << "hello acceptNewCleint\n";
     int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
     if (client_fd != -1)
     {
+        std::cout << "accept Cleint number = " << i << "\n";
         pollfd client_poll;
         client_poll.fd = client_fd;
         client_poll.events = POLLIN;
@@ -58,11 +60,11 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
     }
     else if (client_fd < 0)
     {
+        std::cout << "close in accept\n";
         close(p.fd);
         fds.erase(fds.begin() + i);
         return ;
     }
-    // p.revents = 0;
     i++;
 }
 
@@ -70,23 +72,44 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
 {
     char buffer[1024] = {0};
     int bytes = recv(p.fd, buffer, 1024, 0);
+    std::cout << "buffer = " << buffer << "\n\n";
     if (bytes > 0)
     {
         clientId = i;
         readRequest(req, clientId, buffer, bytes, conf);
-        std::cout << "WAW" << req[i].status << "\n\n\n";
-        if (req[clientId].method == "GET" && (req[clientId].clientState == CLIENT_ON || req[clientId].reqState == ONE_ST))
+        std::cout << "req[i].status = " << req[i].status << "\n";
+        // if (req[clientId].method == "GET" && (req[clientId].clientState == CLIENT_ON || req[clientId].reqState == ONE_ST))
+        if ((req[clientId].clientState == CLIENT_ON))
         {
-            std::cout << "mradoun raha had chi bazaf \n\n";
+            std::cout << "check POLLOUT \n";
             p.events |= POLLOUT;
         }
         return (true);
     }
-    else
+    else if (bytes == 0)
     {
+        std::cout << "buffer = " << buffer << "\n\n";
+        std::cout << "close in recv why? because disconnect" << " bytes = " << bytes << "\n";
         close(p.fd);
         fds.erase(fds.begin() + i);
-        return (false);
+        return (false); 
+    }
+    else
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+
+            
+            std::cout << "No data available now. Please try again later.\n";
+            return (true);
+        }
+        else
+        {
+            std::cout << "close in recv why? because erorr" << " bytes = " << bytes << "\n";
+            close(p.fd);
+            fds.erase(fds.begin() + i);
+            return (false);
+        }
     }
 }
 
@@ -95,15 +118,16 @@ bool Server::sendRespond(pollfd &p, size_t &i)
 {
     if (data[i].sendNext)
     {
+        std::cout << "path = " << req[i].path <<"\n";
         data[i].response = respond(recs[i], conf, req[i]);
-        if (recs[i].status == CLOSED_RS || recs[i].status == ERROR_RS)
-        {
-            req[i] = Request();
-            recs[i] = Record();
-        }
+        std::cout << "req[i].status = "<< req[i].status << " n" ;
     }
     int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), 0);
-    std::cout << "send = " << sent<< "\n\n";
+
+    // std::cout << "\n\nres " << data[i].response << "\n\n"; 
+    std::cout << "send = " << sent << "size respond = " << data[i].response.size() << "\n";
+    std::cout << "status " << recs[i].status << "\n"; 
+
     if (sent > 0)
     {
         data[i].response = data[i].response.substr(sent);
@@ -111,12 +135,27 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     }
     if (sent <= 0)
     {
-        close(p.fd);
-        fds.erase(fds.begin() + i);
-        return (false);
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+            std::cout << "No data available now. Please try again later.\n";
+            return (true);
+        }
+        else
+        {
+            std::cout << "close in send why? because erorr" << " sent = " << sent << "\n";
+            std::cout << "close in sednd\n";
+            close(p.fd);
+            fds.erase(fds.begin() + i);
+            return (false);
+        }
     }
-    if (data[i].sendNext)
+    if ((data[i].sendNext && recs[i].status == CLOSED_RS) || recs[i].status == ERROR_RS)
+    {
+
         p.events &= ~POLLOUT;
+        req[i] = Request();
+        recs[i] = Record();
+    }
     return (true);
 }
 
@@ -135,40 +174,46 @@ int main()
         }
         for (size_t i = 0; i < obj.fds.size();)
         {
+
             pollfd &p = obj.fds[i];
 
             if (p.fd == obj.server_fd && (p.revents & POLLIN))
             {
+                std::cout << "\n\naccept new cleint\n";
                 obj.acceptNewCleint(p, i);
+                std::cout << "end cleint\n\n";
                 continue ;
             }
             if (p.revents & POLLIN)
             {
-
+                std::cout << "\n\nstart receiveRequest\n";
                 if (!obj.receiveRequest(p, i))
                     continue;
 
-                std::cout << "path = " << obj.req[i].path << "number : " << obj.req[i].status << "\n\n"; 
+                std::cout << "path = " << obj.req[i].path << "number : " << obj.req[i].status << "\n"; 
+                std::cout << "end sevdrespond\n\n";
 
             }
             if (p.revents & POLLOUT)
             {
-                std::cout << "hello in sevdrespond\n\n";
+                std::cout << "\n\nstart sevdrespond\n";
                 if (!obj.sendRespond(p, i))
                 {
                     continue ;
                 }
-                 std::cout << "bay kkkkk sevdrespond\n\n";
+                std::cout << "end sevdrespond\n\n";
             }
             if ((p.revents & (POLLHUP | POLLERR)))
             {
-                std::cout << "close fd\n\n";
+                std::cout << "\n\nclose fd\n\n";
                 close(p.fd);
                 obj.fds.erase(obj.fds.begin() + i);
                 continue;
             }
+            std::cout << "\n\nloop for   ++++++++++++++++++++++++\n\n";
             i++;
         }
+        std::cout <<"\n\nloop while  ..............\n\n";
     }
     close(obj.server_fd);
 }
