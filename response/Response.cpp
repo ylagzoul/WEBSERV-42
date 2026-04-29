@@ -369,7 +369,9 @@ int autoIndex(Record &log, playloadData &data, Config &conf)
 int tryIndex(Record &log, playloadData &data, Config &conf)
 {
     std::string pathIndex = data.realPath + '/' + conf.location[data.locationIndex].conf.index[0];
-    std::vector 
+    // std::vector
+    (void)log;
+    return 0;
 }
 
 int validateFile(Record &log, playloadData &data, Config &conf)

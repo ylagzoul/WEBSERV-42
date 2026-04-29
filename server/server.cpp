@@ -150,63 +150,43 @@ Server::Server()
 // }
 
 
-// response main
+// --------------------------------response main-----------------------------------------
 
-Request jibDikRequest()
-{
-    Request req;
-    req.status = 0;
-    req.method = "POST";
-    req.path = "/response/testfiles/file.txt";
-    req.bodyPath = "/home/abouhki/goinfre/tmp/client1";
-    req.httpVersion = "HTTP/1.0";
-    req.headers["Host"] = "localhost";
-    req.headers["Connection"] = "Keep-Alive";
-    req.headers["content-type"] = "application/json";
-    return req;
-}
+// Request jibDikRequest()
+// {
+//     Request req;
+//     req.status = 0;
+//     req.method = "POST";
+//     req.path = "/response/testfiles/file.txt";
+//     req.bodyPath = "/home/abouhki/goinfre/tmp/client1";
+//     req.httpVersion = "HTTP/1.0";
+//     req.headers["Host"] = "localhost";
+//     req.headers["Connection"] = "Keep-Alive";
+//     req.headers["content-type"] = "application/json";
+//     return req;
+// }
 
-int main()
-{
-    Config conf;
-    conf.config_file();
-    Server server;
-    conf.uploadPath = "/heeloooooooooooooooooooo";
-    std::vector<Request> req(1, jibDikRequest());
-    // req[1].bodyPath = "/home/abouhki/goinfre/tmp/client2";
-    // req[2].bodyPath = "/home/abouhki/goinfre/tmp/client3";
+// int main()
+// {
+//     Config conf;
+//     conf.config_file();
+//     Server server;
+//     conf.uploadPath = "/heeloooooooooooooooooooo";
+//     std::vector<Request> req(1, jibDikRequest());
+//     // req[1].bodyPath = "/home/abouhki/goinfre/tmp/client2";
+//     // req[2].bodyPath = "/home/abouhki/goinfre/tmp/client3";
 
-    // req[1].path = "/response/testfiles/client_2.";
-    // req[2].path = "/response/testfiles/client_3.json";
-    std::vector<Record> logs;
-    logs.push_back(Record());
-    logs.push_back(Record());
-    logs.push_back(Record());
-    std::ofstream of("print1");
-    // std::ofstream of("print2");
-    // std::ofstream of("print3");
-    std::string res;
-    res = respond(logs[0], server, conf, req[0]);
-    std::cout  << res << std::endl;
-    of << res << std::endl;
-    // sleep(3);
-    // res = respond(logs[0], server, conf, req[0]);
-    // std::cout  << res << std::endl;
-    // of << res << std::endl;
-    // sleep(3);
-    // res = respond(logs[0], server, conf, req[0]);
-    // std::cout  << res << std::endl;
-    // of << res;
-    // sleep(3);
-    // res = respond(logs[0], server, conf, req[0]);
-    // std::cout  << res << std::endl;
-    // of << res;
-    // res = respond(logs[0], server, conf, req[0]);
-    // std::cout  << res << std::endl;
-    // of << res;
-    // sleep(3);
-
-    // res = respond(logs[0], server, conf, req[0]);
-    // std::cout  << res << std::endl;
-    // of << res;
-}
+//     // req[1].path = "/response/testfiles/client_2.";
+//     // req[2].path = "/response/testfiles/client_3.json";
+//     std::vector<Record> logs;
+//     logs.push_back(Record());
+//     logs.push_back(Record());
+//     logs.push_back(Record());
+//     std::ofstream of("print1");
+//     // std::ofstream of("print2");
+//     // std::ofstream of("print3");
+//     std::string res;
+//     res = respond(logs[0], server, conf, req[0]);
+//     std::cout  << res << std::endl;
+//     of << res << std::endl;
+// }

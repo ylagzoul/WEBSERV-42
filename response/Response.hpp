@@ -12,7 +12,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "state.h"
+#include "../server/state.h"
 
 class Config;
 class Record;

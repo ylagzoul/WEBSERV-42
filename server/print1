@@ -1,0 +1,16 @@
+HTTP/1.0 403 Forbidden
+Connection: Keep-Alive
+Content-Type: text/html
+Content-Length: 175
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Error page</title>
+</head>
+<body>
+<h1 style="text-align: center;">403 Forbidden</h1>
+<hr></body>
+</html>
+
