@@ -407,6 +407,7 @@ int validateFile(Record &log, playloadData &data, Config &conf)
     }
     else
         data.bodySize = info.st_size;
+    getContentType(data);
     return 0;
 }
 
@@ -576,7 +577,6 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
     findLongestMatch(data, conf, req);
     getImportantData(conf, data);
     resolvePath(data, conf);
-
     if (req.headers["Connection"] == "Keep-Alive")
         data.connection = "Keep-Alive";
 
@@ -638,6 +638,7 @@ void generateResponse(Request &req, playloadData &data, std::string &ret_resp, R
         data = log.data;
     // if you want to hundle inside writing or reading this is the key 
     // (log.method == NONE_RS && log.status == ERROR_RS)
+    // std::cout << data.contentType << " " << data.connection << std::endl;
     res << req.httpVersion << ' ' << data.status_code << ' ' << data.resMessage + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Type: " << data.contentType << "\r\n";
@@ -653,10 +654,14 @@ std::string respond(Record &log, Config &conf, Request &req)
     playloadData data;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
+    std::cout << "\""<< log.status << "\"" << std::endl;
+    std::cout << "\""<< req.status << "\"" << std::endl;
+    std::cout << "\""<< req.path << "\"" << std::endl;
+    // std::cout << "\""<< re << "\"" << std::endl;
     if (log.status == NEW_RS)
     {
         loadExtensions(data);
-        data.connection = "close";
+        data.connection = "Close";
         if (handleResponse(log, req, conf, data))
         {
             data.contentType = data.mime["html"];

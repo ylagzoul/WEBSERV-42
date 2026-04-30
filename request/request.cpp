@@ -1,6 +1,6 @@
 #include "../server/server.hpp"
 
-Request::Request() :  bodyFd(-1), status(200), getEndHeaders(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST){};
+Request::Request() : bodyFd(-1), status(200), getEndHeaders(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
 
 std::string tolowerStr(std::string str)
 {
@@ -19,8 +19,8 @@ std::string toStr(int nb)
 bool checkPath(std::string &path)
 {
     std::stringstream iss(path);
-    std::string        splitedPath;
-    std::string         tmp;
+    std::string splitedPath;
+    std::string tmp;
 
     if (path.at(0) != '/')
         return (false);
@@ -48,7 +48,7 @@ bool isPrintable(const std::string &str)
 
 bool isLfCr(const std::string &str)
 {
-     for (size_t i = 0; i < str.size(); i++)
+    for (size_t i = 0; i < str.size(); i++)
     {
         if (isspace(static_cast<unsigned char>(str[i])))
             return false;
@@ -56,24 +56,26 @@ bool isLfCr(const std::string &str)
     return (true);
 }
 
-
-void    fillCheck(Request &req, std::string reqLine)
+void fillCheck(Request &req, std::string reqLine)
 {
     std::stringstream splitReq(reqLine);
     std::string slice;
     std::vector<std::string> array;
-    while(splitReq >> slice)
+    while (splitReq >> slice)
         array.push_back(slice);
     if (array.size() != 3 || (array[0] != "POST" && array[0] != "GET" && array[0] != "DELETE"))
     {
+        // req.status = 400;
+        // throw std::runtime_error("Bad Request");
         req.status = 400;
-        throw std::runtime_error("Bad Request");
+        req.finFlag = true;
+        return;
     }
     if (array[2] != "HTTP/1.1" && array[2] != "HTTP/1.0")
     {
         req.status = 400;
         req.finFlag = true;
-        return ;
+        return;
     }
     req.method = array[0];
     req.path = array[1];
@@ -82,15 +84,15 @@ void    fillCheck(Request &req, std::string reqLine)
     {
         req.status = 400;
         req.finFlag = true;
-        return ;
-    } 
+        return;
+    }
 }
 
-void    getRequestLine(Request &req)
+void getRequestLine(Request &req)
 {
     size_t pos = req.fullLine.find("\r\n");
     if (pos == std::string::npos)
-        return ;
+        return;
     fillCheck(req, req.fullLine.substr(0, pos));
     req.fullLine.erase(0, pos + 2);
 }
@@ -99,14 +101,14 @@ void getHeaders(Request &req)
 {
     size_t endLine = req.fullLine.find("\r\n");
     if (endLine == std::string::npos)
-        return ;
+        return;
     std::string line = req.fullLine.substr(0, endLine);
     if (line.empty())
     {
         req.getEndHeaders = true;
         req.fullLine.erase(0, endLine + 4);
-        
-        std::map<std::string,std::string>::iterator it;
+
+        std::map<std::string, std::string>::iterator it;
         it = req.headers.find("transfer-encoding");
         if (req.headers.find("host") != req.headers.end())
             req.host = req.headers["host"];
@@ -121,33 +123,33 @@ void getHeaders(Request &req)
         {
             req.status = 400;
             req.finFlag = true;
-            return ;
+            return;
         }
-        return ;
+        return;
     }
     size_t colon = line.find(':');
     if (colon != std::string::npos)
     {
-        std::string key   = line.substr(0, colon);
+        std::string key = line.substr(0, colon);
         std::string value = line.substr(colon + 1);
         key.erase(std::remove(key.begin(), key.end(), ' '), key.end());
         if (!isPrintable(key))
         {
             req.status = 400;
             req.finFlag = true;
-            return ;
+            return;
         }
         value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
         if (!isLfCr(value))
         {
             req.status = 400;
             req.finFlag = true;
-            return ;
+            return;
         }
         req.headers[tolowerStr(key)] = value;
     }
     req.fullLine.erase(0, endLine + 2);
-    return ;
+    return;
 }
 
 // void getChunkedBody(Request &req)
@@ -215,11 +217,7 @@ void getHeaders(Request &req)
 //         readRequest(req, fd);
 // }
 
-
-
-
-
-void    getFixedBody(Request &req, Config con)
+void getFixedBody(Request &req, Config con)
 {
     static size_t bodyLen;
     if (req.bodyFd == -1)
@@ -228,8 +226,8 @@ void    getFixedBody(Request &req, Config con)
         if (req.bodyFd == -1)
         {
             std::cerr << "Error opening file\n";
-            throw std::runtime_error("Error file \n");
-            return ;
+            req.status = 500;
+            return;
         }
     }
     bodyLen += req.fullLine.length();
@@ -237,26 +235,28 @@ void    getFixedBody(Request &req, Config con)
     {
         req.status = 400;
         req.getEndFile = true;
-        return ;
+        return;
     }
     if (bodyLen < req.contentLength)
     {
         if (bodyLen != 0)
         {
-            write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length());
+            int a = write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length());
+            a += 0;
             req.fullLine.clear();
         }
-        return ;
+        return;
     }
-    int sizePa = (req.contentLength+req.fullLine.length())-bodyLen;
+    int sizePa = (req.contentLength + req.fullLine.length()) - bodyLen;
     std::string d = req.fullLine.substr(0, sizePa);
-    
-    write(req.bodyFd, d.c_str(), sizePa);
+
+    int a = write(req.bodyFd, d.c_str(), sizePa);
+    a += 0;
     close(req.bodyFd);
     req.getEndFile = true;
 }
 
-void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
+void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
 {
     req[userId].fullLine.append(buffer, len);
     req[userId].bodyPath = "client" + toStr(userId + 1);
@@ -267,11 +267,12 @@ void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t
         req[userId].reqState = ONE_ST;
         size_t pos = req[userId].fullLine.find("\r\n\r\n");
         if (pos == std::string::npos)
-            break ;
+            break;
         getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
-        req[userId].reqState = SECOND_ST;
+        else // add
+            req[userId].reqState = SECOND_ST;
         if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
             getFixedBody(req[userId], con);
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
@@ -281,8 +282,8 @@ void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t
         if (req[userId].finFlag)
         {
             req[userId].clientState = CLIENT_ON;
-            break ;
+            break;
         }
     }
-    return ;
+    return;
 }

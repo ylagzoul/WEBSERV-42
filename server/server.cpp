@@ -14,6 +14,7 @@ Data::Data()
 Server::Server()
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
     int opt = 1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         std::cout << "error in setsockopt\n";
@@ -41,14 +42,12 @@ Server::Server()
     A = 0;
 }
 
-
 void Server::acceptNewCleint(pollfd &p, size_t &i)
 {
     std::cout << "hello acceptNewCleint\n";
     int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
     if (client_fd != -1)
     {
-        std::cout << "accept Cleint number = " << i << "\n";
         pollfd client_poll;
         client_poll.fd = client_fd;
         client_poll.events = POLLIN;
@@ -57,13 +56,14 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         recs.push_back(Record());
         req.push_back(Request());
         data.push_back(Data());
+        std::cout << "accept Cleint number = " << fds.size() << "\n";
     }
     else if (client_fd < 0)
     {
         std::cout << "close in accept\n";
         close(p.fd);
         fds.erase(fds.begin() + i);
-        return ;
+        return;
     }
     i++;
 }
@@ -72,14 +72,14 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
 {
     char buffer[1024] = {0};
     int bytes = recv(p.fd, buffer, 1024, 0);
-    std::cout << "buffer = " << buffer << "\n\n";
+    std::cout << "buffer = " << buffer << " bytes = " << bytes << "\n\n";
     if (bytes > 0)
     {
         clientId = i;
         readRequest(req, clientId, buffer, bytes, conf);
         std::cout << "req[i].status = " << req[i].status << "\n";
         // if (req[clientId].method == "GET" && (req[clientId].clientState == CLIENT_ON || req[clientId].reqState == ONE_ST))
-        if ((req[clientId].clientState == CLIENT_ON))
+        if (req[clientId].clientState == CLIENT_ON)
         {
             std::cout << "check POLLOUT \n";
             p.events |= POLLOUT;
@@ -90,16 +90,18 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     {
         std::cout << "buffer = " << buffer << "\n\n";
         std::cout << "close in recv why? because disconnect" << " bytes = " << bytes << "\n";
+        std::cout << "i = " << i << "  req[i]. = " << req[i].path << "\n";
         close(p.fd);
         fds.erase(fds.begin() + i);
-        return (false); 
+        req.erase(req.begin() + i);
+        recs.erase(recs.begin() + i);
+        remove(req[i].bodyPath.c_str());
+        return (false);
     }
     else
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
         {
-
-            
             std::cout << "No data available now. Please try again later.\n";
             return (true);
         }
@@ -113,27 +115,28 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     }
 }
 
-
 bool Server::sendRespond(pollfd &p, size_t &i)
 {
     if (data[i].sendNext)
     {
-        std::cout << "path = " << req[i].path <<"\n";
+        // std::cout << "path = " << req[i].path <<"\n";
         data[i].response = respond(recs[i], conf, req[i]);
-        std::cout << "req[i].status = "<< req[i].status << " n" ;
+        if (data[i].response.empty())
+            return (true);
+        // std::cout << "req[i].status = "<< req[i].status << " n" ;
     }
-    int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), 0);
+    int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
 
-    // std::cout << "\n\nres " << data[i].response << "\n\n"; 
-    std::cout << "send = " << sent << "size respond = " << data[i].response.size() << "\n";
-    std::cout << "status " << recs[i].status << "\n"; 
+    // std::cout << "\n\nres " << data[i].response << "\n\n";
+    std::cout << "send = " << sent << " size respond = " << data[i].response.size() << "\n";
+    std::cout << "status " << recs[i].status << "\n";
 
     if (sent > 0)
     {
         data[i].response = data[i].response.substr(sent);
         data[i].sendNext = data[i].response.empty();
     }
-    if (sent <= 0)
+    if (sent < 0)
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
         {
@@ -159,8 +162,6 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     return (true);
 }
 
-
-
 int main()
 {
     Server obj;
@@ -182,24 +183,24 @@ int main()
                 std::cout << "\n\naccept new cleint\n";
                 obj.acceptNewCleint(p, i);
                 std::cout << "end cleint\n\n";
-                continue ;
+                continue;
             }
             if (p.revents & POLLIN)
             {
-                std::cout << "\n\nstart receiveRequest\n";
+                std::cout << "\n\nstart receiveRequest  " << "p.revents = " << p.revents << "  =   " << POLLIN << "\n\n";
+                ;
                 if (!obj.receiveRequest(p, i))
                     continue;
 
-                std::cout << "path = " << obj.req[i].path << "number : " << obj.req[i].status << "\n"; 
+                std::cout << "path = " << obj.req[i].path << " number : " << obj.req[i].status << "\n";
                 std::cout << "end sevdrespond\n\n";
-
             }
             if (p.revents & POLLOUT)
             {
                 std::cout << "\n\nstart sevdrespond\n";
                 if (!obj.sendRespond(p, i))
                 {
-                    continue ;
+                    continue;
                 }
                 std::cout << "end sevdrespond\n\n";
             }
@@ -210,14 +211,14 @@ int main()
                 obj.fds.erase(obj.fds.begin() + i);
                 continue;
             }
-            std::cout << "\n\nloop for   ++++++++++++++++++++++++\n\n";
+            std::cout << "\n\nloop for   ++++++++++++++++++++++++" << i << "\n\n";
+            ;
             i++;
         }
-        std::cout <<"\n\nloop while  ..............\n\n";
+        std::cout << "\n\nloop while  ..............\n\n";
     }
     close(obj.server_fd);
 }
-
 
 // --------------------------------response main-----------------------------------------
 
