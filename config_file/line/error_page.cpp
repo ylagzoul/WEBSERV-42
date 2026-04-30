@@ -17,9 +17,9 @@ void Config::ft_autoindex()
 void Config::ft_index()
 {
     int size_s = str[1].size();
-    int pos = size_s - 6; 
-    if (size != 2 || str[1].find(".html;",pos) == std::string::npos )
-        throw std::runtime_error("error in index in .html;");
+    // int pos = size_s - 6; 
+    // if (size != 2)
+    //     throw std::runtime_error("error in index in .html;");
     str[1].erase(size_s - 1);
     index.push_back(str[1]);
 }
