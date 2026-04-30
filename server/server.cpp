@@ -167,7 +167,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
 int main()
 {
     Server obj;
-
+    
     while (true)
     {
         if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)
