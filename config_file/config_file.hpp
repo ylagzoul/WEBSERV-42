@@ -11,8 +11,9 @@
 # define MAXPORT 65535
 # define MAXIP 256
 
-# define LIST_FILES_PATH "/home/abouhki/goinfre/"
-# define BODY_FILES_PATH "/home/abouhki/goinfre/"
+# define LIST_FILE_PATH "/home/abouhki/goinfre/"
+# define BODY_FILE_PATH "/home/abouhki/goinfre/"
+# define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/boha.nginx"
 
 class Location;
 
@@ -35,7 +36,7 @@ class Config {
         int                      size;
         int                      ser_num;
         int                      autoIndex;
-        size_t                    count; //in merge
+        size_t                    count;
         std::vector<std::string> str;
         std::string              line;
         std::vector<Location> location;

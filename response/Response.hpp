@@ -30,6 +30,7 @@ class playloadData
         std::string bodyStr;
         std::string error;
         std::string uri;
+        // std::string tmpFile;
         std::map<int, std::string> errorPages;
         std::string location;
         std::map<std::string, bool> locationMethods;

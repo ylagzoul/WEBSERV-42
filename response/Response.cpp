@@ -83,6 +83,32 @@ void getContentType(playloadData &data)
     }
 }
 
+std::string cleanPath(std::string fullPath)
+{
+    std::stringstream ssPath(fullPath);
+    std::vector<std::string> realNames;
+    std::string tmp;
+    std::string path;
+    while (std::getline(ssPath, tmp, '/'))
+    {
+        if (tmp == "" || tmp == ".")
+            continue;
+        if (tmp == "..")// dkhelha m3a continue o hni rasek
+        {
+            if (!realNames.empty())
+                realNames.pop_back();
+        }
+        else
+            realNames.push_back(tmp);
+    }
+
+    for (size_t i = 0; i < realNames.size(); i++)
+    {
+        path += '/' + realNames[i];
+    }
+    return path;
+}
+
 int handleDelete(playloadData &data)
 {
     struct stat info;
@@ -106,7 +132,7 @@ int handleDelete(playloadData &data)
         data.resMessage = "Forbidden";
         return 1;
     }
-    else if (remove(data.realPath.c_str()))
+    else if (std::remove(data.realPath.c_str()))
     {
         data.status_code = "500";
         data.resMessage = "Internal Server Error";
@@ -234,7 +260,7 @@ int handlePost(Record &log, playloadData &data, Request &req, Config &conf)
 
 int getFile(Record &log, playloadData &data)
 {
-    const int size = 1500;
+    const int size = 8192;
     char buffer[size];
     int bytes = 0;
     bytes = read(log.fd, buffer, size);
@@ -243,6 +269,8 @@ int getFile(Record &log, playloadData &data)
         data.status_code = "500";
         data.resMessage = "Internal Server Error";
         close(log.fd);
+        if (log.method == GET_LIST_RS)
+            std::remove(log.fileName.c_str());
         return 1;
     }
     log.buffer.append(buffer, bytes);
@@ -250,6 +278,8 @@ int getFile(Record &log, playloadData &data)
     {
         log.status = CLOSED_RS;
         close(log.fd);
+        if (log.method == GET_LIST_RS)
+            std::remove(log.fileName.c_str());
     }
     else if (log.status != ACTIVE_RS)
     {
@@ -265,17 +295,22 @@ int postFilesList(Record &log, playloadData &data)
     std::string tmp;
     std::string buff;
     std::string tmpBuff;
+    std::string tmpPath = data.location + data.uri;
+    if (tmpPath[tmpPath.length() - 1] == '/')
+        tmpPath.resize(tmpPath.length() - 1);
+    tmpPath = cleanPath(tmpPath);
     while ((rdir = readdir(log.dir)))
     {
         tmp = rdir->d_name;
         if (tmp == "." || tmp == "..")
             continue ;
-        buff = "<a href=\"" + tmp + "\">" + tmp + "</a><br>\n";
+        buff = "<a href=\"" + tmpPath + '/' + tmp + "\">" + tmp + "</a><br>\n";
         tmpBuff += buff;
         if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
         {
             close(log.fileFd);
             closedir(log.dir);
+            std::remove(log.fileName.c_str());
             log.method = NONE_RS;
             data.status_code = "500";
             data.resMessage = "Internal Server Error";
@@ -295,6 +330,7 @@ int postFilesList(Record &log, playloadData &data)
     {
         close(log.fileFd);
         closedir(log.dir);
+        std::remove(log.fileName.c_str());
         log.method = NONE_RS;
         data.status_code = "500";
         data.resMessage = "Internal Server Error";
@@ -310,6 +346,7 @@ int postFilesList(Record &log, playloadData &data)
     log.fd = open(log.fileName.c_str(), O_RDONLY);
     if (log.fd == -1)
     {
+        std::remove(log.fileName.c_str());
         data.status_code = "500";
         data.resMessage = "Internal Server Error";
         return 1;
@@ -319,7 +356,7 @@ int postFilesList(Record &log, playloadData &data)
 
 int autoIndex(Record &log, playloadData &data, Config &conf)
 {
-    log.fileName = LIST_FILES_PATH; 
+    log.fileName = LIST_FILE_PATH; 
     log.fileName += "bodyList_" + getRandomName(conf);
     log.fileFd = open(log.fileName.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
     if (log.fileFd == -1)
@@ -332,6 +369,7 @@ int autoIndex(Record &log, playloadData &data, Config &conf)
     if (!log.dir)
     {
         close(log.fileFd);
+        std::remove(log.fileName.c_str());
         data.status_code = "500";
         data.resMessage = "Internal Server Error";
         return 1;
@@ -352,6 +390,7 @@ int autoIndex(Record &log, playloadData &data, Config &conf)
     {
         close(log.fileFd);
         closedir(log.dir);
+        std::remove(log.fileName.c_str());
         data.status_code = "500";
         data.resMessage = "Internal Server Error";
         return 1;
@@ -368,9 +407,23 @@ int autoIndex(Record &log, playloadData &data, Config &conf)
 
 int tryIndex(Record &log, playloadData &data, Config &conf)
 {
-    std::string pathIndex = data.realPath + '/' + conf.location[data.locationIndex].conf.index[0];
-    // std::vector
-    (void)log;
+    std::vector<std::string> indexData = conf.location[data.locationIndex].conf.index;
+    for(size_t i = 0; i < indexData.size(); i++)
+    {
+        std::string pathIndex = data.realPath + '/' + conf.location[data.locationIndex].conf.index[i];
+        log.fd = open(pathIndex.c_str(), O_RDONLY);
+        if (log.fd == -1)
+            continue;
+        else
+            break;
+    }
+    if (log.fd != -1)
+    {
+        if (getFile(log, data))
+            return 1;
+    }
+    else
+        return 1;
     return 0;
 }
 
@@ -394,7 +447,7 @@ int validateFile(Record &log, playloadData &data, Config &conf)
     {
         if (conf.location[data.locationIndex].conf.autoIndex)
         {
-            tryIndex(log, data, conf);
+            // tryIndex(log, data, conf);
             if (autoIndex(log, data, conf))
                 return 1;
         }
@@ -527,30 +580,12 @@ void chooseErrorHandler(Config &conf, playloadData &data)
 void resolvePath(playloadData &data, Config &conf) // path
 {
     (void)conf;
-    std::stringstream fullPath(data.locationRoot + data.uri);
-    std::vector<std::string> realNames;
+    
     std::string tmp;
     // std::string tmpPath;
     // struct stat info;
     // stat(data.realPath.c_str(), &info);// cgi
-    while (std::getline(fullPath, tmp, '/'))
-    {
-        if (tmp == "" || tmp == ".")
-            continue;
-        if (tmp == "..")
-        {
-            if (!realNames.empty())
-                realNames.pop_back();
-        }
-        else
-            realNames.push_back(tmp);
-    }
-
-    for (size_t i = 0; i < realNames.size(); i++)
-    {
-        // tmpPath += '/' + realNames[i];
-        data.realPath += '/' + realNames[i];
-    }
+    data.realPath = cleanPath(data.locationRoot + data.uri);
     data.uploadOn = 0;
     if (data.locationUpload.empty())
         return ;
@@ -562,10 +597,6 @@ void resolvePath(playloadData &data, Config &conf) // path
     if (compare == rootUploadDir)
         data.uploadOn = 1;
 }
-// std::cout << data.realPath << "\n\n";
-// std::cout << rootUploadDir << "\n\n"; //debug!!
-// std::cout << compare << "\n\n";
-// exit(0);
 
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 {
@@ -628,7 +659,7 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
     return 0;
 }
 
-void generateResponse(Request &req, playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod)
+void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod)
 {
     if (log.method == POST_LIST_RS)
         log.data = data;
@@ -636,10 +667,7 @@ void generateResponse(Request &req, playloadData &data, std::string &ret_resp, R
     if ((pastMethod == POST_LIST_RS && log.method == GET_LIST_RS)
         || (log.method == NONE_RS && log.status == ERROR_RS))
         data = log.data;
-    // if you want to hundle inside writing or reading this is the key 
-    // (log.method == NONE_RS && log.status == ERROR_RS)
-    // std::cout << data.contentType << " " << data.connection << std::endl;
-    res << req.httpVersion << ' ' << data.status_code << ' ' << data.resMessage + "\r\n";
+    res << "HTTP/1.0" << ' ' << data.status_code << ' ' << data.resMessage + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Type: " << data.contentType << "\r\n";
     res << "Content-Length: " << data.bodySize << "\r\n";
@@ -693,14 +721,13 @@ std::string respond(Record &log, Config &conf, Request &req)
                 // may be something
                 log.status = ERROR_RS;
             }
+            //remove bodyfile
         }
     }
-    // if you want to hundle inside writing or reading this is the key 
-    // (log.method == NONE_RS && log.status == ERROR_RS)
     if (pastStatus == NEW_RS || (log.method == NONE_RS && log.status == ERROR_RS)
         || (pastMethod == POST_LIST_RS && log.method == GET_LIST_RS))
     {
-        generateResponse(req, data, ret_resp, log, pastMethod);
+        generateResponse(data, ret_resp, log, pastMethod);
         if (log.status == ERROR_RS)
             ret_resp += data.bodyStr;
         else

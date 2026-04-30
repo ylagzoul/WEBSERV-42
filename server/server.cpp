@@ -85,7 +85,11 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     {
         clientId = i;
         readRequest(req, clientId, buffer, bytes, conf);
-        std::cout << "req[i].status = " << req[i].status << "\n";
+        if (req[i].path.empty())
+            req[i].path = "/";
+        // std::cout << "req[i].status = " << req[i].status << "\n";
+        std::cout << "reqStatus: " << req[i].status << std::endl;
+        std::cout << "reqPath : (" << req[i].path << ")" << std::endl;
         // if (req[clientId].method == "GET" && (req[clientId].clientState == CLIENT_ON || req[clientId].reqState == ONE_ST))
         if (req[clientId].clientState == CLIENT_ON)
         {
@@ -124,15 +128,16 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     {
         // std::cout << "path = " << req[i].path <<"\n";
         data[i].response = respond(recs[i], conf, req[i]);
-        if (data[i].response.empty())
+        if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
             return (true);
         // std::cout << "req[i].status = "<< req[i].status << " n" ;
     }
     int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
-
+    recs[i].number+=sent;
+    std::cout << "\n\nsentData: " << recs[i].number << "\n\n";
     // std::cout << "\n\nres " << data[i].response << "\n\n";
-    std::cout << "send = " << sent << " size respond = " << data[i].response.size() << "\n";
-    std::cout << "status " << recs[i].status << "\n";
+    // std::cout << "send = " << sent << " size respond = " << data[i].response.size() << "\n";
+    // std::cout << "status " << recs[i].status << "\n";
 
     if (sent > 0)
     {
@@ -143,13 +148,13 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
         {
-            std::cout << "No data available now. Please try again later.\n";
+            // std::cout << "No data available now. Please try again later.\n";
             return (true);
         }
         else
         {
-            std::cout << "close in send why? because erorr" << " sent = " << sent << "\n";
-            std::cout << "close in sednd\n";
+            // std::cout << "close in send why? because erorr" << " sent = " << sent << "\n";
+            // std::cout << "close in sednd\n";
             close_client(p, i);
             return (false);
         }
@@ -182,29 +187,29 @@ int main()
 
             if (p.fd == obj.server_fd && (p.revents & POLLIN))
             {
-                std::cout << "\n\naccept new cleint\n";
+                // std::cout << "\n\naccept new cleint\n";
                 obj.acceptNewCleint(p, i);
-                std::cout << "end cleint\n\n";
+                // std::cout << "end cleint\n\n";
                 continue;
             }
             if (p.revents & POLLIN)
             {
-                std::cout << "\n\nstart receiveRequest  " << "p.revents = " << p.revents << "  =   " << POLLIN << "\n\n";
+                // std::cout << "\n\nstart receiveRequest  " << "p.revents = " << p.revents << "  =   " << POLLIN << "\n\n";
                 ;
                 if (!obj.receiveRequest(p, i))
                     continue;
 
-                std::cout << "path = " << obj.req[i].path << " number : " << obj.req[i].status << "\n";
-                std::cout << "end sevdrespond\n\n";
+                // std::cout << "path = " << obj.req[i].path << " number : " << obj.req[i].status << "\n";
+                // std::cout << "end sevdrespond\n\n";
             }
             if (p.revents & POLLOUT)
             {
-                std::cout << "\n\nstart sevdrespond\n";
+                // std::cout << "\n\nstart sevdrespond\n";
                 if (!obj.sendRespond(p, i))
                 {
                     continue;
                 }
-                std::cout << "end sevdrespond\n\n";
+                // std::cout << "end sevdrespond\n\n";
             }
             if ((p.revents & (POLLHUP | POLLERR)))
             {
@@ -212,23 +217,24 @@ int main()
                 obj.close_client(p, i);
                 continue;
             }
-            std::cout << "\n\nloop for   ++++++++++++++++++++++++" << i << "\n\n";
+            // std::cout << "\n\nloop for   ++++++++++++++++++++++++" << i << "\n\n";
             ;
             i++;
         }
-        std::cout << "\n\nloop while  ..............\n\n";
+        // std::cout << "\n\nloop while  ..............\n\n";
     }
     close(obj.server_fd);
 }
 
-// --------------------------------response main-----------------------------------------
+
+// // --------------------------------response main-----------------------------------------
 
 // Request jibDikRequest()
 // {
 //     Request req;
 //     req.status = 0;
-//     req.method = "POST";
-//     req.path = "/response/testfiles/file.txt";
+//     req.method = "GET";
+//     req.path = "//hh/h/h//////hhg///gh///gh/////ghg////gh////gh";
 //     req.bodyPath = "/home/abouhki/goinfre/tmp/client1";
 //     req.httpVersion = "HTTP/1.0";
 //     req.headers["Host"] = "localhost";
@@ -241,8 +247,8 @@ int main()
 // {
 //     Config conf;
 //     conf.config_file();
-//     Server server;
-//     conf.uploadPath = "/heeloooooooooooooooooooo";
+//     // Server server;
+//     conf.uploadPath = "/hello";
 //     std::vector<Request> req(1, jibDikRequest());
 //     // req[1].bodyPath = "/home/abouhki/goinfre/tmp/client2";
 //     // req[2].bodyPath = "/home/abouhki/goinfre/tmp/client3";
@@ -253,11 +259,13 @@ int main()
 //     logs.push_back(Record());
 //     logs.push_back(Record());
 //     logs.push_back(Record());
-//     std::ofstream of("print1");
+//     std::ofstream of("print1.html");
 //     // std::ofstream of("print2");
 //     // std::ofstream of("print3");
 //     std::string res;
-//     res = respond(logs[0], server, conf, req[0]);
-//     std::cout  << res << std::endl;
-//     of << res << std::endl;
+//     while(logs[0].status != ERROR_RS && logs[0].status != CLOSED_RS)
+//     {
+//         res = respond(logs[0], conf, req[0]);
+//         of << res;
+//     }
 // }

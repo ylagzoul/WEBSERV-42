@@ -25,8 +25,8 @@ class Record {
         t_state status;
         t_state method;
         playloadData data;
-        std::string buffer;
         std::string fileName;
+        std::string buffer;
 };
 
 class Data {

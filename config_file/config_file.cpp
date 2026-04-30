@@ -69,7 +69,7 @@ void Config::config_file()
 {
     ser_num = 0;
     try {
-        std::ifstream file("/home/ylagzoul/Desktop/lagzouli_M/config_file/file_config_file/config.nginx");
+        std::ifstream file(CONF_FILE_PATH);
         if (!file)
             std::cout << "Error opening file\n";
         
