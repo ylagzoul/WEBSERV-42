@@ -61,6 +61,7 @@ class Server {
         void acceptNewCleint(pollfd &p, size_t &i);
         bool receiveRequest(pollfd &p, size_t &i);
         bool sendRespond(pollfd &p, size_t &i);
+        void close_client(pollfd &p, int i);
 };
 
 #endif

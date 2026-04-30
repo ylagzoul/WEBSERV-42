@@ -42,6 +42,15 @@ Server::Server()
     A = 0;
 }
 
+void Server::close_client(pollfd &p, int i)
+{
+    close(p.fd);
+    fds.erase(fds.begin() + i);
+    req.erase(req.begin() + i);
+    recs.erase(recs.begin() + i);
+    remove(req[i].bodyPath.c_str());
+}
+
 void Server::acceptNewCleint(pollfd &p, size_t &i)
 {
     std::cout << "hello acceptNewCleint\n";
@@ -61,8 +70,7 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
     else if (client_fd < 0)
     {
         std::cout << "close in accept\n";
-        close(p.fd);
-        fds.erase(fds.begin() + i);
+        close_client(p, i);
         return;
     }
     i++;
@@ -91,11 +99,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
         std::cout << "buffer = " << buffer << "\n\n";
         std::cout << "close in recv why? because disconnect" << " bytes = " << bytes << "\n";
         std::cout << "i = " << i << "  req[i]. = " << req[i].path << "\n";
-        close(p.fd);
-        fds.erase(fds.begin() + i);
-        req.erase(req.begin() + i);
-        recs.erase(recs.begin() + i);
-        remove(req[i].bodyPath.c_str());
+        close_client(p, i);
         return (false);
     }
     else
@@ -108,8 +112,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
         else
         {
             std::cout << "close in recv why? because erorr" << " bytes = " << bytes << "\n";
-            close(p.fd);
-            fds.erase(fds.begin() + i);
+            close_client(p, i);
             return (false);
         }
     }
@@ -147,8 +150,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
         {
             std::cout << "close in send why? because erorr" << " sent = " << sent << "\n";
             std::cout << "close in sednd\n";
-            close(p.fd);
-            fds.erase(fds.begin() + i);
+            close_client(p, i);
             return (false);
         }
     }
@@ -207,8 +209,7 @@ int main()
             if ((p.revents & (POLLHUP | POLLERR)))
             {
                 std::cout << "\n\nclose fd\n\n";
-                close(p.fd);
-                obj.fds.erase(obj.fds.begin() + i);
+                obj.close_client(p, i);
                 continue;
             }
             std::cout << "\n\nloop for   ++++++++++++++++++++++++" << i << "\n\n";
