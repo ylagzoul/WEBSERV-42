@@ -1,0 +1,21 @@
+#ifndef RECORD_HPP
+# define RECORD_HPP
+
+#include "server.hpp"
+
+class Record { 
+    public:
+        Record();
+        int fd;
+        int fileFd;
+        int number;
+        DIR *dir;
+        t_state status;
+        t_state method;
+        playloadData data;
+        std::string fileName;
+        std::string buffer;
+        ~Record(){}
+};
+
+#endif
