@@ -12,9 +12,9 @@ SRC = server.cpp \
 			../config_file/Helpful_functions/ft_ft.cpp \
 			../config_file/line/listen.cpp \
 			../config_file/line/server_name.cpp \
-			../config_file/line/error_page.cpp
+			../config_file/line/error_page.cpp Record.cpp
 
-SRC_H = server.hpp
+SRC_H = server.hpp Record.hpp
 
 OBJ = $(SRC:.cpp=.o)
 

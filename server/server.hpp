@@ -12,44 +12,11 @@
 #include "../response/Response.hpp"
 #include "../config_file/config_file.hpp"
 #include "state.h"
+#include "Record.hpp"
 
 # define DEFAULTBODY 1024
 
 // GET /file
-
-
-// Record::~Record()
-// {
-//     if (fileFd != -1)
-//         close(fileFd);
-//     if (fd != -1)
-//         close(fd);
-//     if (dir)
-//         closedir(dir);
-// }
-
-class Record { 
-    public:
-        Record()
-        {
-            number = 0;
-            fileFd = -1;
-            fd = -1;
-            dir = NULL;
-            status = NEW_RS;
-            method = NO_MD;
-        }
-        int fd;
-        int fileFd;
-        int number;
-        DIR *dir;
-        t_state status;
-        t_state method;
-        playloadData data;
-        std::string fileName;
-        std::string buffer;
-        ~Record(){}
-};
 
 class Data {
     public:
