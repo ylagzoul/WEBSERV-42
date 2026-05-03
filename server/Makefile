@@ -14,7 +14,7 @@ SRC = server.cpp \
 			../config_file/line/server_name.cpp \
 			../config_file/line/error_page.cpp
 
-SRC_H = server.hpp 
+SRC_H = server.hpp
 
 OBJ = $(SRC:.cpp=.o)
 
