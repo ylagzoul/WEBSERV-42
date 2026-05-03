@@ -117,10 +117,8 @@ void fillCheck(Request &req, std::string reqLine)
     std::vector<std::string> array;
     while (splitReq >> slice)
         array.push_back(slice);
-    if (array.size() != 3 || (array[0] != "POST" && array[0] != "GET" && array[0] != "DELETE"))
+    if (array.size() != 3)
     {
-        // req.status = 400;
-        // throw std::runtime_error("Bad Request");
         req.status = 400;
         req.finFlag = true;
         return;
