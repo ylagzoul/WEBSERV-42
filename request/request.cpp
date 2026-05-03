@@ -16,6 +16,57 @@ std::string toStr(int nb)
     return (ss.str());
 }
 
+bool isHex(char h)
+{
+    return ( h >= '0' && h <= '9' ) ||
+           ( h >= 'a' && h <= 'f' ) ||
+           ( h >= 'A' && h <= 'F' ); 
+}
+
+int hexValue(char c)
+{
+    if (c >= '0' && c <= '9')
+        return (c - '0');
+    if (c >= 'A' && c <= 'F')
+        return (c - 'A' + 10);
+    if (c >= 'a' && c <= 'f')
+        return (c - 'a' + 10);
+    return (-1);
+}
+
+char hexToChar(char a, char b)
+{
+    int high = hexValue(a);
+    int low  = hexValue(b);
+
+    return ((high << 4) | low);
+}
+
+bool checkPrecentEnc(std::string &pathSlice)
+{
+    std::string copyPath = pathSlice;
+    pathSlice.clear();
+    for (size_t i = 0; i < copyPath.length(); i++)
+    {
+        if (copyPath.at(i) == '%')
+        {
+            if(!copyPath[i + 1] || !copyPath[i + 2])
+                return (false);
+            if (!isHex((char)copyPath.at(i+1)) && !isHex((char)copyPath.at(i+2)))
+                return(false);
+            char decoded = hexToChar(copyPath.at(i+1), copyPath.at(i+2));
+            std::string temp2 = "" + decoded;
+            pathSlice.append(temp2);
+            i += 3;
+        }
+        else
+        {
+            pathSlice += copyPath.at(i);
+        }
+    }
+    return (true);
+}
+
 bool checkPath(std::string &path)
 {
     std::stringstream iss(path);
@@ -28,7 +79,10 @@ bool checkPath(std::string &path)
     {
         if (!splitedPath.empty())
         {
+
             tmp.append("/");
+            if (!checkPrecentEnc(splitedPath))
+                return (false);
             tmp += splitedPath;
         }
     }
@@ -119,6 +173,7 @@ void getHeaders(Request &req)
         }
         else
         {
+            // Check the Get Error
             req.status = 400;
             req.finFlag = true;
             return ;
@@ -138,7 +193,7 @@ void getHeaders(Request &req)
             return ;
         }
         value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
-        if (!isLfCr(value))
+        if (!isLfCr(value)) //useless
         {
             req.status = 400;
             req.finFlag = true;
@@ -224,11 +279,12 @@ void    getFixedBody(Request &req, Config con)
     static size_t bodyLen;
     if (req.bodyFd == -1)
     {
+        // cout << req.bodyPath << std::endl;
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (req.bodyFd == -1)
         {
             std::cerr << "Error opening file\n";
-            throw std::runtime_error("Error file \n");
+            req.status = 500;
             return ;
         }
     }
@@ -259,7 +315,7 @@ void    getFixedBody(Request &req, Config con)
 void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
 {
     req[userId].fullLine.append(buffer, len);
-    req[userId].bodyPath = "client" + toStr(userId + 1);
+    req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
         if (req[userId].method.empty())
@@ -271,7 +327,8 @@ void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t
         getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
-        req[userId].reqState = SECOND_ST;
+        else
+            req[userId].reqState = SECOND_ST;
         if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
             getFixedBody(req[userId], con);
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)

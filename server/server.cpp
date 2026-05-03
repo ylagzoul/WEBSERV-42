@@ -16,156 +16,156 @@ Server::Server()
     clientId = 0;
 }
 
-int main()
-{
-    Config conf;
-    Server obj;
+// int main()
+// {
+//     Config conf;
+//     Server obj;
 
-    std::vector<Record> recs;
-    std::vector<Request> req;
+//     std::vector<Record> recs;
+//     std::vector<Request> req;
 
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+//     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    int opt = 1;
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+//     int opt = 1;
+//     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    sockaddr_in addr;
-    socklen_t len = sizeof(addr);
+//     sockaddr_in addr;
+//     socklen_t len = sizeof(addr);
 
-    conf.config_file();
+//     conf.config_file();
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(3051);
-    addr.sin_addr.s_addr = INADDR_ANY;
+//     addr.sin_family = AF_INET;
+//     addr.sin_port = htons(3051);
+//     addr.sin_addr.s_addr = INADDR_ANY;
 
-    bind(server_fd, (sockaddr*)&addr, len);
-    listen(server_fd, 10);
+//     bind(server_fd, (sockaddr*)&addr, len);
+//     listen(server_fd, 10);
 
-    std::vector<pollfd> fds;
+//     std::vector<pollfd> fds;
 
-    pollfd server_poll;
-    server_poll.fd = server_fd;
-    server_poll.events = POLLIN;
-    fds.push_back(server_poll);
+//     pollfd server_poll;
+//     server_poll.fd = server_fd;
+//     server_poll.events = POLLIN;
+//     fds.push_back(server_poll);
 
-    obj.data.push_back(Data());
-    recs.push_back(Record());
-    req.push_back(Request());
+//     obj.data.push_back(Data());
+//     recs.push_back(Record());
+//     req.push_back(Request());
 
-    while (true)
-    {
-        int ret = poll(fds.data(), fds.size(), -1);
+//     while (true)
+//     {
+//         int ret = poll(fds.data(), fds.size(), -1);
 
-        if (ret == -1)
-        {
-            std::cout << "poll error\n";
-            continue;
-        }
+//         if (ret == -1)
+//         {
+//             std::cout << "poll error\n";
+//             continue;
+//         }
 
-        for (size_t i = 0; i < fds.size(); )
-        {
-            pollfd &p = fds[i];
+//         for (size_t i = 0; i < fds.size(); )
+//         {
+//             pollfd &p = fds[i];
 
-            if (p.revents == 0)
-            {
-                i++;
-                continue;
-            }
+//             if (p.revents == 0)
+//             {
+//                 i++;
+//                 continue;
+//             }
 
-            if (p.fd == server_fd && (p.revents & POLLIN))
-            {
-                int client_fd = accept(server_fd, (sockaddr*)&addr, &len);
-                if (client_fd != -1)
-                {
-                    pollfd client_poll;
-                    client_poll.fd = client_fd;
-                    client_poll.events = POLLIN;
-                    fds.push_back(client_poll);
+//             if (p.fd == server_fd && (p.revents & POLLIN))
+//             {
+//                 int client_fd = accept(server_fd, (sockaddr*)&addr, &len);
+//                 if (client_fd != -1)
+//                 {
+//                     pollfd client_poll;
+//                     client_poll.fd = client_fd;
+//                     client_poll.events = POLLIN;
+//                     fds.push_back(client_poll);
 
-                    recs.push_back(Record());
-                    req.push_back(Request());
-                    obj.data.push_back(Data());
-                }
-                else if (client_fd < 0)
-                {
-                    close(p.fd);
-                    fds.erase(fds.begin() + i);
-                    continue;
-                }
+//                     recs.push_back(Record());
+//                     req.push_back(Request());
+//                     obj.data.push_back(Data());
+//                 }
+//                 else if (client_fd < 0)
+//                 {
+//                     close(p.fd);
+//                     fds.erase(fds.begin() + i);
+//                     continue;
+//                 }
 
-                p.revents = 0;
-                i++;
-                continue;
-            }
+//                 p.revents = 0;
+//                 i++;
+//                 continue;
+//             }
 
-            if (p.revents & POLLIN)
-            {
-                char buffer[1024] = {0};
-                int bytes = recv(p.fd, buffer, 1024, 0);
+//             if (p.revents & POLLIN)
+//             {
+//                 char buffer[1024] = {0};
+//                 int bytes = recv(p.fd, buffer, 1024, 0);
 
-                if (bytes > 0)
-                {
-                    int index = i - 1;
-                    obj.clientId = i;
-                    readRequest(req, index, buffer, bytes, conf);
+//                 if (bytes > 0)
+//                 {
+//                     int index = i - 1;
+//                     obj.clientId = i;
+//                     readRequest(req, index, buffer, bytes, conf);
                     
 
-                    // بعد القراءة نسمح بالكتابة
-                    p.events |= POLLOUT;
-                }
-                else
-                {
-                    close(p.fd);
-                    fds.erase(fds.begin() + i);
-                    continue;
-                }
-            }
+//                     // بعد القراءة نسمح بالكتابة
+//                     p.events |= POLLOUT;
+//                 }
+//                 else
+//                 {
+//                     close(p.fd);
+//                     fds.erase(fds.begin() + i);
+//                     continue;
+//                 }
+//             }
 
-            if (p.revents & POLLOUT)
-            {
-                int index = i - 1;
+//             if (p.revents & POLLOUT)
+//             {
+//                 int index = i - 1;
 
-                if (obj.data[i].sendNext)
-                {
-                    obj.clientId = i;
-                    obj.data[i].response =
-                        respond(recs[index], obj, conf, req[index]);
-                    std::cout << obj.data[i].response << "\n\n";
-                    // exit(1);
-                }
+//                 if (obj.data[i].sendNext)
+//                 {
+//                     obj.clientId = i;
+//                     obj.data[i].response =
+//                         respond(recs[index], obj, conf, req[index]);
+//                     std::cout << obj.data[i].response << "\n\n";
+//                     // exit(1);
+//                 }
 
-                int sent = send(p.fd,
-                                obj.data[i].response.c_str(),
-                                obj.data[i].response.size(),
-                                0);
+//                 int sent = send(p.fd,
+//                                 obj.data[i].response.c_str(),
+//                                 obj.data[i].response.size(),
+//                                 0);
 
-                if (sent > 0)
-                {
-                    obj.data[i].response = obj.data[i].response.substr(sent);
-                    obj.data[i].sendNext = obj.data[i].response.empty();
-                }
-                if (sent < 0)
-                {
-                    close(p.fd);
-                    fds.erase(fds.begin() + i);
-                    continue;
-                }
-            }
+//                 if (sent > 0)
+//                 {
+//                     obj.data[i].response = obj.data[i].response.substr(sent);
+//                     obj.data[i].sendNext = obj.data[i].response.empty();
+//                 }
+//                 if (sent < 0)
+//                 {
+//                     close(p.fd);
+//                     fds.erase(fds.begin() + i);
+//                     continue;
+//                 }
+//             }
 
-            if ((p.revents & (POLLHUP | POLLERR)))
-            {
-                close(p.fd);
-                fds.erase(fds.begin() + i);
-                continue;
-            }
+//             if ((p.revents & (POLLHUP | POLLERR)))
+//             {
+//                 close(p.fd);
+//                 fds.erase(fds.begin() + i);
+//                 continue;
+//             }
 
-            p.revents = 0;
-            i++;
-        }
-    }
+//             p.revents = 0;
+//             i++;
+//         }
+//     }
 
-    close(server_fd);
-}
+//     close(server_fd);
+// }
 
 
 // response main
@@ -293,9 +293,9 @@ int main()
 //     for (size_t i = 0; i < 3; i++)
 //         req.push_back(Request());
 //     int i = 0;
-//         char buffer[] = "POST /paj//home HTTP/1.0\r\n
-// Content-Length: 2\r\n
-// \r\n\r\nkd";
+//     char buffer[] = "POST /pajt/home HTTP/1.0\r\n\
+// Content-Length: 27\r\n\
+// \r\n\r\nkdkdfjgfdjgkjdggjfktyujhgft";
 
 //     string str = buffer;
 
@@ -307,12 +307,19 @@ int main()
 //     cout << req[0].status << endl;
 //     cout << req[0].method << endl;
 //     cout << req[0].clientState << endl;
-
-
+//     int fd = open("client1", O_RDONLY, 0644);
+//     if (fd == -1)
+//     {
+//         cout << "Error Opening\n";
+//     }
+//     else
+//     {
+//         cout << "opening well" << endl;
+//         cout << fd << endl;
+//     }
 // }
-
 // int main()
-// {
+// { 
 //     Config conf;
 //     conf.config_file();
 //     Server server;
