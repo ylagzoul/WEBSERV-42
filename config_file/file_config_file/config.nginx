@@ -6,46 +6,13 @@ server {
     methods GET;
     error_page 500 /errors/500.html;
     error_page 501 /errors/501.html;
-        client_max_body_size 10K;
-
-    location / {
-        methods POST GET;
-        root /home/ylagzoul/Desktop/lagzouli_M/server/;
-        index index.html;
-        client_max_body_size 10K;
-        upload_path ./www/uploads;
-        autoindex off;
-    }
+    client_max_body_size 10K;
 
     location / {
         methods GET POST DELETE;
         root /home/ylagzoul/Desktop/lagzouli_M/server/;
-        index index.html;
+        index oooo.html;
         error_page 506 /errors/506.html;
         autoindex off;
-    }
-
-
-    location /images {
-        methods GET;
-        root /var/www11111;
-        index index.html;
-        autoindex on;
-        error_page 506 /errors/506.html;
-        
-    }
-
-    location /images/upload/images {
-        methods DELETE;
-        index index.html;
-        error_page 510 /errors/510.html;
-        autoindex on;
-    }
-
-    location /images/upload/ {
-        error_page 500 /errors/500.html;
-        root /var/www4444444;
-        index index.html;
-        autoindex on;
     } 
 }

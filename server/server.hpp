@@ -14,6 +14,7 @@
 #include "state.h"
 
 # define DEFAULTBODY 1024
+# define NAME_CONFIG_FIEL "config.nginx"
 
 class Record { 
     public:
@@ -47,7 +48,6 @@ class Server {
         Server();
 
         int server_fd;
-        int A;
 
         size_t                  clientId;
         std::vector<pollfd>     fds;

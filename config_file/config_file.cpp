@@ -94,7 +94,7 @@ void Config::config_file()
                 {
                     line = sstr;
                     splite();
-                    if (size == 0)
+                    if (size == 0)//|| str[0][0] == '#'
                         continue;
                     else if (str[0] == "location")
                     {
