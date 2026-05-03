@@ -1,6 +1,6 @@
 #include "../server/server.hpp"
 
-Request::Request() : bodyFd(-1), status(200), getEndHeaders(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
+Request::Request() : bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
 
 std::string tolowerStr(std::string str)
 {
@@ -16,6 +16,57 @@ std::string toStr(int nb)
     return (ss.str());
 }
 
+bool isHex(char h)
+{
+    return ( h >= '0' && h <= '9' ) ||
+           ( h >= 'a' && h <= 'f' ) ||
+           ( h >= 'A' && h <= 'F' ); 
+}
+
+int hexValue(char c)
+{
+    if (c >= '0' && c <= '9')
+        return (c - '0');
+    if (c >= 'A' && c <= 'F')
+        return (c - 'A' + 10);
+    if (c >= 'a' && c <= 'f')
+        return (c - 'a' + 10);
+    return (-1);
+}
+
+char hexToChar(char a, char b)
+{
+    int high = hexValue(a);
+    int low  = hexValue(b);
+
+    return ((high << 4) | low);
+}
+
+bool checkPrecentEnc(std::string &pathSlice)
+{
+    std::string copyPath = pathSlice;
+    pathSlice.clear();
+    for (size_t i = 0; i < copyPath.length(); i++)
+    {
+        if (copyPath.at(i) == '%')
+        {
+            if(!copyPath[i + 1] || !copyPath[i + 2])
+                return (false);
+            if (!isHex((char)copyPath.at(i+1)) && !isHex((char)copyPath.at(i+2)))
+                return(false);
+            char decoded = hexToChar(copyPath.at(i+1), copyPath.at(i+2));
+            std::string temp2 = "" + decoded;
+            pathSlice.append(temp2);
+            i += 3;
+        }
+        else
+        {
+            pathSlice += copyPath.at(i);
+        }
+    }
+    return (true);
+}
+
 bool checkPath(std::string &path)
 {
     std::stringstream iss(path);
@@ -28,7 +79,10 @@ bool checkPath(std::string &path)
     {
         if (!splitedPath.empty())
         {
+
             tmp.append("/");
+            if (!checkPrecentEnc(splitedPath))
+                return (false);
             tmp += splitedPath;
         }
     }
@@ -106,8 +160,7 @@ void getHeaders(Request &req)
     if (line.empty())
     {
         req.getEndHeaders = true;
-        req.fullLine.erase(0, endLine + 4);
-
+        req.fullLine.erase(0, endLine + 2);
         std::map<std::string, std::string>::iterator it;
         it = req.headers.find("transfer-encoding");
         if (req.headers.find("host") != req.headers.end())
@@ -121,6 +174,7 @@ void getHeaders(Request &req)
         }
         else
         {
+            // Check the Get Error
             req.status = 400;
             req.finFlag = true;
             return;
@@ -140,7 +194,7 @@ void getHeaders(Request &req)
             return;
         }
         value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
-        if (!isLfCr(value))
+        if (!isLfCr(value)) //useless
         {
             req.status = 400;
             req.finFlag = true;
@@ -220,8 +274,10 @@ void getHeaders(Request &req)
 void getFixedBody(Request &req, Config con)
 {
     static size_t bodyLen;
+
     if (req.bodyFd == -1)
     {
+        // cout << req.bodyPath << std::endl;
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (req.bodyFd == -1)
         {
@@ -241,8 +297,7 @@ void getFixedBody(Request &req, Config con)
     {
         if (bodyLen != 0)
         {
-            int a = write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length());
-            a += 0;
+            write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length());
             req.fullLine.clear();
         }
         return;
@@ -250,8 +305,7 @@ void getFixedBody(Request &req, Config con)
     int sizePa = (req.contentLength + req.fullLine.length()) - bodyLen;
     std::string d = req.fullLine.substr(0, sizePa);
 
-    int a = write(req.bodyFd, d.c_str(), sizePa);
-    a += 0;
+    write(req.bodyFd, d.c_str(), sizePa);
     close(req.bodyFd);
     req.getEndFile = true;
 }
@@ -265,20 +319,24 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
         req[userId].reqState = ONE_ST;
-        size_t pos = req[userId].fullLine.find("\r\n\r\n");
-        if (pos == std::string::npos)
-            break;
+        // size_t pos = req[userId].fullLine.find("\r\n\r\n");
+        // if (pos == std::string::npos)
+        // {
+        //     break;
+        // }
         getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
-        else // add
+        else
             req[userId].reqState = SECOND_ST;
+
         if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
             getFixedBody(req[userId], con);
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
         //     getChunkedBody(req);
         if (req[userId].getEndFile || req[userId].method != "POST")
             req[userId].finFlag = true;
+
         if (req[userId].finFlag)
         {
             req[userId].clientState = CLIENT_ON;

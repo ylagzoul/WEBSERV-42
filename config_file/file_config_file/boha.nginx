@@ -2,7 +2,7 @@ server {
     listen 0.0.0.1:8001;
     listen 127.0.0.1;
     listen 65535;
-    root /home/abouhki/Desktop/owebserv/server/;
+    root /home/m/Desktop/WEBSERV-42/server/;
     index  gogo.jpg;
     methods GET;
     error_page 400 /errors/400.html;
@@ -22,7 +22,8 @@ server {
     }
     location / {
         methods GET POST DELETE;
-        root /home/abouhki/Desktop/owebserv/server;
+        upload_path server;
+        root /home/m/Desktop/WEBSERV-42/server/;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;

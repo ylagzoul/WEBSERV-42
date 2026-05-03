@@ -179,14 +179,14 @@ bool Server::sendRespond(pollfd &p, size_t &i)
 
 
 
-int main(int arc,char *arv[])
+int main(/*int arc,char *arv[]*/)
 {
-    (void)arv;
-    if (arc != 2)
-    {
-        std::cout << "erorr in inpout arguments" << std::endl;
-        return (1);
-    }
+    // (void)arv;
+    // if (arc != 2)
+    // {
+    //     std::cout << "erorr in inpout arguments" << std::endl;
+    //     return (1);
+    // }
 
     Server obj;
 

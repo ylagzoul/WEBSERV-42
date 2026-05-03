@@ -12,8 +12,10 @@
 # define MAXIP 256
 
 # define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
-# define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
-# define CONF_FILE_PATH "/home/ylagzoul/Desktop/web/config_file/file_config_file/config.nginx"
+# define BODY_FILE_PATH "/home/m/Desktop/WEBSERV-42/"
+# define CONF_FILE_PATH "/home/m/Desktop/WEBSERV-42/config_file/file_config_file/boha.nginx"
+
+
 
 class Location;
 
