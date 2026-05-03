@@ -11,9 +11,9 @@
 # define MAXPORT 65535
 # define MAXIP 256
 
-# define LIST_FILE_PATH "/home/abouhki/goinfre/"
-# define BODY_FILE_PATH "/home/abouhki/goinfre/"
-# define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/boha.nginx"
+# define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
+# define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
+# define CONF_FILE_PATH "/home/ylagzoul/Desktop/web/config_file/file_config_file/config.nginx"
 
 class Location;
 
@@ -30,6 +30,8 @@ class Config {
         std::string uploadPath;
         std::vector<std::string> index;
         std::string autoindex;
+        int retCode;
+        std::string retPath;
         
         bool emptyFile;
 
@@ -57,6 +59,7 @@ class Config {
         void ft_index();
         void ft_autoindex();
         void ft_upload_path();
+        void ft_return();
 
         void check_default();
 

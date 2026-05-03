@@ -61,6 +61,8 @@ void Config::function()
         if (blockName == "location")
             blockName = "server";
     }
+    else if (str[0] == "return")
+        ft_return();
     else
         throw std::runtime_error("erorr in element");
 }
@@ -94,7 +96,7 @@ void Config::config_file()
                 {
                     line = sstr;
                     splite();
-                    if (size == 0)
+                    if (size == 0)//|| str[0][0] == '#'
                         continue;
                     else if (str[0] == "location")
                     {

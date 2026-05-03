@@ -24,8 +24,16 @@ Server::Server()
     addr.sin_port = htons(3050);
     addr.sin_addr.s_addr = INADDR_ANY;
 
-    bind(server_fd, (sockaddr *)&addr, len);
-    listen(server_fd, 10);
+    if (bind(server_fd, (sockaddr *)&addr, len) < 0)
+    {
+        std::cout << "error in bind\n";
+        exit(1);
+    }
+    if (listen(server_fd, 10) < 0)
+    {
+        std::cout << "erorr in listen\n";
+        exit(1);
+    }
 
     pollfd server_poll;
     server_poll.fd = server_fd;
@@ -39,7 +47,6 @@ Server::Server()
     conf.config_file();
 
     clientId = 0;
-    A = 0;
 }
 
 void Server::close_client(pollfd &p, int i)
@@ -170,10 +177,19 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     return (true);
 }
 
-int main()
+
+
+int main(int arc,char *arv[])
 {
+    (void)arv;
+    if (arc != 2)
+    {
+        std::cout << "erorr in inpout arguments" << std::endl;
+        return (1);
+    }
+
     Server obj;
-    
+
     while (true)
     {
         if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)
