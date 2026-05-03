@@ -30,13 +30,14 @@ class playloadData
         std::string bodyStr;
         std::string error;
         std::string uri;
-        // std::string tmpFile;
+        std::vector <std::string> index;
         std::map<int, std::string> errorPages;
         std::string location;
         std::map<std::string, bool> locationMethods;
         std::string locationRoot;
         std::string locationUpload;
         size_t bodySize;
+        int autoIndex;
         int locationIndex;
         int listFd;
         int uploadOn;
@@ -44,7 +45,7 @@ class playloadData
 };
 
 
-void generateResponse(Request &req, playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
+void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
 
 std::string respond(Record &rec, Config &conf, Request &req); // mrege
 

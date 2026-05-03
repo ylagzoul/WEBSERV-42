@@ -1,28 +1,18 @@
 
-1. log.status == ERROR_RS : is that gonna help you as a server
-2 if log.status == ERROR_RS then another one with the same client what to do
-3. if (the errorpage was not on the location should I use the server one?)
-
-
-
-postlist -> postlist(error what should I do) ->post list
-
-
-std::remove
-
+FOR ME
+cgi
 
 -----------------
-3. Percent Encoding
+request
+
+1. Percent Encoding
+2. bodyfile not working
+3. if no headers why 400
 -----------------
 
 
 -----------------
 for conf
 
+
 -----------------
-
-
-
-cgi 
-
-%20

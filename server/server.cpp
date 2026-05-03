@@ -53,7 +53,7 @@ void Server::close_client(pollfd &p, int i)
 
 void Server::acceptNewCleint(pollfd &p, size_t &i)
 {
-    std::cout << "hello acceptNewCleint\n";
+    // std::cout << "hello acceptNewCleint\n";
     int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
     if (client_fd != -1)
     {
@@ -65,11 +65,11 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         recs.push_back(Record());
         req.push_back(Request());
         data.push_back(Data());
-        std::cout << "accept Cleint number = " << fds.size() << "\n";
+        // std::cout << "accept Cleint number = " << fds.size() << "\n";
     }
     else if (client_fd < 0)
     {
-        std::cout << "close in accept\n";
+        // std::cout << "close in accept\n";
         close_client(p, i);
         return;
     }
@@ -80,7 +80,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
 {
     char buffer[1024] = {0};
     int bytes = recv(p.fd, buffer, 1024, 0);
-    std::cout << "buffer = " << buffer << " bytes = " << bytes << "\n\n";
+    // std::cout << "buffer = " << buffer << " bytes = " << bytes << "\n\n";
     if (bytes > 0)
     {
         clientId = i;
@@ -88,21 +88,22 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
         if (req[i].path.empty())
             req[i].path = "/";
         // std::cout << "req[i].status = " << req[i].status << "\n";
-        std::cout << "reqStatus: " << req[i].status << std::endl;
-        std::cout << "reqPath : (" << req[i].path << ")" << std::endl;
+        // std::cout << "reqStatus: " << req[i].status << std::endl;
+        // std::cout << "reqPath : (" << req[i].path << ")" << std::endl;
+        // std::cout << "reqPath : (" << req[i].method << ")" << std::endl;
         // if (req[clientId].method == "GET" && (req[clientId].clientState == CLIENT_ON || req[clientId].reqState == ONE_ST))
         if (req[clientId].clientState == CLIENT_ON)
         {
-            std::cout << "check POLLOUT \n";
+            // std::cout << "check POLLOUT \n";
             p.events |= POLLOUT;
         }
         return (true);
     }
     else if (bytes == 0)
     {
-        std::cout << "buffer = " << buffer << "\n\n";
-        std::cout << "close in recv why? because disconnect" << " bytes = " << bytes << "\n";
-        std::cout << "i = " << i << "  req[i]. = " << req[i].path << "\n";
+        // std::cout << "buffer = " << buffer << "\n\n";
+        // std::cout << "close in recv why? because disconnect" << " bytes = " << bytes << "\n";
+        // std::cout << "i = " << i << "  req[i]. = " << req[i].path << "\n";
         close_client(p, i);
         return (false);
     }
@@ -110,12 +111,12 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
         {
-            std::cout << "No data available now. Please try again later.\n";
+            // std::cout << "No data available now. Please try again later.\n";
             return (true);
         }
         else
         {
-            std::cout << "close in recv why? because erorr" << " bytes = " << bytes << "\n";
+            // std::cout << "close in recv why? because erorr" << " bytes = " << bytes << "\n";
             close_client(p, i);
             return (false);
         }
@@ -134,7 +135,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     }
     int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[i].number+=sent;
-    std::cout << "\n\nsentData: " << recs[i].number << "\n\n";
+    // std::cout << "\n\nsentData: " << recs[i].number << "\n\n";
     // std::cout << "\n\nres " << data[i].response << "\n\n";
     // std::cout << "send = " << sent << " size respond = " << data[i].response.size() << "\n";
     // std::cout << "status " << recs[i].status << "\n";

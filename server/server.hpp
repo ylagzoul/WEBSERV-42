@@ -11,23 +11,12 @@
 #include "../request/request.hpp"
 #include "../response/Response.hpp"
 #include "../config_file/config_file.hpp"
+#include "Record.hpp"
 #include "state.h"
 
 # define DEFAULTBODY 1024
 
-class Record { 
-    public:
-        Record(){number = 0; fileFd = -1; fd = -1; status = NEW_RS;/* method = NONE_RS;*/}
-        int fd;
-        int fileFd;
-        int number;
-        DIR *dir;
-        t_state status;
-        t_state method;
-        playloadData data;
-        std::string fileName;
-        std::string buffer;
-};
+// GET /file
 
 class Data {
     public:

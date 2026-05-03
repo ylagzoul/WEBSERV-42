@@ -13,13 +13,13 @@ void Config::ft_autoindex()
         autoIndex = 0;
 }
 
-
 void Config::ft_index()
 {
     size_t i = 1;
     while (i < str.size())
     {
-        str[i].erase(str[i].size() - 1);
+        if (i + 1 == str.size())
+            str[i].erase(str[i].size() - 1);
         index.push_back(str[i]);
         i++;
     }

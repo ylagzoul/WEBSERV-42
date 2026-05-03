@@ -1,6 +1,6 @@
 NAME = server
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98# -fsanitize=address,undefined -g -O1
+CFLAGS = -Wextra -Wall -Werror -std=c++98 #-fsanitize=address -g
 #-fsanitize=address
 CC = c++
 

@@ -9,8 +9,8 @@
             "name": "Launch",
             "type": "lldb",
             "request": "launch",
-            "program": "/home/ylagzoul/Desktop/lagzouli_M/server/server",
-            "args": ["/home/ylagzoul/Desktop/lagzouli_M/config_file/file_config_file/config.nginx"],
+            "program": "/home/abouhki/Desktop/owebserv/server/server",
+            "args": ["/home/abouhki/Desktop/owebserv/config_file/file_config_file/config.nginx"],
             "cwd": "${workspaceRoot}"
         }
     ]

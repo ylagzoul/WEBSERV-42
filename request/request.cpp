@@ -259,7 +259,7 @@ void getFixedBody(Request &req, Config con)
 void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
 {
     req[userId].fullLine.append(buffer, len);
-    req[userId].bodyPath = "client" + toStr(userId + 1);
+    req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
         if (req[userId].method.empty())
