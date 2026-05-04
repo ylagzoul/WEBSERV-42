@@ -1,0 +1,16 @@
+
+FOR ME
+cgi
+
+-----------------
+request
+
+1. if no headers why 400
+-----------------
+
+
+-----------------
+for conf
+
+are you handling the case that there is a method in config other than GET POST DELETE
+-----------------

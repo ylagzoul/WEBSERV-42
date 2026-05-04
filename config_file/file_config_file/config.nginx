@@ -7,7 +7,7 @@ server {
     error_page 500 /errors/500.html;
     error_page 501 /errors/501.html;
     client_max_body_size 10K;
-    return 405 file.txt;
+    return 410 file.txt;
 
     location / {
         methods GET POST DELETE;
@@ -15,5 +15,6 @@ server {
         index oooo.html;
         error_page 506 /errors/506.html;
         autoindex off;
+        return 405 file.txt;
     } 
 }

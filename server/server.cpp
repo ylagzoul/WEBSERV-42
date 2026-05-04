@@ -135,18 +135,18 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     if (data[i].sendNext)
     {
         // std::cout << "path = " << req[i].path <<"\n";
-        data[i].response = respond(recs[i], conf, req[i]);
+        data[i].response = respond(recs[i].data, recs[i], conf, req[i]);
         if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
             return (true);
         // std::cout << "req[i].status = "<< req[i].status << " n" ;
     }
     int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[i].number+=sent;
-    // std::cout << "\n\nsentData: " << recs[i].number << "\n\n";
     // std::cout << "\n\nres " << data[i].response << "\n\n";
     // std::cout << "send = " << sent << " size respond = " << data[i].response.size() << "\n";
     // std::cout << "status " << recs[i].status << "\n";
-
+    // if (recs[i].status == CLOSED_RS || recs[i].status == ERROR_RS)
+    //     std::cout << "\n\nsentData: " << recs[i].number << "\n\n";
     if (sent > 0)
     {
         data[i].response = data[i].response.substr(sent);
@@ -172,6 +172,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
 
         p.events &= ~POLLOUT;
         req[i] = Request();
+        recs[i].clean();
         recs[i] = Record();
     }
     return (true);
@@ -187,7 +188,7 @@ int main(/*int arc,char *arv[]*/)
     //     std::cout << "erorr in inpout arguments" << std::endl;
     //     return (1);
     // }
-
+    
     Server obj;
 
     while (true)
