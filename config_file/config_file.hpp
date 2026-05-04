@@ -30,7 +30,11 @@ class Config {
         std::string uploadPath;
         std::vector<std::string> index;
         std::string autoindex;
-        
+        int retCode;
+        std::string retPath;
+        std::vector<std::string> cgiExt;
+        std::vector<std::string> cgiPath;
+
         bool emptyFile;
 
         int                      size;
@@ -57,6 +61,7 @@ class Config {
         void ft_index();
         void ft_autoindex();
         void ft_upload_path();
+        void ft_return();
 
         void check_default();
 

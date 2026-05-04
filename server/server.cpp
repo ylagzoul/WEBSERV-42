@@ -24,8 +24,16 @@ Server::Server()
     addr.sin_port = htons(3050);
     addr.sin_addr.s_addr = INADDR_ANY;
 
-    bind(server_fd, (sockaddr *)&addr, len);
-    listen(server_fd, 10);
+    if (bind(server_fd, (sockaddr *)&addr, len) < 0)
+    {
+        std::cout << "error in bind\n";
+        exit(1);
+    }
+    if (listen(server_fd, 10) < 0)
+    {
+        std::cout << "erorr in listen\n";
+        exit(1);
+    }
 
     pollfd server_poll;
     server_poll.fd = server_fd;
@@ -39,7 +47,6 @@ Server::Server()
     conf.config_file();
 
     clientId = 0;
-    A = 0;
 }
 
 void Server::close_client(pollfd &p, int i)
@@ -128,18 +135,18 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     if (data[i].sendNext)
     {
         // std::cout << "path = " << req[i].path <<"\n";
-        data[i].response = respond(recs[i], conf, req[i]);
+        data[i].response = respond(recs[i].data, recs[i], conf, req[i]);
         if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
             return (true);
         // std::cout << "req[i].status = "<< req[i].status << " n" ;
     }
     int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[i].number+=sent;
-    // std::cout << "\n\nsentData: " << recs[i].number << "\n\n";
     // std::cout << "\n\nres " << data[i].response << "\n\n";
     // std::cout << "send = " << sent << " size respond = " << data[i].response.size() << "\n";
     // std::cout << "status " << recs[i].status << "\n";
-
+    // if (recs[i].status == CLOSED_RS || recs[i].status == ERROR_RS)
+    //     std::cout << "\n\nsentData: " << recs[i].number << "\n\n";
     if (sent > 0)
     {
         data[i].response = data[i].response.substr(sent);
@@ -165,15 +172,25 @@ bool Server::sendRespond(pollfd &p, size_t &i)
 
         p.events &= ~POLLOUT;
         req[i] = Request();
+        recs[i].clean();
         recs[i] = Record();
     }
     return (true);
 }
 
-int main()
+
+
+int main(/*int arc,char *arv[]*/)
 {
-    Server obj;
+    // (void)arv;
+    // if (arc != 2)
+    // {
+    //     std::cout << "erorr in inpout arguments" << std::endl;
+    //     return (1);
+    // }
     
+    Server obj;
+
     while (true)
     {
         if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)

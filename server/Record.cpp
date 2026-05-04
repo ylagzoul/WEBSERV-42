@@ -10,12 +10,17 @@ Record::Record()
     method = NO_MD;
 }
 
-// Record::~Record()
-// {
-//     if (fileFd != -1)
-//         close(fileFd);
-//     if (fd != -1)
-//         close(fd);
-//     if (dir)
-//         closedir(dir);
-// }
+void Record::clean()
+{
+    if (fileFd != -1)
+        (close(fileFd), fileFd = -1);
+    if (fd != -1)
+        (close(fd), fd = -1);
+    if (dir)
+        (closedir(dir), dir = NULL);
+}
+
+Record::~Record()
+{
+    clean();
+}

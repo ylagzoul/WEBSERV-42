@@ -6,6 +6,7 @@
 class Record { 
     public:
         Record();
+        void clean();
         int fd;
         int fileFd;
         int number;
@@ -15,7 +16,7 @@ class Record {
         playloadData data;
         std::string fileName;
         std::string buffer;
-        ~Record(){}
+        ~Record();
 };
 
 #endif

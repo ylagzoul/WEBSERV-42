@@ -15,6 +15,8 @@ void Config::ft_autoindex()
 
 void Config::ft_index()
 {
+    if (str.size() > 1)
+        index.erase(index.begin(), index.end());
     size_t i = 1;
     while (i < str.size())
     {
@@ -25,13 +27,12 @@ void Config::ft_index()
     }
 }
 
-
 void Config::ft_client_max_body_size()
 {
     size_t size_a = str[1].size();
     size_t i = 0;
     char c = str[1][size_a - 2];
-    if (size != 2 || !ft_str_char("MGK",str[1][size_a - 2]) || str[1][size_a - 1] != ';')
+    if (size != 2 || !ft_str_char("MGK", str[1][size_a - 2]) || str[1][size_a - 1] != ';')
         throw std::runtime_error("client_max_body_size");
     str[1].erase(size_a - 2, 2);
     while (i < str[1].size())
@@ -44,20 +45,19 @@ void Config::ft_client_max_body_size()
     if (c == 'G')
         client_max_body_size = client_max_body_size * DEFAULTBODY * DEFAULTBODY * DEFAULTBODY;
     else if (c == 'K')
-        client_max_body_size = client_max_body_size  * DEFAULTBODY;
+        client_max_body_size = client_max_body_size * DEFAULTBODY;
     else if (c == 'M')
-        client_max_body_size = client_max_body_size * DEFAULTBODY * DEFAULTBODY; 
+        client_max_body_size = client_max_body_size * DEFAULTBODY * DEFAULTBODY;
 }
 
 void Config::ft_upload_path()
 {
     int size_s = str[1].size();
-    if (size != 2  || str[1][size_s - 1] != ';')
+    if (size != 2 || str[1][size_s - 1] != ';')
         throw std::runtime_error("upload_path");
     str[1].erase(size_s - 1);
     uploadPath = str[1];
 }
-
 
 void Config::ft_error_page()
 {
@@ -65,7 +65,7 @@ void Config::ft_error_page()
     int size_s = str[2].size();
     if (size != 3 || str[2][size_s - 1] != ';')
         throw std::runtime_error("error in pa");
-    
+
     for (size_t i = 0; i < str[1].size(); i++)
     {
         c = str[1][i];
@@ -74,4 +74,22 @@ void Config::ft_error_page()
     }
     str[2].erase(size_s - 1);
     error_page[std::atoi(str[1].c_str())] = str[2];
+}
+
+void Config::ft_return()
+{
+    char c;
+    int size_s = str[2].size();
+    if (size != 3 || str[2][size_s - 1] != ';')
+        throw std::runtime_error("error in return");
+
+    for (size_t i = 0; i < str[1].size(); i++)
+    {
+        c = str[1][i];
+        if (!isdigit(c))
+            throw std::runtime_error("not digit in return");
+    }
+    str[2].erase(size_s - 1);
+    retCode = std::atoi(str[1].c_str());
+    retPath = str[2];
 }

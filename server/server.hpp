@@ -36,7 +36,6 @@ class Server {
         Server();
 
         int server_fd;
-        int A;
 
         size_t                  clientId;
         std::vector<pollfd>     fds;
