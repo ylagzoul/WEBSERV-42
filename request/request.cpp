@@ -50,14 +50,16 @@ bool checkPrecentEnc(std::string &pathSlice)
     {
         if (copyPath.at(i) == '%')
         {
+            std::cout << "Found % at index: " << i << std::endl;
             if(!copyPath[i + 1] || !copyPath[i + 2])
                 return (false);
-            if (!isHex((char)copyPath.at(i+1)) && !isHex((char)copyPath.at(i+2)))
+            if (!isHex((char)copyPath.at(i+1)) || !isHex((char)copyPath.at(i+2)))
                 return(false);
-            char decoded = hexToChar(copyPath.at(i+1), copyPath.at(i+2));
-            std::string temp2 = "" + decoded;
-            pathSlice.append(temp2);
-            i += 3;
+            char res = hexToChar(copyPath.at(i+1), copyPath.at(i+2));
+            if ((unsigned char)res > 127)
+                return false;
+            pathSlice += res;
+            i += 2;
         }
         else
         {
