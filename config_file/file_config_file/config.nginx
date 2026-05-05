@@ -1,20 +1,30 @@
 server {
-
-    listen 10.30.15.33:65;
-    root /home/ylagzoul/Desktop/lagzouli_M/server/; 
-    index indeshx.html gogo.jlp;
+    listen 0.0.0.1:8001;
+    listen 127.0.0.1;
+    listen 65535;
+    root /home/ylagzoul/Desktop/WEBSERV-42/server/;
     methods GET;
+    error_page 400 /errors/400.html;
+    error_page 403 /errors/403.html;
+    error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
-    error_page 501 /errors/501.html;
-    client_max_body_size 10K;
-    return 410 file.txt;
+    config_data .cfi fkdfr.txt;
+    autoindex on;
 
+    location /goinfre {
+        methods POST GET;
+        root /home/ylagzoul/goinfre;
+        index index.html gogo.jpg;
+        error_page 400 /errors/400.html;
+        error_page 403 /errors/403.html;
+        error_page 404 /errors/404.html;
+        autoindex on;
+    }
     location / {
         methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/lagzouli_M/server/;
-        index oooo.html;
-        error_page 506 /errors/506.html;
-        autoindex off;
-        return 405 file.txt;
-    } 
+        root /home/ylagzoul/Desktop/WEBSERV-42/server/;
+        error_page 400 /errors/400.html;
+        error_page 500 /errors/500.html;
+        autoindex on;
+    }
 }
