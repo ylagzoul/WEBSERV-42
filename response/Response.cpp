@@ -686,7 +686,9 @@ void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_
     res << "Content-Length: " << data.bodySize << "\r\n";
     res << "\r\n";
     if (log.method != POST_LIST_RS || log.status == ERROR_RS)
+    {
         ret_resp = res.str();
+    }
 }
 
 std::string respond(playloadData &data, Record &log, Config &conf, Request &req)

@@ -22,5 +22,4 @@ void Record::clean()
 
 Record::~Record()
 {
-    clean();
 }

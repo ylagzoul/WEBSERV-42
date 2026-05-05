@@ -6,6 +6,7 @@ cgi
 request
 
 1. if no headers why 400
+2. errno forbidden
 -----------------
 
 
