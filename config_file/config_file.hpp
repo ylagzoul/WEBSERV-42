@@ -11,9 +11,9 @@
 # define MAXPORT 65535
 # define MAXIP 256
 
-# define LIST_FILE_PATH "/home/abouhki/goinfre/"
-# define BODY_FILE_PATH "/home/abouhki/goinfre/"
-# define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/boha.nginx"
+# define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
+# define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
+# define CONF_FILE_PATH "/home/ylagzoul/Desktop/WEBSERV-42/config_file/file_config_file/config.nginx"
 
 class Location;
 
@@ -62,6 +62,7 @@ class Config {
         void ft_autoindex();
         void ft_upload_path();
         void ft_return();
+        void ft_config_data();
 
         void check_default();
 

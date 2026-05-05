@@ -35,6 +35,16 @@ void Config::check_default()
     }
 }
 
+void Config::ft_config_data()
+{
+    if (str.size() != 3)
+        throw std::runtime_error("ft_config_data");
+    // if (str.size() > 1)
+    //     index.erase(index.begin(), index.end());
+    cgiExt.push_back(str[1]);
+    cgiPath.push_back(str[2]);
+}
+
 
 void Config::function()
 {
@@ -63,6 +73,8 @@ void Config::function()
     }
     else if (str[0] == "return")
         ft_return();
+    else if (str[0] == "config_data")
+        ft_config_data();
     else
         throw std::runtime_error("erorr in element");
 }
