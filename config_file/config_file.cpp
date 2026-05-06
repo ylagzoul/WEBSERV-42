@@ -35,12 +35,16 @@ void Config::check_default()
     }
 }
 
-void Config::ft_config_data()
+void Config::ft_cgi_data()
 {
-    if (str.size() != 3)
-        throw std::runtime_error("ft_config_data");
-    // if (str.size() > 1)
-    //     index.erase(index.begin(), index.end());
+    if (str.size() != 3 || str[1][0] != '.')
+        throw std::runtime_error("ft_cgi_data");
+    if (cgiExt.size() > 1)
+    {
+        cgiExt.erase(cgiExt.begin(), cgiExt.end());
+        cgiPath.erase(cgiPath.begin(), cgiPath.end());
+    }
+    str[2].erase(str[2].size() - 1);
     cgiExt.push_back(str[1]);
     cgiPath.push_back(str[2]);
 }
@@ -73,8 +77,8 @@ void Config::function()
     }
     else if (str[0] == "return")
         ft_return();
-    else if (str[0] == "config_data")
-        ft_config_data();
+    else if (str[0] == "cgi_data")
+        ft_cgi_data();
     else
         throw std::runtime_error("erorr in element");
 }

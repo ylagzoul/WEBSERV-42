@@ -15,7 +15,7 @@ void Config::ft_autoindex()
 
 void Config::ft_index()
 {
-    if (str.size() > 1)
+    if (index.size() > 1)
         index.erase(index.begin(), index.end());
     size_t i = 1;
     while (i < str.size())
