@@ -11,9 +11,6 @@ server {
     autoindex on;
 
     location /goinfre {
-        cgi_data .cif hhjhg
-        cgi_data .cif hhjhg
-        cgi_data .cif hhjhg
         methods POST GET;
         root /home/abouhki/goinfre;
         index index.html gogo.jpg;

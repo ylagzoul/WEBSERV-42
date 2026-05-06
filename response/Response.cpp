@@ -696,8 +696,8 @@ std::string respond(playloadData &data, Record &log, Config &conf, Request &req)
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
-    // if (req.path.empty())
-    //     req.path = "/";
+    if (req.path.empty())
+        req.path = "/";
     if (log.status == NEW_RS)
     {
         loadExtensions(data);
