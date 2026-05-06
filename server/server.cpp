@@ -54,7 +54,7 @@ void Server::close_client(pollfd &p, int i)
     if (access(req[i].bodyFile.c_str(), F_OK) != -1)
         std::remove(req[i].bodyPath.c_str());
     fds.erase(fds.begin() + i);
-     req.erase(req.begin() + i);//iteration problem 
+    req.erase(req.begin() + i);//iteration problem 
     recs[i].clean();
     recs.erase(recs.begin() + i);
     data.erase(data.begin() + i);
@@ -145,7 +145,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
             return (false);
         }
     }
-    if ((recs[i].status == CLOSED_RS) || recs[i].status == ERROR_RS)
+    if ((data[i].sendNext && recs[i].status == CLOSED_RS) || recs[i].status == ERROR_RS)
     {
         p.events &= ~POLLOUT;
         close_client(p, i);
