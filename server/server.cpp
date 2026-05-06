@@ -92,8 +92,6 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     {
         clientId = i;
         readRequest(req, clientId, buffer, bytes, conf);
-        if (req[i].path.empty())
-            req[i].path = "/";
         // std::cout << "req[i].status = " << req[i].status << "\n";
         // std::cout << "reqStatus: " << req[i].status << std::endl;
         // std::cout << "reqPath : (" << req[i].path << ")" << std::endl;
