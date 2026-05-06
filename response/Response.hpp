@@ -44,9 +44,8 @@ class playloadData
         std::map <std::string, std::string> mime;
 };
 
-
 void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
 
-std::string respond(playloadData &data, Record &rec, Config &conf, Request &req); // mrege
+std::string respond(playloadData &data, Record &log, Config &conf, Request &req);
 
 #endif

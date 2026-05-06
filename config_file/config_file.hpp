@@ -62,6 +62,7 @@ class Config {
         void ft_autoindex();
         void ft_upload_path();
         void ft_return();
+        void ft_config_data();
 
         void check_default();
 

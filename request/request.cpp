@@ -50,7 +50,7 @@ bool checkPrecentEnc(std::string &pathSlice)
     {
         if (copyPath.at(i) == '%')
         {
-            std::cout << "Found % at index: " << i << std::endl;
+            // std::cout << "Found % at index: " << i << std::endl;
             if(!copyPath[i + 1] || !copyPath[i + 2])
                 return (false);
             if (!isHex((char)copyPath.at(i+1)) || !isHex((char)copyPath.at(i+2)))
@@ -314,6 +314,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
 {
     req[userId].fullLine.append(buffer, len);
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
+
     while (1)
     {
         if (req[userId].method.empty())

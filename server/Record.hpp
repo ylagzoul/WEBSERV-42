@@ -9,6 +9,7 @@ class Record {
         void clean();
         int fd;
         int fileFd;
+        int k;
         int number;
         DIR *dir;
         t_state status;
