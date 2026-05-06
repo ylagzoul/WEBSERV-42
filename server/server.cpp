@@ -92,8 +92,6 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     {
         clientId = i;
         readRequest(req, clientId, buffer, bytes, conf);
-        if (req[i].path.empty())
-            req[i].path = "/";
         if (req[clientId].clientState == CLIENT_ON)
             p.events |= POLLOUT;
         return (true);
