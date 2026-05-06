@@ -95,14 +95,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
         if (req[i].path.empty())
             req[i].path = "/";
         if (req[clientId].clientState == CLIENT_ON)
-<<<<<<< HEAD
             p.events |= POLLOUT;
-=======
-        {
-            // p.events |= POLLOUT;
-            p.events = POLLOUT;
-        }
->>>>>>> 8b48e30db7cd44e6a83fae57b0dfbe77292c0852
         return (true);
     }
     else if (bytes == 0)
@@ -114,18 +107,9 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     else
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
-<<<<<<< HEAD
-=======
-        {
-            std::cout << "No data available now. Please try again later.\n";
->>>>>>> 8b48e30db7cd44e6a83fae57b0dfbe77292c0852
             return (true);
         else
         {
-<<<<<<< HEAD
-=======
-            std::cout << "close in recv why? because erorr" << " bytes = " << bytes << "\n";
->>>>>>> 8b48e30db7cd44e6a83fae57b0dfbe77292c0852
             close_client(p, i);
     
             return (false);
@@ -137,7 +121,6 @@ bool Server::sendRespond(pollfd &p, size_t &i)
 {
     if (data[i].sendNext)
     {
-<<<<<<< HEAD
         
         data[i].response = respond(recs[i].data, recs[i], conf, req[i]);
         if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
@@ -146,14 +129,6 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     }
     int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[i].number+=sent;
-=======
-        data[i].response = respond(recs[i].data, recs[i], conf, req[i]);
-        if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
-            return (true);
-    }
-    int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
-    recs[i].number += sent;
->>>>>>> 8b48e30db7cd44e6a83fae57b0dfbe77292c0852
     if (sent > 0)
     {
         data[i].response = data[i].response.substr(sent);
@@ -163,38 +138,20 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
         {
-<<<<<<< HEAD
-=======
-            std::cout << "No data available now. Please try again later.\n";
->>>>>>> 8b48e30db7cd44e6a83fae57b0dfbe77292c0852
             return (true);
         }
         else
         {
-<<<<<<< HEAD
     
-=======
-            std::cout << "close in send why? because erorr" << " sent = " << sent << "\n";
-            std::cout << "close in sednd\n";
->>>>>>> 8b48e30db7cd44e6a83fae57b0dfbe77292c0852
             close_client(p, i);
             return (false);
         }
     }
     if ((recs[i].status == CLOSED_RS) || recs[i].status == ERROR_RS)
     {
-<<<<<<< HEAD
         p.events &= ~POLLOUT;
         close_client(p, i);
 
-=======
-
-        // p.events &= ~POLLOUT;
-        p.events = POLLIN;
-        req[i] = Request();
-        recs[i] = Record();
-        data[i] = Data();
->>>>>>> 8b48e30db7cd44e6a83fae57b0dfbe77292c0852
     }
     return (true);
 }
@@ -204,11 +161,7 @@ int main(/*int arc,char *arv[]*/)
     // (void)arv;
     // if (arc != 2)
     // {
-<<<<<<< HEAD
         // std::cout << "erorr in inpout arguments" << std::endl;
-=======
-    // std::cout << "erorr in inpout arguments" << std::endl;
->>>>>>> 8b48e30db7cd44e6a83fae57b0dfbe77292c0852
     //     return (1);
     // }
 
