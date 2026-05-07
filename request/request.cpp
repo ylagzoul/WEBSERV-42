@@ -9,6 +9,16 @@ std::string tolowerStr(std::string str)
     return (str);
 }
 
+bool isPrintable(const std::string &str)
+{
+    for (size_t i = 0; i < str.size(); i++)
+    {
+        if (!isprint(static_cast<unsigned char>(str[i])))
+            return false;
+    }
+    return true;
+}
+
 std::string toStr(int nb)
 {
     std::stringstream ss;
@@ -77,29 +87,22 @@ bool checkPath(std::string &path)
 
     if (path.at(0) != '/')
         return (false);
+    else if (path.at(0) == '/' && path.length() == 1)
+        return (true);
     while (getline(iss, splitedPath, '/'))
     {
-        if (!splitedPath.empty())
-        {
-
-            tmp.append("/");
+        // if (!splitedPath.empty())
+        // {
+            if(!isPrintable(splitedPath))
+                return (false);
+            // tmp.append("/");
             if (!checkPrecentEnc(splitedPath))
                 return (false);
             tmp += splitedPath;
-        }
+        // }
     }
     path = tmp;
     return (true);
-}
-
-bool isPrintable(const std::string &str)
-{
-    for (size_t i = 0; i < str.size(); i++)
-    {
-        if (!isprint(static_cast<unsigned char>(str[i])))
-            return false;
-    }
-    return true;
 }
 
 bool isLfCr(const std::string &str)
@@ -319,6 +322,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     {
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
+        cout << "path ->" << req[userId].path << std::endl;
         req[userId].reqState = ONE_ST;
         // size_t pos = req[userId].fullLine.find("\r\n\r\n");
         // if (pos == std::string::npos)
