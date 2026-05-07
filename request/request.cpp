@@ -1,6 +1,6 @@
 #include "../server/server.hpp"
 
-Request::Request() : bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
+Request::Request() : lenRead(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
 
 std::string tolowerStr(std::string str)
 {
@@ -151,6 +151,7 @@ void getRequestLine(Request &req)
     if (pos == std::string::npos)
         return;
     fillCheck(req, req.fullLine.substr(0, pos));
+    req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
 }
 
@@ -163,6 +164,7 @@ void getHeaders(Request &req)
     if (line.empty())
     {
         req.getEndHeaders = true;
+        req.lenRead += req.fullLine.substr(0, endLine + 2).length();
         req.fullLine.erase(0, endLine + 2);
         std::map<std::string, std::string>::iterator it;
         it = req.headers.find("transfer-encoding");
@@ -205,6 +207,7 @@ void getHeaders(Request &req)
         }
         req.headers[tolowerStr(key)] = value;
     }
+    req.lenRead += req.fullLine.substr(0, endLine + 2).length();
     req.fullLine.erase(0, endLine + 2);
     return;
 }
@@ -277,16 +280,15 @@ void getHeaders(Request &req)
 void getFixedBody(Request &req, Config con)
 {
     static size_t bodyLen;
-
+    req.lenRead += req.fullLine.length();
     if (req.bodyFd == -1)
     {
-        // cout << req.bodyPath << std::endl;
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (req.bodyFd == -1)
         {
             std::cerr << "Error opening file\n";
             req.status = 500;
-            return;
+            return ;
         }
     }
     bodyLen += req.fullLine.length();
@@ -317,12 +319,10 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
 {
     req[userId].fullLine.append(buffer, len);
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
-
     while (1)
     {
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
-        cout << "path ->" << req[userId].path << std::endl;
         req[userId].reqState = ONE_ST;
         // size_t pos = req[userId].fullLine.find("\r\n\r\n");
         // if (pos == std::string::npos)
@@ -334,9 +334,15 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getHeaders(req[userId]);
         else
             req[userId].reqState = SECOND_ST;
-
         if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
             getFixedBody(req[userId], con);
+        if (req[userId].lenRead == len)
+        {
+            if (req[userId].getEndFile)
+                req[userId].clientState = CLIENT_ON;
+            req[userId].lenRead = 0;
+            break ;
+        }    
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
         //     getChunkedBody(req);
         if (req[userId].getEndFile || req[userId].method != "POST")

@@ -50,6 +50,7 @@ class Request
         std::string bodyFile;
         std::string fullLine;
         std::string bodyPath;
+        size_t      lenRead;
         int         bodyFd;
         int         status;
         bool        getEndHeaders;
