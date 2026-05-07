@@ -84,6 +84,7 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
     i++;
 }
 
+
 bool Server::receiveRequest(pollfd &p, size_t &i)
 {
     char buffer[1024] = {0};
@@ -91,7 +92,10 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     if (bytes > 0)
     {
         clientId = i;
+        cout << "Mohammed 1\n";
         readRequest(req, clientId, buffer, bytes, conf);
+        // cout << "-->" << req[i].path << std::endl;
+        cout << "Mohammed 2\n";
         if (req[clientId].clientState == CLIENT_ON)
             p.events |= POLLOUT;
         return (true);
