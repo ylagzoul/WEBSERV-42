@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <stdlib.h>
 #include <sstream>
 #include <vector>
 #include <map>
@@ -13,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "../server/state.h"
+#include "../request/request.hpp"
 
 class Config;
 class Record;
@@ -31,18 +33,25 @@ class playloadData
         std::string error;
         std::string uri;
         std::vector <std::string> index;
+        std::vector<std::string> cgiExt;
+        std::vector<std::string> cgiPath;
         std::map<int, std::string> errorPages;
         std::string location;
-        std::map<std::string, bool> locationMethods;
-        std::string locationRoot;
-        std::string locationUpload;
+        std::map<std::string, bool> methods;
+        std::string root;
+        std::string upload;
+        std::string cgiInfo;
+        std::string cgiFile;
         size_t bodySize;
         int autoIndex;
-        int locationIndex;
+        bool isCgi;
         int listFd;
         int uploadOn;
+        int cgiDataPos;
         std::map <std::string, std::string> mime;
 };
+
+#include "CgiHandler.hpp"
 
 void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
 

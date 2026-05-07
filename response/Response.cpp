@@ -34,7 +34,7 @@ int readyChecks(Request &req, playloadData &data)
         return 1;
     }
     else if ((req.method != "GET" && req.method != "POST" && req.method != "DELETE")
-        || !data.locationMethods[req.method])
+        || !data.methods[req.method])
     {
         data.status_code = "405";
         data.resMessage = "Method Not Allowed";
@@ -77,7 +77,7 @@ void loadExtensions(playloadData &data)
 void getContentType(playloadData &data, std::string path)
 {
     std::string extension;
-    size_t pos = path.find_last_of('.');
+    size_t pos = path.rfind('.');
     data.contentType = "application/octet-stream";
     if (pos != std::string::npos)
     {
@@ -85,32 +85,6 @@ void getContentType(playloadData &data, std::string path)
         if (data.mime.count(extension))
             data.contentType = data.mime[extension];
     }
-}
-
-std::string cleanPath(std::string fullPath)
-{
-    std::stringstream ssPath(fullPath);
-    std::vector<std::string> realNames;
-    std::string tmp;
-    std::string path;
-    while (std::getline(ssPath, tmp, '/'))
-    {
-        if (tmp == "" || tmp == "." || tmp == "..")
-            continue;
-        // if (tmp == "..")// dkhelha m3a continue o hni rasek
-        // {
-        //     if (!realNames.empty())
-        //         realNames.pop_back();
-        // }
-        else
-            realNames.push_back(tmp);
-    }
-
-    for (size_t i = 0; i < realNames.size(); i++)
-    {
-        path += '/' + realNames[i];
-    }
-    return path;
 }
 
 int handleDelete(Record &log, playloadData &data)
@@ -259,7 +233,7 @@ int handlePost(Record &log, playloadData &data, Request &req, Config &conf)
         log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
         if (log.fileFd == -1)
         {
-            std::cout << req.bodyPath<<std::endl;
+            // std::cout << req.bodyPath<<std::endl;
             data.status_code = "500";
             data.resMessage = "Internal Server Error";
             return 1;
@@ -304,6 +278,45 @@ int getFile(Record &log, playloadData &data)
     return 0;
 }
 
+std::string handleFileName(std::string fileName)
+{
+    unsigned char c;
+    char s[17] = "0123456789ABCDEF";
+    for (size_t i = 0; i < fileName.length(); i++)
+    {
+        if (!isalpha(fileName[i]) && !isdigit(fileName[i]) &&
+            fileName[i] != '.' && fileName[i] != '-' && fileName[i] != '_')
+        {
+            c = fileName[i];
+            fileName[i] = '%';
+            fileName.insert(fileName.begin() + i + 1, s[c/16]);
+            fileName.insert(fileName.begin() + i + 2, s[c%16]);//und
+        }
+    }
+    return fileName;
+}
+
+std::string cleanPath(std::string fullPath)
+{
+    std::stringstream ssPath(fullPath);
+    std::vector<std::string> realNames;
+    std::string tmp;
+    std::string path;
+    while (std::getline(ssPath, tmp, '/'))
+    {
+        if (tmp == "" || tmp == "." || tmp == "..")//tou can remove it
+            continue;
+        else
+            realNames.push_back(tmp);
+    }
+
+    for (size_t i = 0; i < realNames.size(); i++)
+    {
+        path += '/' + realNames[i];
+    }
+    return path;
+}
+
 int postFilesList(Record &log, playloadData &data)
 {
     struct dirent *rdir;
@@ -319,7 +332,7 @@ int postFilesList(Record &log, playloadData &data)
         tmp = rdir->d_name;
         if (tmp == "." || tmp == "..")
             continue ;
-        buff = "<a href=\"" + tmpPath + '/' + tmp + "\">" + tmp + "</a><br>\n";
+        buff = "<a href=\"" + tmpPath + '/' + handleFileName(tmp) + "\">" + tmp + "</a><br>\n";
         tmpBuff += buff;
         if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
         {
@@ -514,74 +527,78 @@ int handleGet(Record &log, playloadData &data, Config &conf)
     return 0;
 }
 
-void findLongestMatch(playloadData &data, Config &conf, Request &req) //tests
+void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) //tests
 {
     std::map<int, std::string> locs;
+    if (reqPath.empty())
+        reqPath = "/";
     for(size_t i = 0; i < conf.location.size(); i++)
     {
         std::string name = conf.location[i].location_name;
-        size_t f = req.path.find(name); 
-        if (f == 0 && (req.path.length() == name.length() || req.path[name.length()] == '/'
+        size_t f = reqPath.find(name); 
+        if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/'
             || name == "/"))
             locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
     }
     if (locs.empty())
     {
-        data.uri = req.path.substr(1);
+        data.uri = reqPath.substr(1);
         if (data.uri[0] != '/')
             data.uri.insert(0, "/");
         return ;
     }
     else
         data.location = locs.rbegin()->second;
-    data.uri = req.path.substr(data.location.length());
+    data.uri = reqPath.substr(data.location.length());
     if (data.uri[0] != '/')
         data.uri.insert(0, "/");
     // std::cout << data.uri << std::endl;
-    // std::cout << req.path.length() << '\n' << data.location << '\n';
+    // std::cout << reqPath.length() << '\n' << data.location << '\n';
     // std::cout << data.uri << std::endl;
     // exit(0);
 }
 
 void getImportantData(Config &conf, playloadData &data)
 {
+    data.cgiExt.push_back(".py");//tmp
+    data.cgiExt.push_back(".cgi");//tmp
+    data.cgiPath.push_back("/bin/ls");//tmp
+    data.cgiPath.push_back("/bin/lb");//tmp
     if (data.location.empty())
     {
         data.location = "/";
-        data.locationMethods = conf.methods;
-        data.locationRoot = conf.root;
+        data.methods = conf.methods;
+        data.root = conf.root;
         data.index = conf.index;
-        data.locationUpload = conf.uploadPath;
+        data.upload = conf.uploadPath;
         data.autoIndex = conf.autoIndex;
+        data.errorPages = conf.error_page;
+        // data.cgiExt = conf.cgiExt;
+        // data.cgiPath = conf.cgiPath;
         return ;
     }
     for(size_t i = 0; i < conf.location.size(); i++)
     {
+
         if (conf.location[i].location_name == data.location)
         {
-            if (!conf.location[i].conf.error_page.empty())
-                data.errorPages = conf.location[i].conf.error_page;
-            else
-                data.errorPages = conf.error_page;////
-            data.locationMethods = conf.location[i].conf.methods;
-            data.locationIndex = i;
+            data.errorPages = conf.location[i].conf.error_page;
+            data.methods = conf.location[i].conf.methods;
             data.index = conf.location[i].conf.index;
-            data.locationRoot = conf.location[i].conf.root;
-            data.locationUpload = conf.location[i].conf.uploadPath;
+            data.root = conf.location[i].conf.root;
+            data.upload = conf.location[i].conf.uploadPath;
             data.autoIndex = conf.location[i].conf.autoIndex;
+            // data.cgiExt = conf.location[i].conf.cgiExt;
+            // data.cgiPath = conf.location[i].conf.cgiPath;
             break ;
         }
-    }
-    if (data.locationMethods.empty())///
-    {
-        data.locationMethods = conf.methods;
     }
 }
  
 int checkErrorFile(playloadData &data, Config &conf)
 {
     int code = atoi(data.status_code.c_str());
-    std::string file = data.locationRoot;
+    std::string file = data.root;
     if (file[file.length() - 1] != '/')
         file += '/' ;
     std::string page = data.errorPages[code];
@@ -623,36 +640,99 @@ void chooseErrorHandler(Config &conf, playloadData &data)
         defaultErrorPage(data);
 }
 
-void resolvePath(playloadData &data, Config &conf) // path
+int checkCgi(playloadData &data, std::vector<std::string> realNames, size_t j, std::string &reqPath)
+{
+    // std::string cgiInfo;
+    for(size_t i = 0; i < data.cgiExt.size(); i++)
+    {
+        size_t k = data.realPath.rfind(data.cgiExt[i]);
+        if (k != std::string::npos)
+        {
+            data.cgiInfo = data.realPath.substr(k + data.cgiExt[i].size());
+            data.cgiFile = data.realPath.substr(0, k + data.cgiExt[i].size());
+            data.cgiInfo += reqPath.substr(reqPath.find(realNames[j]) + realNames[j].length());
+            return 1;
+        }
+    }
+    // std::cout << data.realPath << std::endl;
+    // std::cout << data.cgiInfo << std::endl,exit(0);
+    return 0;
+}
+
+int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
 {
     (void)conf;
-    std::string tmp;
-    // std::string tmpPath;
-    // struct stat info;
+    std::string tmpPath;
+    struct stat info;
+    data.isCgi = false;
     // stat(data.realPath.c_str(), &info);// cgi
-    data.realPath = cleanPath(data.locationRoot + data.uri);
-    if (data.locationUpload.empty())
-        return ;
-    if (data.locationRoot[data.locationRoot.length() - 1] != '/'
-        && data.locationUpload[0] != '/')
-        data.locationUpload.insert(0, "/");
-    std::string rootUploadDir = data.locationRoot + data.locationUpload;
+    std::stringstream ssPath(data.root + data.uri);
+    std::vector<std::string> realNames;
+    std::string tmp;
+    while (std::getline(ssPath, tmp, '/'))
+    {
+        if (tmp == "" || tmp == ".")
+            continue;
+        if (tmp == "..")
+        {
+            data.status_code = "403";
+            data.resMessage = "Forbidden";
+            return 1;
+        }
+        else
+            realNames.push_back(tmp);
+    }
+    for (size_t i = 0; i < realNames.size(); i++)
+    {
+        data.realPath += '/' + realNames[i];
+        if (!checkCgi(data, realNames, i, reqPath))
+            continue;
+        if (stat(data.cgiFile.c_str(), &info) != -1)
+        {
+            if (S_ISDIR(info.st_mode))
+                continue;
+            data.isCgi = true;
+            return 0;
+        }
+        else
+        {
+            if (!data.cgiInfo.empty())
+            {
+                data.status_code = "404";
+                data.resMessage = "Not Found";
+                return 1;
+            }
+            data.isCgi = true;
+            return 0;
+        }
+    }
+    data.uploadOn = 0;
+    if (data.upload.empty())
+        return 0;
+    if (data.root[data.root.length() - 1] != '/'
+        && data.upload[0] != '/')
+        data.upload.insert(0, "/");
+    std::string rootUploadDir = data.root + data.upload;
     std::string compare = data.realPath.substr(0, rootUploadDir.length());
     // std::cout << rootUploadDir << std::endl;
     // std::cout << compare << std::endl;
     if (compare == rootUploadDir)
         data.uploadOn = 1;
+    return 0;
 }
 
 int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
 {
-    findLongestMatch(data, conf, req);
+    if (req.headers["connection"] == "Keep-Alive")
+        data.connection = "Keep-Alive";
+    findLongestMatch(data, conf, cleanPath(req.path));
     getImportantData(conf, data);
     if (readyChecks(req, data))
         return 1;
-    resolvePath(data, conf);
-    if (req.headers["connection"] == "Keep-Alive")
-        data.connection = "Keep-Alive";
+    if (resolvePath(data, conf, req.path))
+        return 1;
+    if (data.isCgi)
+        cgiHandler(data, req);
     if (req.method == "GET") 
     {
         if (handleGet(log, data, conf))
@@ -686,9 +766,7 @@ void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_
     res << "Content-Length: " << data.bodySize << "\r\n";
     res << "\r\n";
     if (log.method != POST_LIST_RS || log.status == ERROR_RS)
-    {
         ret_resp = res.str();
-    }
 }
 
 std::string respond(playloadData &data, Record &log, Config &conf, Request &req)

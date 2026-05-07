@@ -1,7 +1,6 @@
 NAME = webserv
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98 -g  # -fsanitize=address,undefined -g -O1
-#-fsanitize=address
+CFLAGS = -Wextra -Wall -Werror -std=c++98 -g #-fsanitize=address # -fsanitize=address,undefined -g -O1 
 CC = c++
 
 SRC = server.cpp \
@@ -12,9 +11,10 @@ SRC = server.cpp \
 			../config_file/Helpful_functions/ft_ft.cpp \
 			../config_file/line/listen.cpp \
 			../config_file/line/server_name.cpp \
-			../config_file/line/error_page.cpp Record.cpp
+			../config_file/line/error_page.cpp Record.cpp\
+			../response/CgiHandler.cpp
 
-SRC_H = server.hpp Record.hpp
+SRC_H = server.hpp Record.hpp ../response/CgiHandler.hpp
 
 
 OBJ = $(SRC:.cpp=.o)
