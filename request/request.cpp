@@ -74,7 +74,7 @@ bool checkPath(std::string &path)
     std::stringstream iss(path);
     std::string splitedPath;
     std::string tmp;
-
+    std::string oldPath = path;
     if (path.at(0) != '/')
         return (false);
     while (getline(iss, splitedPath, '/'))
@@ -88,7 +88,7 @@ bool checkPath(std::string &path)
             tmp += splitedPath;
         }
     }
-    path = tmp;
+    path = oldPath;
     return (true);
 }
 
