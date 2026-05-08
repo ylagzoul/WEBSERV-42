@@ -1,21 +1,26 @@
-#include "../server/server.hpp"
+ #include "../server/server.hpp"
+
+void Request::clean() // add youssef
+{
+    if (access(bodyFile.c_str(), F_OK) != -1)
+        std::remove(bodyPath.c_str());
+}
 
 void defaultErrorPage(playloadData &data)
 {
     data.bodyStr =
-     "<!DOCTYPE html>\n"
-    "<html lang=\"en\">\n"
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
         "<head>\n"
-            "<meta charset=\"UTF-8\">\n"
-            "<title>Error page</title>\n"
+        "<meta charset=\"UTF-8\">\n"
+        "<title>Error page</title>\n"
         "</head>\n"
         "<body>\n";
-    data.bodyStr += "<h1 style=\"text-align: center;\">" + data.status_code + ' '
-                 + data.resMessage + "</h1>\n";
-    data.bodyStr += 
-            "<hr>"
+    data.bodyStr += "<h1 style=\"text-align: center;\">" + data.status_code + ' ' + data.resMessage + "</h1>\n";
+    data.bodyStr +=
+        "<hr>"
         "</body>\n"
-    "</html>\n";
+        "</html>\n";
     data.bodySize = data.bodyStr.length();
 }
 
@@ -142,7 +147,7 @@ std::string getRandomName(Config &conf)
     ss << conf.count++;
     randName += '_';
     randName += ss.str();
-    //stat
+    // stat
     return randName;
 }
 
@@ -190,7 +195,7 @@ int handlePost(Record &log, playloadData &data, Request &req, Config &conf)
         data.resMessage = "Forbidden";
         return 1;
     }
-    if (stat(data.realPath.c_str(), &info) != - 1)
+    if (stat(data.realPath.c_str(), &info) != -1)
     {
         if (S_ISDIR(info.st_mode))
         {
@@ -216,6 +221,7 @@ int handlePost(Record &log, playloadData &data, Request &req, Config &conf)
         }
         else
         {
+            // std::cout << "yoyoy\n\n\n";
             data.status_code = "403";
             data.resMessage = "Forbidden";
             return 1;
@@ -254,7 +260,7 @@ int getFile(Record &log, playloadData &data)
     int bytes = 0;
     bytes = read(log.fd, buffer, size);
     if (bytes == -1)
-    { 
+    {
         data.status_code = "500";
         data.resMessage = "Internal Server Error";
         // close(log.fd);
@@ -348,9 +354,9 @@ int postFilesList(Record &log, playloadData &data)
             return 0;
         }
     }
-    buff = 
+    buff =
         "</body>\n"
-    "</html>\n";
+        "</html>\n";
     if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
     {
         // close(log.fileFd);
@@ -363,7 +369,7 @@ int postFilesList(Record &log, playloadData &data)
     // closedir(log.dir);
 
     struct stat info;
-    if(stat(log.fileName.c_str(), &info) == -1)
+    if (stat(log.fileName.c_str(), &info) == -1)
         return 1;
     data.bodySize = info.st_size;
     log.fd = open(log.fileName.c_str(), O_RDONLY);
@@ -374,7 +380,7 @@ int postFilesList(Record &log, playloadData &data)
 
 int autoIndex(Record &log, playloadData &data, Config &conf)
 {
-    log.fileName = LIST_FILE_PATH; 
+    log.fileName = LIST_FILE_PATH;
     log.fileName += "bodyList_" + getRandomName(conf);
     log.fileFd = open(log.fileName.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
     if (log.fileFd == -1)
@@ -389,15 +395,15 @@ int autoIndex(Record &log, playloadData &data, Config &conf)
     data.contentType = data.mime["html"];
     std::string buff;
     buff =
-    "<!DOCTYPE html>\n"
-    "<html lang=\"en\">\n"
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
         "<head>\n"
-            "<meta charset=\"UTF-8\">\n"
-            "<title>File List</title>\n"
+        "<meta charset=\"UTF-8\">\n"
+        "<title>File List</title>\n"
         "</head>\n"
         "<body>\n"
-            "<h1>File List</h1>\n"
-            "<a href=\"../\">../</a><br>\n";
+        "<h1>File List</h1>\n"
+        "<a href=\"../\">../</a><br>\n";
     if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
     {
         // close(log.fileFd);
@@ -420,18 +426,18 @@ int autoIndex(Record &log, playloadData &data, Config &conf)
 
 int tryIndex(Record &log, playloadData &data)
 {
-    for(size_t i = 0; i < data.index.size(); i++)
+    for (size_t i = 0; i < data.index.size(); i++)
     {
         std::string pathIndex = data.realPath + '/' + data.index[i];
         if (access(pathIndex.c_str(), F_OK) == -1)
-            continue ;
+            continue;
         struct stat info;
         if (stat(pathIndex.c_str(), &info) == -1)
         {
             data.status_code = "500";
             data.resMessage = "Internal Server Error";
             return 1;
-        }    
+        }
         if (S_ISDIR(info.st_mode))
             continue;
         else if (access(pathIndex.c_str(), R_OK) == -1)
@@ -545,7 +551,7 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) //t
         data.uri = reqPath.substr(1);
         if (data.uri[0] != '/')
             data.uri.insert(0, "/");
-        return ;
+        return;
     }
     else
         data.location = locs.rbegin()->second;
@@ -577,7 +583,7 @@ void getImportantData(Config &conf, playloadData &data)
         // data.cgiPath = conf.cgiPath;
         return ;
     }
-    for(size_t i = 0; i < conf.location.size(); i++)
+    for (size_t i = 0; i < conf.location.size(); i++)
     {
 
         if (conf.location[i].location_name == data.location)
@@ -594,13 +600,13 @@ void getImportantData(Config &conf, playloadData &data)
         }
     }
 }
- 
+
 int checkErrorFile(playloadData &data, Config &conf)
 {
     int code = atoi(data.status_code.c_str());
     std::string file = data.root;
     if (file[file.length() - 1] != '/')
-        file += '/' ;
+        file += '/';
     std::string page = data.errorPages[code];
     if (page.empty())
     {
@@ -622,7 +628,7 @@ int checkErrorFile(playloadData &data, Config &conf)
     int fd = open(file.c_str(), O_RDONLY);
     if (fd == -1)
         return 1;
-    char buff[8192];//use more
+    char buff[8192]; // use more
     int bytes = 0;
     while ((bytes = read(fd, buff, sizeof(buff) - 1)) > 0)
         data.bodyStr.append(buff, bytes);
@@ -738,7 +744,7 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
         if (handleGet(log, data, conf))
             return 1;
     }
-    else if (req.method == "POST") 
+    else if (req.method == "POST")
     {
         if (handlePost(log, data, req, conf))
             return 1;
@@ -759,7 +765,7 @@ void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_
     std::stringstream res;
     // if ((pastMethod == POST_LIST_RS && log.method == GET_LIST_RS)
     //     || (log.method == NONE_RS && log.status == ERROR_RS))
-    //     data.bodySize+=0; 
+    //     data.bodySize+=0;
     res << "HTTP/1.0" << ' ' << data.status_code << ' ' << data.resMessage + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Type: " << data.contentType << "\r\n";
@@ -815,11 +821,10 @@ std::string respond(playloadData &data, Record &log, Config &conf, Request &req)
                 // may be something
                 log.status = ERROR_RS;
             }
-            //remove bodyfile
+            // remove bodyfile
         }
     }
-    if (pastStatus == NEW_RS || (log.method == NONE_RS && log.status == ERROR_RS)
-        || (pastMethod == POST_LIST_RS && log.method == GET_LIST_RS))
+    if (pastStatus == NEW_RS || (log.method == NONE_RS && log.status == ERROR_RS) || (pastMethod == POST_LIST_RS && log.method == GET_LIST_RS))
     {
         generateResponse(data, ret_resp, log, pastMethod);
         if (log.status == ERROR_RS)

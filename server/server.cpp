@@ -51,12 +51,14 @@ Server::Server()
 void Server::close_client(pollfd &p, int i)
 {
     close(p.fd);
-    if (access(req[i].bodyFile.c_str(), F_OK) != -1)
-        std::remove(req[i].bodyPath.c_str());
     fds.erase(fds.begin() + i);
-    req.erase(req.begin() + i);//iteration problem 
+
+    req[i].clean();
+    req.erase(req.begin() + i); // iteration problem
+
     recs[i].clean();
     recs.erase(recs.begin() + i);
+
     data.erase(data.begin() + i);
 }
 
@@ -92,8 +94,12 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     if (bytes > 0)
     {
         clientId = i;
+        std::cout << "youssef     1 ====  " << buffer << "\n\n";
         readRequest(req, clientId, buffer, bytes, conf);
-        // cout << "-->" << req[i].path << std::endl;
+        std::cout << "youssef     5\n\n";
+        
+        if (req[i].path.empty())
+            req[i].path = "/";
         if (req[clientId].clientState == CLIENT_ON)
             p.events |= POLLOUT;
         return (true);
@@ -111,7 +117,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
         else
         {
             close_client(p, i);
-    
+
             return (false);
         }
     }
@@ -121,14 +127,13 @@ bool Server::sendRespond(pollfd &p, size_t &i)
 {
     if (data[i].sendNext)
     {
-        
+
         data[i].response = respond(recs[i].data, recs[i], conf, req[i]);
         if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
             return (true);
-        
     }
     int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
-    recs[i].number+=sent;
+    recs[i].number += sent;
     if (sent > 0)
     {
         data[i].response = data[i].response.substr(sent);
@@ -142,7 +147,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
         }
         else
         {
-    
+
             close_client(p, i);
             return (false);
         }
@@ -150,8 +155,6 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     if ((data[i].sendNext && recs[i].status == CLOSED_RS) || recs[i].status == ERROR_RS)
     {
         p.events &= ~POLLOUT;
-        close_client(p, i);
-
     }
     return (true);
 }
@@ -161,7 +164,7 @@ int main(/*int arc,char *arv[]*/)
     // (void)arv;
     // if (arc != 2)
     // {
-        // std::cout << "erorr in inpout arguments" << std::endl;
+    // std::cout << "erorr in inpout arguments" << std::endl;
     //     return (1);
     // }
 
@@ -207,45 +210,3 @@ int main(/*int arc,char *arv[]*/)
     close(obj.server_fd);
 }
 
-// // --------------------------------response main-----------------------------------------
-
-// Request jibDikRequest()
-// {
-//     Request req;
-//     req.status = 0;
-//     req.method = "GET";
-//     req.path = "//hh/h/h//////hhg///gh///gh/////ghg////gh////gh";
-//     req.bodyPath = "/home/abouhki/goinfre/tmp/client1";
-//     req.httpVersion = "HTTP/1.0";
-//     req.headers["Host"] = "localhost";
-//     req.headers["Connection"] = "Keep-Alive";
-//     req.headers["content-type"] = "application/json";
-//     return req;
-// }
-
-// int main()
-// {
-//     Config conf;
-//     conf.config_file();
-//     // Server server;
-//     conf.uploadPath = "/hello";
-//     std::vector<Request> req(1, jibDikRequest());
-//     // req[1].bodyPath = "/home/abouhki/goinfre/tmp/client2";
-//     // req[2].bodyPath = "/home/abouhki/goinfre/tmp/client3";
-
-//     // req[1].path = "/response/testfiles/client_2.";
-//     // req[2].path = "/response/testfiles/client_3.json";
-//     std::vector<Record> logs;
-//     logs.push_back(Record());
-//     logs.push_back(Record());
-//     logs.push_back(Record());
-//     std::ofstream of("print1.html");
-//     // std::ofstream of("print2");
-//     // std::ofstream of("print3");
-//     std::string res;
-//     while(logs[0].status != ERROR_RS && logs[0].status != CLOSED_RS)
-//     {
-//         res = respond(logs[0], conf, req[0]);
-//         of << res;
-//     }
-// }

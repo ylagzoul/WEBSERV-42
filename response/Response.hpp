@@ -43,6 +43,7 @@ class playloadData
         std::string cgiInfo;
         std::string cgiFile;
         size_t bodySize;
+        
         int autoIndex;
         bool isCgi;
         int listFd;

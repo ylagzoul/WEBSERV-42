@@ -61,6 +61,9 @@ class Request
         t_client_state  clientState;
         t_req_state     reqState;
 
+
+        void clean();
+
 };
 
 void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con);
