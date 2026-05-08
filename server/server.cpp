@@ -72,7 +72,6 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         client_poll.events = POLLIN;
         client_poll.revents = 0;
         fds.push_back(client_poll);
-
         recs.push_back(Record());
         req.push_back(Request());
         data.push_back(Data());
