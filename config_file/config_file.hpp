@@ -11,9 +11,9 @@
 # define MAXPORT 65535
 # define MAXIP 256
 
-# define LIST_FILE_PATH "/home/ylagzoul/Desktop/small-portfolio"
-# define BODY_FILE_PATH "/home/ylagzoul/Desktop/goinfre/"
-# define CONF_FILE_PATH "/home/ylagzoul/Desktop/web/config_file/file_config_file/config.nginx"
+# define LIST_FILE_PATH "/home/abouhki/goinfre/"
+# define BODY_FILE_PATH "/home/abouhki/goinfre/"
+# define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/boha.nginx"
 
 class Location;
 

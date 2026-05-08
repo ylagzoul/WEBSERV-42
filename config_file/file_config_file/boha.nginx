@@ -25,6 +25,7 @@ server {
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;
+        cgi_data .py /bin/usr/ls; 
         upload_path server;
         return 410 file.txt;
     }

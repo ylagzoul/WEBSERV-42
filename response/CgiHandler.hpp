@@ -6,10 +6,13 @@
 class CgiHandler
 {
     public:
-        std::vector<std::string> headers;
+        const char **env;
+        int fd[2];
+        std::string path;
+        std::string executeablePath;
 };
 
-
 int cgiHandler(playloadData &data, Request &req);
+
 
 #endif

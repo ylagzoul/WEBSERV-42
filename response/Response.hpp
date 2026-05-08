@@ -41,7 +41,9 @@ class playloadData
         std::string root;
         std::string upload;
         std::string cgiInfo;
+        std::string cgiScriptFile;
         std::string cgiFile;
+        std::string cgiExecutePath;
         size_t bodySize;
         
         int autoIndex;
