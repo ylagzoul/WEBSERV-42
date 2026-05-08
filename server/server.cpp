@@ -70,7 +70,6 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         client_poll.events = POLLIN;
         client_poll.revents = 0;
         fds.push_back(client_poll);
-
         recs.push_back(Record());
         req.push_back(Request());
         data.push_back(Data());
@@ -127,7 +126,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
             return (true);
         
     }
-    int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
+    int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);//MSG_DONTWAIT 0 - MSG_NOSIGNAL 
     recs[i].number+=sent;
     if (sent > 0)
     {
