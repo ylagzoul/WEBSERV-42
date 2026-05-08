@@ -60,6 +60,7 @@ class Request
         t_client_state  clientState;
         t_req_state     reqState;
 
+
         void clean();
 
 };

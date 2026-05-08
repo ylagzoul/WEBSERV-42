@@ -37,6 +37,7 @@ class playloadData
         std::string locationRoot;
         std::string locationUpload;
         size_t bodySize;
+        
         int autoIndex;
         int locationIndex;
         int listFd;
