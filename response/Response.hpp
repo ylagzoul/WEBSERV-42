@@ -58,6 +58,6 @@ class playloadData
 
 void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
 
-std::string respond(playloadData &data, Record &log, Config &conf, Request &req);
+std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &conf, Request &req);
 
 #endif

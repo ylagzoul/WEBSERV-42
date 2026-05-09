@@ -730,7 +730,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     return 0;
 }
 
-int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
+int handleResponse(pollfd &pEvents, Record &log, Request &req, Config &conf, playloadData &data)
 {
     if (req.headers["connection"] == "Keep-Alive")
         data.connection = "Keep-Alive";
@@ -741,7 +741,7 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
     if (resolvePath(data, conf, req.path))
         return 1;
     if (data.isCgi)
-        cgiHandler(data, req);
+        cgiHandler(pEvents, data, req);
     if (req.method == "GET") 
     {
         if (handleGet(log, data, conf))
@@ -778,7 +778,7 @@ void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_
         ret_resp = res.str();
 }
 
-std::string respond(playloadData &data, Record &log, Config &conf, Request &req)
+std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &conf, Request &req)
 {
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -789,7 +789,7 @@ std::string respond(playloadData &data, Record &log, Config &conf, Request &req)
     {
         loadExtensions(data);
         data.connection = "Close";
-        if (handleResponse(log, req, conf, data))
+        if (handleResponse(pEvents, log, req, conf, data))
         {
             chooseErrorHandler(conf, data);
             data.contentType = data.mime["html"];

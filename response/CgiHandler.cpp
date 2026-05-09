@@ -11,13 +11,15 @@ std::string normalizeKey(std::string key)
     return key;
 }
 
-int runCgi(CgiHandler &cgiData, std::string method, std::string bodyFile)
+int runCgi(pollfd &pEvents, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
     (void)cgiData;
     (void)method;
     //if method post
     ////    write to cgi
     (void)bodyFile;
+    (void)pEvents;
+
     return 0;
 }
 
@@ -63,16 +65,17 @@ void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData)
     cgiData.env = env.data();
     cgiData.executeablePath = data.cgiExecutePath;
     cgiData.path = data.cgiScriptFile;
-    runCgi(cgiData, req.method, req.bodyPath);
+    
 }
 // int i = -1;
 // while(envp[++i])
 //     std::cout << envp[i] << std::endl;
 
 
-int cgiHandler(playloadData &data, Request &req)
+int cgiHandler(pollfd &pEvents, playloadData &data, Request &req)
 {
     CgiHandler cgiData;
     getCgiEnv(data, req, cgiData);
+    runCgi(pEvents, cgiData, req.method, req.bodyPath);
     return 0;
 }

@@ -1,18 +1,18 @@
 #ifndef CGIHANDLER_HPP
 # define CGIHANDLER_HPP
 
-#include "Response.hpp"
+#include "../server/server.hpp"
 
 class CgiHandler
 {
     public:
-        const char **env;
         int fd[2];
+        const char **env;
         std::string path;
         std::string executeablePath;
 };
 
-int cgiHandler(playloadData &data, Request &req);
+int cgiHandler(pollfd &pEvents, playloadData &data, Request &req);
 
 
 #endif

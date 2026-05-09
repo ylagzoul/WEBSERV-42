@@ -127,7 +127,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     if (data[i].sendNext)
     {
 
-        data[i].response = respond(recs[i].data, recs[i], conf, req[i]);
+        data[i].response = respond(p, recs[i].data, recs[i], conf, req[i]);
         if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
             return (true);
     }
