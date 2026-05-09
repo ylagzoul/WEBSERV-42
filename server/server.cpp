@@ -158,56 +158,56 @@ bool Server::sendRespond(pollfd &p, size_t &i)
     return (true);
 }
 
-int main(/*int arc,char *arv[]*/)
-{
-    // (void)arv;
-    // if (arc != 2)
-    // {
-        // std::cout << "erorr in inpout arguments" << std::endl;
-    //     return (1);
-    // }
+// int main(/*int arc,char *arv[]*/)
+// {
+//     // (void)arv;
+//     // if (arc != 2)
+//     // {
+//         // std::cout << "erorr in inpout arguments" << std::endl;
+//     //     return (1);
+//     // }
 
-    Server obj;
+//     Server obj;
 
-    while (true)
-    {
-        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)
-        {
-            std::cout << "poll error\n";
-            continue;
-        }
-        for (size_t i = 0; i < obj.fds.size();)
-        {
+//     while (true)
+//     {
+//         if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)
+//         {
+//             std::cout << "poll error\n";
+//             continue;
+//         }
+//         for (size_t i = 0; i < obj.fds.size();)
+//         {
 
-            pollfd &p = obj.fds[i];
+//             pollfd &p = obj.fds[i];
 
-            if (p.fd == obj.server_fd && (p.revents & POLLIN))
-            {
-                obj.acceptNewCleint(p, i);
-                continue;
-            }
-            if (p.revents & POLLIN)
-            {
-                if (!obj.receiveRequest(p, i))
-                    continue;
-            }
-            if (p.revents & POLLOUT)
-            {
-                if (!obj.sendRespond(p, i))
-                {
-                    continue;
-                }
-            }
-            if ((p.revents & (POLLHUP | POLLERR)))
-            {
-                obj.close_client(p, i);
-                continue;
-            }
-            i++;
-        }
-    }
-    close(obj.server_fd);
-}
+//             if (p.fd == obj.server_fd && (p.revents & POLLIN))
+//             {
+//                 obj.acceptNewCleint(p, i);
+//                 continue;
+//             }
+//             if (p.revents & POLLIN)
+//             {
+//                 if (!obj.receiveRequest(p, i))
+//                     continue;
+//             }
+//             if (p.revents & POLLOUT)
+//             {
+//                 if (!obj.sendRespond(p, i))
+//                 {
+//                     continue;
+//                 }
+//             }
+//             if ((p.revents & (POLLHUP | POLLERR)))
+//             {
+//                 obj.close_client(p, i);
+//                 continue;
+//             }
+//             i++;
+//         }
+//     }
+//     close(obj.server_fd);
+// }
 
 // // --------------------------------response main-----------------------------------------
 
@@ -251,3 +251,42 @@ int main(/*int arc,char *arv[]*/)
 //         of << res;
 //     }
 // }
+
+using namespace std;
+
+
+int main()
+{
+    vector<Request> req;
+    Config con;
+    con.client_max_body_size = 14;
+    for (size_t i = 0; i < 3; i++)
+        req.push_back(Request());
+    int i = 0;
+    char buffer[] = "POST / HTTP/1.0\r\n\
+Content-Length: 2\r\n\
+\r\n\r\nkd";
+
+
+    string str = buffer;
+
+
+    readRequest(req, i, buffer, str.length(), con);
+    // readRequest(req, i, buffer, str.length(), con);
+
+
+    cout << req[0].path << endl;
+    cout << req[0].status << endl;
+    cout << req[0].method << endl;
+    cout << req[0].clientState << endl;
+    int fd = open("client1", O_RDONLY, 0644);
+    if (fd == -1)
+    {
+        cout << "Error Opening\n";
+    }
+    else
+    {
+        cout << "opening well" << endl;
+        cout << fd << endl;
+    }
+}

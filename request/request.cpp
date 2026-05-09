@@ -91,15 +91,16 @@ bool checkPath(std::string &path)
         return (true);
     while (getline(iss, splitedPath, '/'))
     {
-        // if (!splitedPath.empty())
-        // {
+        if (!splitedPath.empty())
+        {
+            cout << splitedPath << std::endl;
             if(!isPrintable(splitedPath))
                 return (false);
-            // tmp.append("/");
             if (!checkPrecentEnc(splitedPath))
                 return (false);
-            tmp += splitedPath;
-        // }
+        }
+        tmp += "/";
+        tmp += splitedPath;
     }
     path = tmp;
     return (true);
