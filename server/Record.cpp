@@ -20,4 +20,3 @@ void Record::clean()
         (closedir(dir), dir = NULL);
 }
 
-Record::~Record(){}

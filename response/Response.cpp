@@ -295,8 +295,8 @@ std::string handleFileName(std::string fileName)
         {
             c = fileName[i];
             fileName[i] = '%';
-            fileName.insert(fileName.begin() + i + 1, s[c/16]);
-            fileName.insert(fileName.begin() + i + 2, s[c%16]);//und
+            fileName.insert(fileName.begin() + i + 1, s[c / 16]);
+            fileName.insert(fileName.begin() + i + 2, s[c % 16]);//und
         }
     }
     return fileName;
@@ -310,7 +310,7 @@ std::string cleanPath(std::string fullPath)
     std::string path;
     while (std::getline(ssPath, tmp, '/'))
     {
-        if (tmp == "" || tmp == "." || tmp == "..")//tou can remove it
+        if (tmp == "" || tmp == "." || tmp == "..")//you can remove it
             continue;
         else
             realNames.push_back(tmp);
@@ -646,22 +646,25 @@ void chooseErrorHandler(Config &conf, playloadData &data)
         defaultErrorPage(data);
 }
 
-int checkCgi(playloadData &data, std::vector<std::string> realNames, size_t j, std::string &reqPath)
+int checkCgi(playloadData &data, std::string realNames , std::string &reqPath)
 {
-    // std::string cgiInfo;
     for(size_t i = 0; i < data.cgiExt.size(); i++)
     {
         size_t k = data.realPath.rfind(data.cgiExt[i]);
-        if (k != std::string::npos)
+        if (k != std::string::npos
+            && (k + data.cgiExt[i].size() == data.realPath.size()
+            || data.realPath[k + data.cgiExt[i].size()] == '?'))
         {
             data.cgiInfo = data.realPath.substr(k + data.cgiExt[i].size());
-            data.cgiFile = data.realPath.substr(0, k + data.cgiExt[i].size());
-            data.cgiInfo += reqPath.substr(reqPath.find(realNames[j]) + realNames[j].length());
+            data.cgiScriptFile = data.realPath.substr(0, k + data.cgiExt[i].size());
+            data.cgiInfo += reqPath.substr(reqPath.find(realNames) + realNames.length());
+            data.cgiFile = cleanPath(reqPath.substr(0, reqPath.length() - data.cgiInfo.length()));
+            data.cgiExecutePath = data.cgiPath[i];
+            // std::cout << data.cgiFile << std::endl;
+            // std::cout << data.cgiScriptFile << std::endl;
             return 1;
         }
     }
-    // std::cout << data.realPath << std::endl;
-    // std::cout << data.cgiInfo << std::endl,exit(0);
     return 0;
 }
 
@@ -691,9 +694,9 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     for (size_t i = 0; i < realNames.size(); i++)
     {
         data.realPath += '/' + realNames[i];
-        if (!checkCgi(data, realNames, i, reqPath))
+        if (!checkCgi(data, realNames[i], reqPath))
             continue;
-        if (stat(data.cgiFile.c_str(), &info) != -1)
+        if (stat(data.cgiScriptFile.c_str(), &info) != -1)
         {
             if (S_ISDIR(info.st_mode))
                 continue;
@@ -727,7 +730,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     return 0;
 }
 
-int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
+int handleResponse(pollfd &pEvents, Record &log, Request &req, Config &conf, playloadData &data)
 {
     if (req.headers["connection"] == "Keep-Alive")
         data.connection = "Keep-Alive";
@@ -738,7 +741,7 @@ int handleResponse(Record &log, Request &req, Config &conf, playloadData &data)
     if (resolvePath(data, conf, req.path))
         return 1;
     if (data.isCgi)
-        cgiHandler(data, req);
+        cgiHandler(pEvents, data, req);
     if (req.method == "GET") 
     {
         if (handleGet(log, data, conf))
@@ -775,7 +778,7 @@ void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_
         ret_resp = res.str();
 }
 
-std::string respond(playloadData &data, Record &log, Config &conf, Request &req)
+std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &conf, Request &req)
 {
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -786,7 +789,7 @@ std::string respond(playloadData &data, Record &log, Config &conf, Request &req)
     {
         loadExtensions(data);
         data.connection = "Close";
-        if (handleResponse(log, req, conf, data))
+        if (handleResponse(pEvents, log, req, conf, data))
         {
             chooseErrorHandler(conf, data);
             data.contentType = data.mime["html"];

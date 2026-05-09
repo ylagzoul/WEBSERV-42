@@ -17,7 +17,6 @@ class Record {
         playloadData data;
         std::string fileName;
         std::string buffer;
-        ~Record();
 };
 
 #endif
