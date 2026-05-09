@@ -20,9 +20,9 @@ server {
         error_page 404 /errors/404.html;
         autoindex on;
     }
-    location / {
+    location /files {
         methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/web/;
+        root /tmp/www/files;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         upload_path server;

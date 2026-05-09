@@ -1,3 +1,4 @@
+import time
 def get_cgi_path_info(script_path, extension=".cgi"):
     """
     Extract PATH_INFO from CGI request
@@ -12,3 +13,11 @@ def get_cgi_path_info(script_path, extension=".cgi"):
 cgi_uri = "/cgi-bin/test.cgi/user/john/details"
 path_info = get_cgi_path_info(cgi_uri, ".cgi")
 print(path_info)  # Output: /user/john/details
+
+
+
+# while True:
+#     pass
+
+
+# time.sleep(20)

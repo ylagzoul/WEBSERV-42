@@ -91,6 +91,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
 {
     char buffer[1024] = {0};
     int bytes = recv(p.fd, buffer, 1024, 0);
+    
     if (bytes > 0)
     {
         clientId = i;
@@ -112,6 +113,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     }
     else
     {
+        
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return (true);
         else
