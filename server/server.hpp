@@ -14,7 +14,7 @@
 #include "state.h"
 #include "Record.hpp"
 
-# define DEFAULTBODY 100000000000
+# define DEFAULTBODY 1024
 
 
 // GET /file
