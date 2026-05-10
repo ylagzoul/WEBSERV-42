@@ -93,8 +93,15 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     if (bytes > 0)
     {
         clientId = i;
-        std::cout << "youssef     1 ====  " << buffer << "\n\n";
+        std::cout << "youssef     1 --\n" << buffer;
         readRequest(req, clientId, buffer, bytes, conf);
+        cout <<  req[i].status << std::endl;
+        if (req[i].clientState)
+            cout << "--> " << "The cleint is finished" << std::endl;
+        else
+            cout << "--> " << "The cleint is not finished" << std::endl;
+        cout << req[i].reqState << std::endl;
+        
         std::cout << "youssef     5\n\n";
         
         if (req[i].path.empty())
@@ -208,3 +215,4 @@ int main(/*int arc,char *arv[]*/)
     }
     close(obj.server_fd);
 }
+

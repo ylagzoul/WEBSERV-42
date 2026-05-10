@@ -84,7 +84,7 @@ bool checkPath(std::string &path)
     std::stringstream iss(path);
     std::string splitedPath;
     std::string tmp;
-    std::string oldPath = path;
+
     if (path.at(0) != '/')
         return (false);
     else if (path.at(0) == '/' && path.length() == 1)
@@ -102,7 +102,7 @@ bool checkPath(std::string &path)
         tmp += "/";
         tmp += splitedPath;
     }
-    path = oldPath;
+    path = tmp;
     return (true);
 }
 
@@ -178,9 +178,8 @@ void getHeaders(Request &req)
             req.contentLength = std::atoi(req.headers["content-length"].c_str());
             req.bodyType = FIXED;
         }
-        else
+        else if (req.method != "GET")
         {
-            // Check the Get Error
             req.status = 400;
             req.finFlag = true;
             return;
@@ -351,6 +350,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
 
         if (req[userId].finFlag)
         {
+            req[userId].reqState = SECOND_ST;
             req[userId].clientState = CLIENT_ON;
             break;
         }
