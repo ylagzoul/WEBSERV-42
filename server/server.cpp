@@ -95,15 +95,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
         clientId = i;
         std::cout << "youssef     1 --\n" << buffer;
         readRequest(req, clientId, buffer, bytes, conf);
-        cout <<  req[i].status << std::endl;
-        if (req[i].clientState)
-            cout << "--> " << "The cleint is finished" << std::endl;
-        else
-            cout << "--> " << "The cleint is not finished" << std::endl;
-        cout << req[i].reqState << std::endl;
-        
         std::cout << "youssef     5\n\n";
-        
         if (req[i].path.empty())
             req[i].path = "/";
         if (req[clientId].clientState == CLIENT_ON)
