@@ -29,7 +29,7 @@ int readyChecks(Request &req, playloadData &data)
     if (req.status == 400)
     {
         data.status_code = "400";
-        data.resMessage = "Bad Request";
+        data.resMessage = "Bad Request"; // on map
         return 1;
     }
     else if (req.status == 500)
@@ -38,15 +38,20 @@ int readyChecks(Request &req, playloadData &data)
         data.resMessage = "Internal Server Error";
         return 1;
     }
-    else if ((req.method != "GET" && req.method != "POST" && req.method != "DELETE")
-        || !data.methods[req.method])
+    else if (req.method != "GET" && req.method != "POST" && req.method != "DELETE")
+    {
+        data.status_code = "501";
+        data.resMessage = "Not Implemented";
+        return 1;
+    }
+    else if (!data.methods[req.method])
     {
         data.status_code = "405";
         data.resMessage = "Method Not Allowed";
         return 1;
     }
     data.status_code = "200";
-    data.resMessage = "Ok";
+    data.resMessage = "OK";
     return 0;
 }
 
@@ -164,6 +169,7 @@ int postBody(Record &log, playloadData &data)
         // close(log.fileFd);
         return 1;
     }
+    // std::cout << buff << std::endl;
     if ((write(log.fd, buff, bytes)) == -1)
     {
         data.status_code = "500";
@@ -189,6 +195,7 @@ int postBody(Record &log, playloadData &data)
 int handlePost(Record &log, playloadData &data, Request &req, Config &conf)
 {
     struct stat info;
+    // std::cout << req.headers["content-length"] << std::endl;
     if (!data.uploadOn)
     {
         data.status_code = "403";
@@ -579,6 +586,8 @@ void getImportantData(Config &conf, playloadData &data)
         data.upload = conf.uploadPath;
         data.autoIndex = conf.autoIndex;
         data.errorPages = conf.error_page;
+        data.retPath = conf.retPath;
+        data.retCode = conf.retCode;
         // data.cgiExt = conf.cgiExt;
         // data.cgiPath = conf.cgiPath;
         return ;
@@ -588,12 +597,16 @@ void getImportantData(Config &conf, playloadData &data)
 
         if (conf.location[i].location_name == data.location)
         {
+            // if (conf.location[i].conf.error_page.empty())
+                
             data.errorPages = conf.location[i].conf.error_page;
             data.methods = conf.location[i].conf.methods;
             data.index = conf.location[i].conf.index;
             data.root = conf.location[i].conf.root;
             data.upload = conf.location[i].conf.uploadPath;
             data.autoIndex = conf.location[i].conf.autoIndex;
+            data.retPath = conf.location[i].conf.retPath;
+            data.retCode = conf.location[i].conf.retCode;
             // data.cgiExt = conf.location[i].conf.cgiExt;
             // data.cgiPath = conf.location[i].conf.cgiPath;
             break ;
@@ -736,6 +749,18 @@ int handleResponse(pollfd &pEvents, Record &log, Request &req, Config &conf, pla
         data.connection = "Keep-Alive";
     findLongestMatch(data, conf, cleanPath(req.path));
     getImportantData(conf, data);
+    data.retValid = 0;
+    if (!data.retPath.empty())
+    {
+        if (data.retCode != 301 && data.retCode != 302)
+        {
+            data.status_code = "501";
+            data.resMessage = "Not Implemented";
+            return 1;
+        }
+        data.retValid = 1;
+        return 0;
+    }
     if (readyChecks(req, data))
         return 1;
     if (resolvePath(data, conf, req.path))
@@ -769,7 +794,34 @@ void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_
     // if ((pastMethod == POST_LIST_RS && log.method == GET_LIST_RS)
     //     || (log.method == NONE_RS && log.status == ERROR_RS))
     //     data.bodySize+=0;
-    res << "HTTP/1.0" << ' ' << data.status_code << ' ' << data.resMessage + "\r\n";
+    if (data.retValid)
+    {
+        if (data.retCode != 301 && data.retCode != 302)
+        {
+            res << "HTTP/1.0 501 Not Implemented" << "\r\n";
+            res << "Connection: " << data.connection << "\r\n";
+            res << "Content-Length: 0\r\n";
+            res << "\r\n";
+        }
+        else
+        {
+            res << "HTTP/1.0 " << data.retCode;
+            if (data.retCode == 301)
+                res << " Moved Permanently\r\n";
+            else if (data.retCode == 302)
+                res << " Moved Temporarily\r\n";
+            res << "Connection: " << data.connection << "\r\n";
+            res << "Content-Length: 0\r\n";
+            res << "Location: " << data.retPath << "\r\n";
+            res << "\r\n";
+        }
+        if (log.method != POST_LIST_RS || log.status == ERROR_RS)
+            ret_resp = res.str();
+        std::cout << ret_resp << std::endl;
+        // data.retValid = 0;
+        return ;
+    }
+    res << "HTTP/1.0 " << data.status_code << ' ' << data.resMessage + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Type: " << data.contentType << "\r\n";
     res << "Content-Length: " << data.bodySize << "\r\n";
@@ -787,6 +839,7 @@ std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &co
         req.path = "/";
     if (log.status == NEW_RS)
     {
+        data.bodySize = 0;
         loadExtensions(data);
         data.connection = "Close";
         if (handleResponse(pEvents, log, req, conf, data))

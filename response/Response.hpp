@@ -44,10 +44,13 @@ class playloadData
         std::string cgiScriptFile;
         std::string cgiFile;
         std::string cgiExecutePath;
+        std::string retPath;
+        int retCode;
         size_t bodySize;
         
         int autoIndex;
         bool isCgi;
+        bool retValid;
         int listFd;
         int uploadOn;
         int cgiDataPos;
