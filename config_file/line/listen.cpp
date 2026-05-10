@@ -57,6 +57,7 @@ void Config::ft_listen_Ip()
 void Config::ft_listen_prot()
 {
     size_t i = 0;
+    int port;
     while (i < str[1].size() && str[1][i])
     {
         if (!isdigit(str[1][i]))
@@ -65,7 +66,9 @@ void Config::ft_listen_prot()
     }
     if (atoi(str[1].c_str()) > MAXPORT)
         throw std::runtime_error("invalid max port");
-    listen_Port.push_back(str[1]);
+    std::stringstream ss(str[1]);
+    ss >> port;       
+    listen_Port.push_back(port);
 }
 
 void Config::ft_listen()
@@ -80,7 +83,7 @@ void Config::ft_listen()
             ft_listen_prot_Ip();
         else if (str[1].find('.') != std::string::npos)
         {
-            listen_Port.push_back("80");
+            listen_Port.push_back(80);
             ft_listen_Ip();
         }
         else

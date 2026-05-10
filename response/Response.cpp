@@ -1,4 +1,4 @@
- #include "../server/server.hpp"
+#include "../server/server.hpp"
 
 void Request::clean() // add youssef
 {
@@ -38,8 +38,7 @@ int readyChecks(Request &req, playloadData &data)
         data.resMessage = "Internal Server Error";
         return 1;
     }
-    else if ((req.method != "GET" && req.method != "POST" && req.method != "DELETE")
-        || !data.methods[req.method])
+    else if ((req.method != "GET" && req.method != "POST" && req.method != "DELETE") || !data.methods[req.method])
     {
         data.status_code = "405";
         data.resMessage = "Method Not Allowed";
@@ -296,7 +295,7 @@ std::string handleFileName(std::string fileName)
             c = fileName[i];
             fileName[i] = '%';
             fileName.insert(fileName.begin() + i + 1, s[c / 16]);
-            fileName.insert(fileName.begin() + i + 2, s[c % 16]);//und
+            fileName.insert(fileName.begin() + i + 2, s[c % 16]); // und
         }
     }
     return fileName;
@@ -310,7 +309,7 @@ std::string cleanPath(std::string fullPath)
     std::string path;
     while (std::getline(ssPath, tmp, '/'))
     {
-        if (tmp == "" || tmp == "." || tmp == "..")//you can remove it
+        if (tmp == "" || tmp == "." || tmp == "..") // you can remove it
             continue;
         else
             realNames.push_back(tmp);
@@ -337,7 +336,7 @@ int postFilesList(Record &log, playloadData &data)
     {
         tmp = rdir->d_name;
         if (tmp == "." || tmp == "..")
-            continue ;
+            continue;
         buff = "<a href=\"" + tmpPath + '/' + handleFileName(tmp) + "\">" + tmp + "</a><br>\n";
         tmpBuff += buff;
         if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
@@ -533,17 +532,16 @@ int handleGet(Record &log, playloadData &data, Config &conf)
     return 0;
 }
 
-void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) //tests
+void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) // tests
 {
     std::map<int, std::string> locs;
     if (reqPath.empty())
         reqPath = "/";
-    for(size_t i = 0; i < conf.location.size(); i++)
+    for (size_t i = 0; i < conf.location.size(); i++)
     {
         std::string name = conf.location[i].location_name;
-        size_t f = reqPath.find(name); 
-        if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/'
-            || name == "/"))
+        size_t f = reqPath.find(name);
+        if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
             locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
     }
     if (locs.empty())
@@ -566,10 +564,10 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) //t
 
 void getImportantData(Config &conf, playloadData &data)
 {
-    data.cgiExt.push_back(".py");//tmp
-    data.cgiExt.push_back(".cgi");//tmp
-    data.cgiPath.push_back("/bin/ls");//tmp
-    data.cgiPath.push_back("/bin/lb");//tmp
+    data.cgiExt.push_back(".py");      // tmp
+    data.cgiExt.push_back(".cgi");     // tmp
+    data.cgiPath.push_back("/bin/ls"); // tmp
+    data.cgiPath.push_back("/bin/lb"); // tmp
     if (data.location.empty())
     {
         data.location = "/";
@@ -581,7 +579,7 @@ void getImportantData(Config &conf, playloadData &data)
         data.errorPages = conf.error_page;
         // data.cgiExt = conf.cgiExt;
         // data.cgiPath = conf.cgiPath;
-        return ;
+        return;
     }
     for (size_t i = 0; i < conf.location.size(); i++)
     {
@@ -596,7 +594,7 @@ void getImportantData(Config &conf, playloadData &data)
             data.autoIndex = conf.location[i].conf.autoIndex;
             // data.cgiExt = conf.location[i].conf.cgiExt;
             // data.cgiPath = conf.location[i].conf.cgiPath;
-            break ;
+            break;
         }
     }
 }
@@ -646,14 +644,12 @@ void chooseErrorHandler(Config &conf, playloadData &data)
         defaultErrorPage(data);
 }
 
-int checkCgi(playloadData &data, std::string realNames , std::string &reqPath)
+int checkCgi(playloadData &data, std::string realNames, std::string &reqPath)
 {
-    for(size_t i = 0; i < data.cgiExt.size(); i++)
+    for (size_t i = 0; i < data.cgiExt.size(); i++)
     {
         size_t k = data.realPath.rfind(data.cgiExt[i]);
-        if (k != std::string::npos
-            && (k + data.cgiExt[i].size() == data.realPath.size()
-            || data.realPath[k + data.cgiExt[i].size()] == '?'))
+        if (k != std::string::npos && (k + data.cgiExt[i].size() == data.realPath.size() || data.realPath[k + data.cgiExt[i].size()] == '?'))
         {
             data.cgiInfo = data.realPath.substr(k + data.cgiExt[i].size());
             data.cgiScriptFile = data.realPath.substr(0, k + data.cgiExt[i].size());
@@ -718,8 +714,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     data.uploadOn = 0;
     if (data.upload.empty())
         return 0;
-    if (data.root[data.root.length() - 1] != '/'
-        && data.upload[0] != '/')
+    if (data.root[data.root.length() - 1] != '/' && data.upload[0] != '/')
         data.upload.insert(0, "/");
     std::string rootUploadDir = data.root + data.upload;
     std::string compare = data.realPath.substr(0, rootUploadDir.length());
@@ -730,8 +725,9 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     return 0;
 }
 
-int handleResponse(pollfd &pEvents, Record &log, Request &req, Config &conf, playloadData &data)
+int handleResponse(Server &obj, Record &log, Request &req, Config &conf, playloadData &data)
 {
+    (void)obj;
     if (req.headers["connection"] == "Keep-Alive")
         data.connection = "Keep-Alive";
     findLongestMatch(data, conf, cleanPath(req.path));
@@ -741,8 +737,8 @@ int handleResponse(pollfd &pEvents, Record &log, Request &req, Config &conf, pla
     if (resolvePath(data, conf, req.path))
         return 1;
     if (data.isCgi)
-        cgiHandler(pEvents, data, req);
-    if (req.method == "GET") 
+        cgiHandler(obj, data, req, conf.listen_Port);
+    if (req.method == "GET")
     {
         if (handleGet(log, data, conf))
             return 1;
@@ -778,7 +774,7 @@ void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_
         ret_resp = res.str();
 }
 
-std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &conf, Request &req)
+std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -789,7 +785,7 @@ std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &co
     {
         loadExtensions(data);
         data.connection = "Close";
-        if (handleResponse(pEvents, log, req, conf, data))
+        if (handleResponse(obj, log, req, conf, data))
         {
             chooseErrorHandler(conf, data);
             data.contentType = data.mime["html"];

@@ -13,6 +13,8 @@ Data::Data()
 
 Server::Server()
 {
+    conf.config_file();
+
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     int opt = 1;
@@ -21,6 +23,7 @@ Server::Server()
 
     len = sizeof(addr);
     addr.sin_family = AF_INET;
+    // addr.sin_port = htons(conf.listen_Port[0]);
     addr.sin_port = htons(3050);
     addr.sin_addr.s_addr = INADDR_ANY;
 
@@ -38,12 +41,11 @@ Server::Server()
     server_poll.events = POLLIN;
     server_poll.revents = 0;
     fds.push_back(server_poll);
+    index_Cleint.push_back(0);
 
     data.push_back(Data());
     recs.push_back(Record());
     req.push_back(Request());
-
-    conf.config_file();
 
     clientId = 0;
 }
@@ -51,15 +53,16 @@ Server::Server()
 void Server::close_client(pollfd &p, int i)
 {
     close(p.fd);
-    fds.erase(fds.begin() + i);
+    fds.erase(fds.begin() + index_Cleint[i]);
 
-    req[i].clean();
-    req.erase(req.begin() + i); // iteration problem
-
-    recs[i].clean();
-    recs.erase(recs.begin() + i);
-
-    data.erase(data.begin() + i);
+    req[index_Cleint[i]].clean();
+    req.erase(req.begin() + index_Cleint[i]); // iteration problem
+    
+    recs[index_Cleint[i]].clean();
+    recs.erase(recs.begin() + index_Cleint[i]);
+    
+    data.erase(data.begin() + index_Cleint[i]);
+    index_Cleint.erase(index_Cleint.begin() + index_Cleint.size()-1);
 }
 
 void Server::acceptNewCleint(pollfd &p, size_t &i)
@@ -72,6 +75,7 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         client_poll.events = POLLIN;
         client_poll.revents = 0;
         fds.push_back(client_poll);
+        index_Cleint.push_back(fds.size() - 1);
         recs.push_back(Record());
         req.push_back(Request());
         data.push_back(Data());
@@ -85,21 +89,17 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
     i++;
 }
 
-
-bool Server::receiveRequest(pollfd &p, size_t &i)
+bool Server:: receiveRequest(pollfd &p, size_t &i)
 {
     char buffer[1024] = {0};
     int bytes = recv(p.fd, buffer, 1024, 0);
-    
     if (bytes > 0)
-    {
-        clientId = i;
-        std::cout << "youssef     1 ====  " << buffer << "\n\n";
+    { 
+        clientId = index_Cleint[i];
         readRequest(req, clientId, buffer, bytes, conf);
-        std::cout << "youssef     5\n\n";
-        
-        if (req[i].path.empty())
-            req[i].path = "/";
+
+        if (req[index_Cleint[i]].path.empty())
+            req[index_Cleint[i]].path = "/";
         if (req[clientId].clientState == CLIENT_ON)
             p.events |= POLLOUT;
         return (true);
@@ -112,7 +112,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     }
     else
     {
-        
+
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return (true);
         else
@@ -124,21 +124,21 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     }
 }
 
-bool Server::sendRespond(pollfd &p, size_t &i)
+bool Server::sendRespond(Server &obj, pollfd &p)
 {
-    if (data[i].sendNext)
+    if (data[index_Cleint[iClnt]].sendNext)
     {
 
-        data[i].response = respond(p, recs[i].data, recs[i], conf, req[i]);
-        if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
+        data[index_Cleint[iClnt]].response = respond(obj, recs[index_Cleint[iClnt]].data, recs[index_Cleint[iClnt]], conf, req[index_Cleint[iClnt]]);
+        if (data[index_Cleint[iClnt]].response.empty() && recs[index_Cleint[iClnt]].status == ACTIVE_RS)
             return (true);
     }
-    int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
-    recs[i].number += sent;
+    int sent = send(p.fd, data[index_Cleint[iClnt]].response.c_str(), data[index_Cleint[iClnt]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
+    recs[index_Cleint[iClnt]].number += sent;
     if (sent > 0)
     {
-        data[i].response = data[i].response.substr(sent);
-        data[i].sendNext = data[i].response.empty();
+        data[index_Cleint[iClnt]].response = data[index_Cleint[iClnt]].response.substr(sent);
+        data[index_Cleint[iClnt]].sendNext = data[index_Cleint[iClnt]].response.empty();
     }
     if (sent < 0)
     {
@@ -148,12 +148,13 @@ bool Server::sendRespond(pollfd &p, size_t &i)
         }
         else
         {
+            std::cout << "lagzouli 1111   \n\n";
 
-            close_client(p, i);
+            close_client(p, iClnt);
             return (false);
         }
     }
-    if ((data[i].sendNext && recs[i].status == CLOSED_RS) || recs[i].status == ERROR_RS)
+    if ((data[index_Cleint[iClnt]].sendNext && recs[index_Cleint[iClnt]].status == CLOSED_RS) || recs[index_Cleint[iClnt]].status == ERROR_RS)
     {
         p.events &= ~POLLOUT;
     }
@@ -178,10 +179,11 @@ int main(/*int arc,char *arv[]*/)
             std::cout << "poll error\n";
             continue;
         }
-        for (size_t i = 0; i < obj.fds.size();)
+        for (size_t i = 0; i < obj.index_Cleint.size();)
         {
+            
 
-            pollfd &p = obj.fds[i];
+            pollfd &p = obj.fds[obj.index_Cleint[i]];
 
             if (p.fd == obj.server_fd && (p.revents & POLLIN))
             {
@@ -195,13 +197,15 @@ int main(/*int arc,char *arv[]*/)
             }
             if (p.revents & POLLOUT)
             {
-                if (!obj.sendRespond(p, i))
+                obj.iClnt = i;
+                if (!obj.sendRespond(obj, p))
                 {
                     continue;
                 }
             }
             if ((p.revents & (POLLHUP | POLLERR)))
             {
+                std::cout << "lagzouli 4444  \n\n";
                 obj.close_client(p, i);
                 continue;
             }
@@ -210,4 +214,3 @@ int main(/*int arc,char *arv[]*/)
     }
     close(obj.server_fd);
 }
-

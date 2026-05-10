@@ -31,7 +31,7 @@ void Config::check_default()
     if (listen_Port.size() == 0)
     {
         listen_Ip.push_back("0.0.0.0");
-        listen_Port.push_back("80");
+        listen_Port.push_back(80);
     }
 }
 

@@ -7,12 +7,12 @@ class CgiHandler
 {
     public:
         int fd[2];
-        const char **env;
+        char **env;
+        char * const *executeablePath;
         std::string path;
-        std::string executeablePath;
 };
 
-int cgiHandler(pollfd &pEvents, playloadData &data, Request &req);
+int cgiHandler(Server &obj, playloadData &data, Request &req, std::vector<int> &listenPort);
 
 
 #endif

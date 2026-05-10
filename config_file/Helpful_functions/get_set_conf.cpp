@@ -6,10 +6,10 @@ std::vector<std::string> Config::get_listen_Ip(void)
     return (listen_Ip);
 }
 
-std::vector<std::string> Config::get_listen_Port(void)
-{
-    return (listen_Port);
-}
+// std::vector<std::string> Config::get_listen_Port(void)
+// {
+//     return (listen_Port);
+// }
 
 std::string Config::get_server_name(void)
 {

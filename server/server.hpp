@@ -14,43 +14,47 @@
 #include "state.h"
 #include "Record.hpp"
 
-# define DEFAULTBODY 100000000000
-
+#define DEFAULTBODY 100000000000
 
 // GET /file
 
-class Data {
-    public:
-        Data();
-        std::string response;
-        int maxSend;
-        bool sendNext;
-        bool rspEnd;
-        std::string reqEnd;
-        int recvSize;
-        int recvNum;
-        bool recvNext;
+class Data
+{
+public:
+    Data();
+    std::string response;
+    int maxSend;
+    bool sendNext;
+    bool rspEnd;
+    std::string reqEnd;
+    int recvSize;
+    int recvNum;
+    bool recvNext;
 };
 
-class Server {
-    public:
-        Server();
+class Server
+{
+public:
+    Server();
 
-        int server_fd;
+    int server_fd;
 
-        size_t                  clientId;
-        std::vector<pollfd>     fds;
-        sockaddr_in             addr;
-        socklen_t               len;
-        std::vector<Data>       data;
-        std::vector<Record>     recs;
-        std::vector<Request>    req;
-        Config                  conf;
+    size_t iClnt;
 
-        void acceptNewCleint(pollfd &p, size_t &i);
-        bool receiveRequest(pollfd &p, size_t &i);
-        bool sendRespond(pollfd &p, size_t &i);
-        void close_client(pollfd &p, int i);
+    size_t clientId;
+    std::vector<pollfd> fds;
+    std::vector<int> index_Cleint;
+    sockaddr_in addr;
+    socklen_t len;
+    std::vector<Data> data;
+    std::vector<Record> recs;
+    std::vector<Request> req;
+    Config conf;
+
+    void acceptNewCleint(pollfd &p, size_t &i);
+    bool receiveRequest(pollfd &p, size_t &i);
+    bool sendRespond(Server &obj, pollfd &p);
+    void close_client(pollfd &p, int i);
 };
 
 #endif

@@ -52,12 +52,14 @@ class playloadData
         int uploadOn;
         int cgiDataPos;
         std::map <std::string, std::string> mime;
+
+
 };
 
 #include "CgiHandler.hpp"
 
 void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
 
-std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &conf, Request &req);
+std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req);
 
 #endif
