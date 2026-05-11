@@ -286,8 +286,8 @@ void getFixedBody(Request &req, Config con)
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (req.bodyFd == -1)
         {
-            std::cerr << "Error opening file\n";
-            req.status = 500;
+            std::cerr << "Error opening file\n";//should be removed and let response handle it
+            req.status = 500;//don't remove this
             return ;
         }
     }
