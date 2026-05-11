@@ -565,12 +565,12 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) //t
     data.uri = reqPath.substr(data.location.length());
     if (data.uri[0] != '/')
         data.uri.insert(0, "/");
-    // std::cout << data.uri << std::endl;
-    // std::cout << reqPath.length() << '\n' << data.location << '\n';
-    // std::cout << data.uri << std::endl;
-    // exit(0);
 }
-
+// std::cout << data.uri << std::endl;
+// std::cout << reqPath.length() << '\n' << data.location << '\n';
+// std::cout << data.uri << std::endl;
+// exit(0);
+    
 void getImportantData(Config &conf, playloadData &data)
 {
     data.cgiExt.push_back(".py");//tmp
@@ -832,11 +832,10 @@ void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_
 
 std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &conf, Request &req)
 {
+    // std::cout << req.status << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
-    if (req.path.empty())
-        req.path = "/";
     if (log.status == NEW_RS)
     {
         data.bodySize = 0;
