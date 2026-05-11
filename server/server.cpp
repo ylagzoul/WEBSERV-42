@@ -92,7 +92,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     if (bytes > 0)
     {
         clientId = i;
-        // std::cout << "youssef     1 ====  " << buffer << "\n\n";
+        std::cout << "youssef     1 ====  " << buffer << "\n\n";
         readRequest(req, clientId, buffer, bytes, conf);
         cout << req[i].clientState << std::endl;
         std::cout << "youssef     5\n\n";
