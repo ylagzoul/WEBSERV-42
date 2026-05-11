@@ -40,7 +40,6 @@ server {
         error_page 500 /errors/500.html;
         autoindex on;
         cgi_data .py  python3; 
-        upload_patroot /home/abouhki/Desktop/owebserv/h server;
         return 410 file.txt;
     }
 }

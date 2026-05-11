@@ -1,5 +1,5 @@
 FOR ME
-cgi
+check parsing headers logic with cgi response
 
 -----------------
 request
