@@ -323,6 +323,8 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     {
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
+        if (req[userId].method.empty())
+            break ;
         req[userId].reqState = ONE_ST;
         // size_t pos = req[userId].fullLine.find("\r\n\r\n");
         // if (pos == std::string::npos)
@@ -345,7 +347,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         }    
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
         //     getChunkedBody(req);
-        if (req[userId].getEndFile || req[userId].method != "POST")
+        if ((req[userId].getEndFile) || (req[userId].method != "POST" && !req[userId].method.empty()))
             req[userId].finFlag = true;
 
         if (req[userId].finFlag)
