@@ -12,16 +12,30 @@ server {
 
     location /goinfre {
         methods POST GET;
-        root /home/abouhki/goinfre;
+        root /home/abouhki/Desktop/owebserv/;
         index index.html gogo.jpg;
         error_page 400 /errors/400.html;
         error_page 403 /errors/403.html;
         error_page 404 /errors/404.html;
         autoindex on;
     }
+
     location / {
+        client_max_body_size  100G;
         methods GET POST DELETE;
         root /home/abouhki/Desktop/owebserv/;
+        error_page 400 /errors/400.html;
+        error_page 404 /errors/404.html;
+        error_page 500 /errors/500.html;
+        error_page 501 /errors/501.html;
+        autoindex on;
+        cgi_data .py  python3; 
+        upload_path server;
+    }
+    location /errors {
+        client_max_body_size  100G;
+        methods GET POST DELETE;
+        root /home/abouhki/Desktop/owebserv/errors;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;

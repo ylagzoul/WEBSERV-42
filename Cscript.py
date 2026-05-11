@@ -1,0 +1,1 @@
+python3 -c "print('e'*10_100_000_000, end='')" > output.txt

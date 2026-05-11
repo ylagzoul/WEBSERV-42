@@ -1,7 +1,6 @@
 #include "../server/server.hpp"
 
 
-
 Config::Config()
 {
     emptyFile = false;

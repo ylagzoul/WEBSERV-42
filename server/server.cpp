@@ -13,7 +13,7 @@ Data::Data()
 
 Server::Server()
 {
-    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);//NON BLOCKING AND 3LACH AND CLOSE ON EXECV
 
     int opt = 1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
@@ -44,7 +44,6 @@ Server::Server()
     req.push_back(Request());
 
     conf.config_file();
-
     clientId = 0;
 }
 
@@ -93,7 +92,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     if (bytes > 0)
     {
         clientId = i;
-        std::cout << "youssef     1 --\n" << buffer;
+        // std::cout << "youssef     1 ====  " << buffer << "\n\n";
         readRequest(req, clientId, buffer, bytes, conf);
         cout << req[i].clientState << std::endl;
         std::cout << "youssef     5\n\n";
@@ -131,7 +130,7 @@ bool Server::sendRespond(pollfd &p, size_t &i)
         if (data[i].response.empty() && recs[i].status == ACTIVE_RS)
             return (true);
     }
-    int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
+    int sent = send(p.fd, data[i].response.c_str(), data[i].response.size(), MSG_NOSIGNAL);
     recs[i].number += sent;
     if (sent > 0)
     {
@@ -171,7 +170,7 @@ int main(/*int arc,char *arv[]*/)
 
     while (true)
     {
-        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)
+        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)// MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
         {
             std::cout << "poll error\n";
             continue;
@@ -181,7 +180,7 @@ int main(/*int arc,char *arv[]*/)
 
             pollfd &p = obj.fds[i];
 
-            if (p.fd == obj.server_fd && (p.revents & POLLIN))
+            if (p.fd == obj.server_fd && (p.revents & POLLIN))//CHECK ALL SERVER FDS
             {
                 obj.acceptNewCleint(p, i);
                 continue;
