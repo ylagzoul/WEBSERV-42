@@ -93,7 +93,7 @@ bool checkPath(std::string &path)
     {
         if (!splitedPath.empty())
         {
-            cout << splitedPath << std::endl;
+            // cout << splitedPath << std::endl;
             if(!isPrintable(splitedPath))
                 return (false);
             if (!checkPrecentEnc(splitedPath))

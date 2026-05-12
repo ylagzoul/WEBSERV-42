@@ -93,8 +93,8 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     {
         clientId = i;
         readRequest(req, clientId, buffer, bytes, conf);
-        cout << req[i].clientState << std::endl;
-        cout << req[i].status << std::endl;
+        // cout << req[i].clientState << std::endl;
+        // cout << req[i].status << std::endl;
 
         if (req[clientId].clientState == CLIENT_ON)
             p.events |= POLLOUT;
