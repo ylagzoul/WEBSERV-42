@@ -87,8 +87,8 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
 
 bool Server::receiveRequest(pollfd &p, size_t &i)
 {
-    char buffer[1024] = {0};
-    int bytes = recv(p.fd, buffer, 1024, 0);
+    char buffer[8192] = {0};
+    int bytes = recv(p.fd, buffer, 8192, 0);
     if (bytes > 0)
     {
         clientId = i;

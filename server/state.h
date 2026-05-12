@@ -11,6 +11,7 @@ typedef enum e_state
     POST_LIST_RS,
     GET_LIST_RS,
     POST_RS,
+    CGI_ACTIVE,
     NO_MD,
     ERROR_RS
 
