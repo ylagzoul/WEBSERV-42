@@ -67,15 +67,61 @@ void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData)
     cgiData.path = data.cgiScriptFile;
     
 }
-// int i = -1;
-// while(envp[++i])
-//     std::cout << envp[i] << std::endl;
 
-
-int cgiHandler(pollfd &pEvents, playloadData &data, Request &req)
+int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 {
-    CgiHandler cgiData;
-    getCgiEnv(data, req, cgiData);
-    runCgi(pEvents, cgiData, req.method, req.bodyPath);
+    if (cgiData.cgStatusCode == 502)
+    {
+        cgiData.cgStatusName = "Bad Gateway";
+        return 1;
+    }
+    log.fd = open(cgiData.cgBodyFileName.c_str(), O_RDONLY);
+    if (log.fd == -1)
+    {
+        data.status_code = "500";
+        data.statusName = "Internal Server Error";
+        return 1;
+    }
+        getFile(log, data);
+
+    return 0;
+}
+
+int parseCgiResponse(CgiHandler &cgiData)
+{
+    //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
+    //and "Bad Gateway" to cgiData.cgStatusName and return 
+        //                process
+        //                   |
+        //                   |
+        //                   |
+        //                   |
+    //result: cgiHeadersData + bodyFile
+    // case error happen while creating BodyFile , 500 should be set to cgiData.cgStatusCode
+    // "Internal Server Error" in cgiData.cgStatusName and return 1
+    cgiData.cgBuff.clear();
+    return 0;
+}
+
+int cgiHandler(CgiHandler &cgiData, Record &log, pollfd &pEvents, playloadData &data, Request &req)
+{
+    (void)cgiData;
+    (void)log;
+    (void)pEvents;
+    (void)data;
+    (void)req;
+    data.cgiValid = true;
+    // getCgiEnv(data, req, cgiData);
+    // if (runCgi(pEvents, cgiData, req.method, req.bodyPath))
+    //     return 1;
+    // if (cgiData.canRead)
+    // {
+    //     if (parseCgiResponse(cgiData))
+    //         return 1;
+    // }
+    // if (log.method == CGI_ACTIVE)
+    //     return 0;
+    // if (cgiResponseHandler(log, cgiData, data))
+    //     return 1;
     return 0;
 }
