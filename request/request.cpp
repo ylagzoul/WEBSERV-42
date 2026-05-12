@@ -154,6 +154,8 @@ void getRequestLine(Request &req)
     fillCheck(req, req.fullLine.substr(0, pos));
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
+    // cout << req.method << " " << req.httpVersion << " " << req.path << std::endl; 
+    // cout << "size : " << req.fullLine.size() << " content = "<< req.fullLine << std::endl;
 }
 
 void getHeaders(Request &req)
@@ -279,6 +281,7 @@ void getHeaders(Request &req)
 
 void getFixedBody(Request &req, Config con)
 {
+    (void)con;
     static size_t bodyLen;
     req.lenRead += req.fullLine.length();
     if (req.bodyFd == -1)
@@ -292,7 +295,7 @@ void getFixedBody(Request &req, Config con)
         }
     }
     bodyLen += req.fullLine.length();
-    if (bodyLen > con.client_max_body_size)
+    if (bodyLen > 10000000) // after handel
     {
         req.status = 400;
         req.getEndFile = true;
@@ -321,17 +324,20 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
+        // cout << "--->" << req[userId].fullLine.length() << std::endl;
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
-        if (req[userId].method.empty())
+        if (req[userId].method.empty()) // if no /r/n break 
             break ;
-        req[userId].reqState = ONE_ST;
+        else
+            req[userId].reqState = ONE_ST;
         // size_t pos = req[userId].fullLine.find("\r\n\r\n");
         // if (pos == std::string::npos)
         // {
         //     break;
         // }
-        getHeaders(req[userId]);
+        if (req[userId].getEndHeaders == false)
+            getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
         else
@@ -340,7 +346,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
-            if (req[userId].getEndFile)
+            if (req[userId].getEndFile || req[userId].method != "POST")
                 req[userId].clientState = CLIENT_ON;
             req[userId].lenRead = 0;
             break ;
