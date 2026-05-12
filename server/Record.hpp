@@ -19,7 +19,7 @@ public:
     std::string fileName;
     std::string buffer;
 
-    int idFdPipe[4];
+    std::vector<int> idFdPipe;
 };
 
 #endif

@@ -15,6 +15,7 @@
 #include "Record.hpp"
 
 #define DEFAULTBODY 100000000000
+#define SIZESR 8192
 
 // GET /file
 
@@ -43,7 +44,7 @@ public:
 
     size_t clientId;
     std::vector<pollfd> fds;
-    std::vector<int> index_Cleint;
+    std::vector<int> index_Client;
     sockaddr_in addr;
     socklen_t len;
     std::vector<Data> data;
