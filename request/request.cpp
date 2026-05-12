@@ -93,7 +93,7 @@ bool checkPath(std::string &path)
     {
         if (!splitedPath.empty())
         {
-            // cout << splitedPath << std::endl;
+            cout << splitedPath << std::endl;
             if(!isPrintable(splitedPath))
                 return (false);
             if (!checkPrecentEnc(splitedPath))
@@ -289,8 +289,8 @@ void getFixedBody(Request &req, Config con)
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (req.bodyFd == -1)
         {
-            std::cerr << "Error opening file\n";//should be removed and let response handle it
-            req.status = 500;//don't remove this
+            std::cerr << "Error opening file\n";
+            req.status = 500;
             return ;
         }
     }
@@ -320,6 +320,7 @@ void getFixedBody(Request &req, Config con)
 
 void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
 {
+    size_t pos;
     req[userId].fullLine.append(buffer, len);
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
@@ -330,7 +331,10 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         if (req[userId].method.empty()) // if no /r/n break 
             break ;
         else
+        {
+            pos = req[userId].fullLine.find("\r\n");
             req[userId].reqState = ONE_ST;
+        }
         // size_t pos = req[userId].fullLine.find("\r\n\r\n");
         // if (pos == std::string::npos)
         // {
@@ -346,7 +350,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
-            if (req[userId].getEndFile || req[userId].method != "POST")
+            if ((req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos) )
                 req[userId].clientState = CLIENT_ON;
             req[userId].lenRead = 0;
             break ;
