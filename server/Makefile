@@ -14,7 +14,7 @@ SRC = server.cpp \
 			../config_file/line/error_page.cpp Record.cpp\
 			../response/CgiHandler.cpp
 
-SRC_H = server.hpp Record.hpp ../response/CgiHandler.hpp
+SRC_H = server.hpp Record.hpp ../response/CgiHandler.hpp ../config_file/config_file.hpp
 
 
 OBJ = $(SRC:.cpp=.o)

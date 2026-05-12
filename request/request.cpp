@@ -329,7 +329,11 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
         if (req[userId].method.empty()) // if no /r/n break 
+        {
+            if (req[userId].status == 400)
+                req[userId].clientState = CLIENT_ON;
             break ;
+        }
         else
         {
             pos = req[userId].fullLine.find("\r\n");
@@ -350,9 +354,9 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
-            if ((req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos) )
+            if ((req[userId].status == 400) || (req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos) )
                 req[userId].clientState = CLIENT_ON;
-            req[userId].lenRead = 0;
+            req[userId].lenRead = 0;    
             break ;
         }    
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
@@ -362,6 +366,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
 
         if (req[userId].finFlag)
         {
+            cout << "SFSFSFSF\n";
             req[userId].reqState = SECOND_ST;
             req[userId].clientState = CLIENT_ON;
             break;
