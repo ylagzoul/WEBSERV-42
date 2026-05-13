@@ -21,12 +21,13 @@ server {
         error_page 404 /errors/404.html;
         autoindex on;
     }
-    location /files {
+    location / {
         methods GET POST DELETE;
-        root /tmp/www/files;
+        root /home/ylagzoul/Desktop/web/;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         upload_path server;
+        cgi_data .py /bin/usr/ls;
         autoindex on;
     }
 }

@@ -36,6 +36,8 @@ int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
         obj.req.push_back(Request());
         obj.data.push_back(Data());
     }
+    obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].events = POLLOUT;
+
 
     if (method == "POST")
     {
@@ -129,10 +131,11 @@ int runCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
         if (NewCgi(obj, cgiData, method, bodyFile))
             return(1);
     }
-
+    
     pid_t pid = fork();
     if (pid == -1)
         return (erorrCgi(cgiData));
+    
 
     if (pid == 0)
     {
@@ -143,6 +146,7 @@ int runCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
     {
         if (readFromCgi(obj, cgiData,method))
             return (1);
+        // std::cout << "youssef11\n";
     }
     return 0;
 }
