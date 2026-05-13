@@ -18,7 +18,6 @@ std::string normalizeKey(std::string key)
     return key;
 }
 
-
 void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData)
 {
     std::string pathInfo = "PATH_INFO=";

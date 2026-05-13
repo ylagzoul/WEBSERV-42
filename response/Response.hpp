@@ -59,7 +59,8 @@ class playloadData
 
 #include "CgiHandler.hpp"
 
-void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
+void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log);
+
 int getFile(Record &log, playloadData &data);
 
 std::string respond(pollfd &pEvents, playloadData &data, Record &log, Config &conf, Request &req);
