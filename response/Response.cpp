@@ -784,7 +784,7 @@ int responseHandler(CgiHandler &cgiData, Server &obj, Record &log, Request &req,
     }
     else if (req.method == "DELETE")
     {
-        if (deleteHandler(log, data))
+        if (deleteHandler(log,data))
             return 1;
     }
     return 0;
