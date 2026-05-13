@@ -18,14 +18,11 @@ std::string normalizeKey(std::string key)
     return key;
 }
 
-void NewCgi(Server &obj, std::string method)
+int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
     int outputPipe[2];
     if (pipe(outputPipe) == -1)
-    {
-        std::cout << "Pipe Failed" << std::endl;
-        exit(1);
-    }
+        return (erorrCgi(cgiData));
 
     for (int i = 0; i < 2; i++)
     {
@@ -43,11 +40,11 @@ void NewCgi(Server &obj, std::string method)
     if (method == "POST")
     {
         int inputPipe[2];
+        cgiData.bodyFd = open(bodyFile.c_str(), O_RDONLY, 0644);
+        if (cgiData.bodyFd < 0)
+            return (erorrCgi(cgiData));
         if (pipe(inputPipe) == -1)
-        {
-            std::cout << "Pipe Failed" << std::endl;
-            exit(1);
-        }
+            return (erorrCgi(cgiData));
         for (int i = 0; i < 2; i++)
         {
             pollfd client_poll;
@@ -60,112 +57,96 @@ void NewCgi(Server &obj, std::string method)
             obj.req.push_back(Request());
             obj.data.push_back(Data());
         }
+        obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].events = POLLOUT;
     }
+    return (0);
 }
 
-void read_bodyfile(Server &obj, std::string bodyFile)
+
+int outputcgi(Server &obj, CgiHandler &cgiData, std::string method)
 {
-    if (obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].revents & POLLOUT)
+    if (obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].revents & POLLOUT)
     {
-        int bytes_r;
-        char buffer[SIZESR];
-        int fd = open(bodyFile.c_str(), O_RDONLY, 0644);
-        bytes_r = read(fd, buffer, SIZESR);
-        write(obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].fd, buffer, SIZESR);
-
-        if (bytes_r == 0)
+        if (method == "POST")
         {
-
-            obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].events = POLLIN;
-            dup2(STDIN_FILENO, obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].fd);
+            if (dup2(STDIN_FILENO, obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].fd) < 0)
+                return (erorrCgi(cgiData));
+            close(obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].fd);
+            close(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd);
         }
 
-    }
-}
-
-
-
-void outputcgi(Server &obj, CgiHandler &cgiData)
-{
-    dup2(obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].fd, STDOUT_FILENO);
-
-    execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
-}
-
-
-
-void readFromCgi(Server &obj, CgiHandler &cgiData, std::string bodyFile)
-{
-    char buffer[SIZESR];
-    read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR);
-    cgiData.cgBuff = *buffer;
-}
-
-
-
-void startCgiPost(Server &obj, CgiHandler &cgiData, std::string bodyFile, pid_t pid)
-{
-    (void)bodyFile;
-
-    char buffer[SIZESR];
-    if (pid == 0)
-    {
+        if (dup2(obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].fd, STDOUT_FILENO) < 0)
+            return (erorrCgi(cgiData));
         close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
-        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd);
-
-        read_bodyfile(obj, bodyFile);
-        outputcgi(obj, cgiData);
-    }
-    else
-    {
-        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].fd);
         close(obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].fd);
-        readFromCgi(obj, cgiData, bodyFile);
-    }
-}
-
-void startCgiGet(Server &obj, CgiHandler &cgiData, pid_t pid)
-{
-    char buffer[1024];
-    if (pid == 0)
-    {
-        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
-
-        dup2(obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].fd, STDOUT_FILENO);
 
         execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
     }
-    else
+    return (0);
+}
+
+
+
+int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
+{
+    close(obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].fd);
+
+    if (method == "POST")
     {
-        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].fd);
-        read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR);
-        std::fstream file("test.txt", std::ios::in | std::ios::out | std::ios::app);
-        file << buffer;
+        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].fd);
+        if (obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].revents & POLLOUT)
+        {
+            int bytes_r;
+            char buffer[SIZESR];
+            
+            bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
+            if (bytes_r < 0)
+                return (erorrCgi(cgiData));
+
+            if (write(obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].fd, buffer, SIZESR) < 0)
+                return (erorrCgi(cgiData));
+        }
     }
+
+    if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & POLLIN)
+    {
+        char buffer[SIZESR];
+        int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR-1);
+        if (bytes < 0)
+            return (erorrCgi(cgiData));
+        cgiData.cgBuff = *buffer;
+        buffer[bytes] = '\0';
+        std::cout << buffer << std::endl;
+    }
+    return (0);
 }
 
 
 int runCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
+    if (1 /*newcgi == true*/)
+    {
+        if (NewCgi(obj, cgiData, method, bodyFile))
+            return(1);
+    }
+
     pid_t pid = fork();
     if (pid == -1)
         return (erorrCgi(cgiData));
 
-    if (1 /*newcgi == true*/)
+    if (pid == 0)
     {
-        NewCgi(obj, method);
+        if (outputcgi(obj, cgiData,method))
+            return (1);
     }
-
-    if (method == "POST")
+    else
     {
-        startCgiPost(obj, cgiData, bodyFile, pid);
-    }
-    else if (method == "GET")
-    {
-        startCgiGet(obj, cgiData, pid);
+        if (readFromCgi(obj, cgiData,method))
+            return (1);
     }
     return 0;
 }
+
 void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData, std::vector<int> &listenPorts)
 {
     std::string pathInfo = "PATH_INFO=";

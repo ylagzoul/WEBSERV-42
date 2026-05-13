@@ -7,6 +7,7 @@ class CgiHandler
 {
 public:
     int fd[2];
+    int bodyFd;
     char **env;
     char *const *executeablePath;
     int cgStatusCode;
