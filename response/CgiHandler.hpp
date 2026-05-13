@@ -1,8 +1,8 @@
 #ifndef CGIHANDLER_HPP
 #define CGIHANDLER_HPP
 
-#include "../server/server.hpp"
-
+#include <string>
+#include <map>
 
 // typedef enum e_client_state_cgi
 // {
@@ -23,12 +23,17 @@
 class CgiHandler
 {
     public:
+    CgiHandler();
     int bodyFd;
     char *const *executeablePath;
     std::string path;
     char *const *env;
     int canRead;
-
+    
+    // -------------------------------------------------- //
+    bool dataReady;
+    bool cgiValid;
+    
     // --------------attributes for parsing-------------- //
     std::string cgBuff;
     int cgStatusCode;
@@ -49,7 +54,12 @@ class CgiHandler
     // t_req_state_cgi     reqState;
     // int bodyType;
 };
-int cgiHandler(CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts);
 
+#include "../server/server.hpp"
+
+
+int cgiHandler(Record &log, CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts);
+
+int cgiProcess(CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req);
 
 #endif

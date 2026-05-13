@@ -24,7 +24,7 @@ class Server;
 class playloadData
 {
     public:
-        std::string status_code;
+        std::string statusCode;
         std::string statusName;
         std::string connection;
         std::string contentType;
@@ -50,7 +50,6 @@ class playloadData
         
         int autoIndex;
         bool isCgi;
-        bool cgiValid;
         bool retValid;
         int listFd;
         int uploadOn;
@@ -62,7 +61,8 @@ class playloadData
 
 #include "CgiHandler.hpp"
 
-void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
+void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log);
+
 int getFile(Record &log, playloadData &data);
 
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req);

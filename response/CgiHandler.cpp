@@ -6,6 +6,12 @@ int erorrCgi(CgiHandler &cgiData)
     cgiData.cgStatusName = "Internal Server Error";
     return 1;
 }
+CgiHandler::CgiHandler()
+{
+    dataReady = false;
+    cgiValid = false; 
+    canRead = false;
+}
 
 std::string normalizeKey(std::string key)
 {
@@ -16,6 +22,22 @@ std::string normalizeKey(std::string key)
             key[i] = '_';
     }
     return key;
+}
+
+int parseCgiResponse(CgiHandler &cgiData)
+{
+    //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
+    //and "Bad Gateway" to cgiData.cgStatusName and return 
+        //                process
+        //                   |
+        //                   |
+        //                   |
+        //                   |
+    //result: cgiHeadersData + bodyFile
+    // case error happen while creating BodyFile , 500 should be set to cgiData.cgStatusCode
+    // "Internal Server Error" in cgiData.cgStatusName and return 1
+    cgiData.cgBuff.clear();
+    return 0;
 }
 
 int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
@@ -87,8 +109,6 @@ int outputcgi(Server &obj, CgiHandler &cgiData, std::string method)
     return (0);
 }
 
-
-
 int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
 {
     close(obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].fd);
@@ -124,6 +144,7 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
 }
 
 
+
 int runCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
     if (1 /*newcgi == true*/)
@@ -148,6 +169,8 @@ int runCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
             return (1);
         // std::cout << "youssef11\n";
     }
+    if (cgiData.canRead) /* CHEEEECK /!\*/
+        parseCgiResponse(cgiData);
     return 0;
 }
 
@@ -195,21 +218,64 @@ void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData, std::vecto
     for (size_t i = 0; i < headers.size(); i++)
         env.push_back((char *)headers[i].c_str());
     env.push_back(NULL);
-    cgiData.env = env.data();
+    cgiData.env = &env[0];
 
     exFile.push_back((char *)data.cgiExecutePath.c_str());
     exFile.push_back(NULL);
-    cgiData.executeablePath = exFile.data();
+    cgiData.executeablePath = &exFile[0];
     cgiData.path = data.cgiScriptFile;
-}
 
 // int i = -1;
 // while (cgiData.env[++i])
 //     std::cout << env[i] << std::endl;
 
-int cgiHandler(CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts)
+}
+
+int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 {
+    if (cgiData.cgStatusCode != 200)
+    {
+        data.statusName = cgiData.cgStatusName;
+        data.statusCode = cgiData.cgStatusCode;
+        return 1;
+    }
+    log.fd = open(cgiData.cgBodyFileName.c_str(), O_RDONLY);
+    if (log.fd == -1)
+    {
+        data.statusCode = "500";
+        data.statusName = "Internal Server Error";
+        return 1;
+    }
+    if (getFile(log, data))
+        return 1;
+    return 0;
+}
+
+int cgiProcess(CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req)
+{
+    // he should set log.status to CGI_ACTIVE and log.method to CGI_RDWR
+    // he should set log.status to ERROR_RS and cgiData.cgStatusName and cgiData.cgStatusCode
+        // to its proper data
+    // he should check whether the parser ends or not to close the file was opened
+    if (runCgi(obj, cgiData, req.method, req.bodyPath))
+        log.status = ERROR_RS;
+    if (cgiData.dataReady == true || log.status == ERROR_RS)
+    {
+        if (cgiResponseHandler(log, cgiData, data))
+            return 1;
+        else
+            cgiData.cgiValid = true;
+    }
+    return 0;
+}
+
+int cgiHandler(Record &log, CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts)
+{
+    if (log.status == NEW_RS)
+        cgiData.dataReady = false;
     getCgiEnv(data, req, cgiData, listenPorts);
-    runCgi(obj, cgiData, req.method, req.bodyPath);
+
+    if (cgiProcess(cgiData, log, obj, data, req))
+        return 1;
     return 0;
 }

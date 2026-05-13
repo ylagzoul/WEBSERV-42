@@ -3,17 +3,22 @@
 
 typedef enum e_state
 {
+    //status
     NEW_RS = 100,
     ACTIVE_RS,
     CLOSED_RS,
+    CGI_ACTIVE,
+    ERROR_RS,
+
+    //methods
     NONE_RS,
     GET_RS,
     POST_LIST_RS,
     GET_LIST_RS,
     POST_RS,
-    CGI_ACTIVE,
-    NO_MD,
-    ERROR_RS
+    CGI_RDWR,
+    NO_MD
+    
 
 } t_state;
 
