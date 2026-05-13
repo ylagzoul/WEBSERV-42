@@ -6,7 +6,7 @@ methods GET DELETE          ;// not error
 Default:	client_max_body_size 1m; // ==> this good
 
 HTTP response status codes
-100 <= status_code <= 599 // in error_page
+100 <= statusCode <= 599 // in error_page
 
 
 

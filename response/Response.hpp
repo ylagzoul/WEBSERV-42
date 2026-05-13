@@ -24,7 +24,7 @@ class Server;
 class playloadData
 {
     public:
-        std::string status_code;
+        std::string statusCode;
         std::string statusName;
         std::string connection;
         std::string contentType;
@@ -50,7 +50,6 @@ class playloadData
         
         int autoIndex;
         bool isCgi;
-        bool cgiValid;
         bool retValid;
         int listFd;
         int uploadOn;

@@ -1,5 +1,12 @@
 #include "CgiHandler.hpp"
 
+CgiHandler::CgiHandler()
+{
+    dataReady = false;
+    cgiValid = false; 
+    canRead = false;
+}
+
 std::string normalizeKey(std::string key)
 {
     for(size_t i = 0; i < key.length(); i++)
@@ -11,17 +18,6 @@ std::string normalizeKey(std::string key)
     return key;
 }
 
-int runCgi(pollfd &pEvents, CgiHandler &cgiData, std::string method, std::string bodyFile)
-{
-    (void)cgiData;
-    (void)method;
-    //if method post
-    ////    write to cgi
-    (void)bodyFile;
-    (void)pEvents;
-
-    return 0;
-}
 
 void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData)
 {
@@ -62,28 +58,28 @@ void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData)
     for(size_t i = 0; i < headers.size(); i++)
         env.push_back(headers[i].c_str());
     env.push_back(NULL);
-    cgiData.env = env.data();
+    cgiData.env = &env[0];
     cgiData.executeablePath = data.cgiExecutePath;
     cgiData.path = data.cgiScriptFile;
-    
 }
 
 int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 {
-    if (cgiData.cgStatusCode == 502)
+    if (cgiData.cgStatusCode != 200)
     {
-        cgiData.cgStatusName = "Bad Gateway";
+        data.statusName = cgiData.cgStatusName;
+        data.statusCode = cgiData.cgStatusCode;
         return 1;
     }
     log.fd = open(cgiData.cgBodyFileName.c_str(), O_RDONLY);
     if (log.fd == -1)
     {
-        data.status_code = "500";
+        data.statusCode = "500";
         data.statusName = "Internal Server Error";
         return 1;
     }
-        getFile(log, data);
-
+    if (getFile(log, data))
+        return 1;
     return 0;
 }
 
@@ -103,25 +99,45 @@ int parseCgiResponse(CgiHandler &cgiData)
     return 0;
 }
 
-int cgiHandler(CgiHandler &cgiData, Record &log, pollfd &pEvents, playloadData &data, Request &req)
+int runCgi(pollfd &pEvents, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
     (void)cgiData;
-    (void)log;
+    (void)method;
+    //if method post
+    ////    write to cgi
+    (void)bodyFile;
     (void)pEvents;
-    (void)data;
-    (void)req;
-    data.cgiValid = true;
-    // getCgiEnv(data, req, cgiData);
-    // if (runCgi(pEvents, cgiData, req.method, req.bodyPath))
-    //     return 1;
-    // if (cgiData.canRead)
-    // {
-    //     if (parseCgiResponse(cgiData))
-    //         return 1;
-    // }
-    // if (log.method == CGI_ACTIVE)
-    //     return 0;
-    // if (cgiResponseHandler(log, cgiData, data))
-    //     return 1;
+    if (cgiData.canRead) // SHOULD BE INSIDE THE RUN CGI
+        parseCgiResponse(cgiData);
+    return 0;
+}
+
+
+int cgiProcess(CgiHandler &cgiData, Record &log, pollfd &pEvents, playloadData &data, Request &req)
+{
+    // he should set log.status to CGI_ACTIVE and log.method to CGI_RDWR
+    // he should set log.status to ERROR_RS and cgiData.cgStatusName and cgiData.cgStatusCode
+        // to its proper data
+    // he should check whether the parser ends or not to close the file was opened
+    if (runCgi(pEvents, cgiData, req.method, req.bodyPath))
+        log.status = ERROR_RS;
+    if (cgiData.dataReady == true || log.status == ERROR_RS)
+    {
+        if (cgiResponseHandler(log, cgiData, data))
+            return 1;
+        else
+            cgiData.cgiValid = true;
+    }
+    return 0;
+}
+
+int cgiHandler(CgiHandler &cgiData, Record &log, pollfd &pEvents, playloadData &data, Request &req)
+{
+    if (log.status == NEW_RS)
+        cgiData.dataReady = false;
+    getCgiEnv(data, req, cgiData);
+
+    if (cgiProcess(cgiData, log, pEvents, data, req))
+        return 1;
     return 0;
 }
