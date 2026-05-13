@@ -1,7 +1,8 @@
 
 #include "response/CgiHandler.hpp"
+// #include "server/server.hpp"
 
-CgiHandler::CgiHandler() : lenRead(0), bodyFd(-1), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
+CgiHandler::CgiHandler() : cgStatusCode(200), cgStatusName("OK"), lenRead(0), bodyFd(-1), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST) {};
 
 
 
@@ -29,85 +30,6 @@ std::string toStr(int nb)
     return (ss.str());
 }
 
-bool isHex(char h)
-{
-    return ( h >= '0' && h <= '9' ) ||
-           ( h >= 'a' && h <= 'f' ) ||
-           ( h >= 'A' && h <= 'F' ); 
-}
-
-int hexValue(char c)
-{
-    if (c >= '0' && c <= '9')
-        return (c - '0');
-    if (c >= 'A' && c <= 'F')
-        return (c - 'A' + 10);
-    if (c >= 'a' && c <= 'f')
-        return (c - 'a' + 10);
-    return (-1);
-}
-
-char hexToChar(char a, char b)
-{
-    int high = hexValue(a);
-    int low  = hexValue(b);
-
-    return ((high << 4) | low);
-}
-
-bool checkPrecentEnc(std::string &pathSlice)
-{
-    std::string copyPath = pathSlice;
-    pathSlice.clear();
-    for (size_t i = 0; i < copyPath.length(); i++)
-    {
-        if (copyPath.at(i) == '%')
-        {
-            // std::cout << "Found % at index: " << i << std::endl;
-            if(!copyPath[i + 1] || !copyPath[i + 2])
-                return (false);
-            if (!isHex((char)copyPath.at(i+1)) || !isHex((char)copyPath.at(i+2)))
-                return(false);
-            char res = hexToChar(copyPath.at(i+1), copyPath.at(i+2));
-            if ((unsigned char)res > 127)
-                return false;
-            pathSlice += res;
-            i += 2;
-        }
-        else
-        {
-            pathSlice += copyPath.at(i);
-        }
-    }
-    return (true);
-}
-
-bool checkPath(std::string &path)
-{
-    std::stringstream iss(path);
-    std::string splitedPath;
-    std::string tmp;
-
-    if (path.at(0) != '/')
-        return (false);
-    else if (path.at(0) == '/' && path.length() == 1)
-        return (true);
-    while (getline(iss, splitedPath, '/'))
-    {
-        if (!splitedPath.empty())
-        {
-            // cout << splitedPath << std::endl;
-            if(!isPrintable(splitedPath))
-                return (false);
-            if (!checkPrecentEnc(splitedPath))
-                return (false);
-        }
-        tmp += "/";
-        tmp += splitedPath;
-    }
-    path = tmp;
-    return (true);
-}
 
 bool isLfCr(const std::string &str)
 {
@@ -119,46 +41,12 @@ bool isLfCr(const std::string &str)
     return (true);
 }
 
-void fillCheck(Request &req, std::string reqLine)
+void    parseLine(std::string str, CgiHandler &cgiData)
 {
-    std::stringstream splitReq(reqLine);
-    std::string slice;
-    std::vector<std::string> array;
-    while (splitReq >> slice)
-        array.push_back(slice);
-    if (array.size() != 3)
-    {
-        req.status = 400;
-        req.finFlag = true;
-        return;
-    }
-    if (array[2] != "HTTP/1.1" && array[2] != "HTTP/1.0")
-    {
-        req.status = 400;
-        req.finFlag = true;
-        return;
-    }
-    req.method = array[0];
-    req.path = array[1];
-    req.httpVersion = array[2];
-    if (!checkPath(req.path))
-    {
-        req.status = 400;
-        req.finFlag = true;
-        return;
-    }
-}
-
-void getRequestLine(Request &req)
-{
-    size_t pos = req.fullLine.find("\r\n");
-    if (pos == std::string::npos)
-        return;
-    fillCheck(req, req.fullLine.substr(0, pos));
-    req.lenRead += req.fullLine.substr(0, pos + 2).length();
-    req.fullLine.erase(0, pos + 2);
-    // cout << req.method << " " << req.httpVersion << " " << req.path << std::endl; 
-    // cout << "size : " << req.fullLine.size() << " content = "<< req.fullLine << std::endl;
+    std::stringstream iss(str);
+    iss >> cgiData.cgStatusCode >> cgiData.cgStatusName;
+    if (!cgiData.cgStatusName.empty() && cgiData.cgStatusName.at(0) == ' ')
+        cgiData.cgStatusName.erase(0, 1);
 }
 
 void getHeaders(CgiHandler &cgiData)
@@ -172,23 +60,16 @@ void getHeaders(CgiHandler &cgiData)
         cgiData.getEndHeaders = true;
         cgiData.lenRead += cgiData.fullLine.substr(0, endLine + 2).length();
         cgiData.fullLine.erase(0, endLine + 2);
-        std::map<std::string, std::string>::iterator it;
-        it = cgiData.cgHeaders.find("transfer-encoding");
-        if (cgiData.cgHeaders.find("host") != cgiData.cgHeaders.end())
-            cgiData.host = cgiData.cgHeaders["host"];
-        if (it != cgiData.cgHeaders.end() && it->second == "chunked")
-            cgiData.bodyType = CHUNKED;
-        else if (cgiData.cgHeaders.find("content-length") != cgiData.cgHeaders.end())
+        if (cgiData.cgHeaders.find("content-length") == cgiData.cgHeaders.end() || cgiData.cgHeaders.find("content-type") == cgiData.cgHeaders.end())
         {
-            cgiData.contentLength = std::atoi(cgiData.cgHeaders["content-length"].c_str());
-            cgiData.bodyType = FIXED;
-        }
-        else if (cgiData.method != "GET")
-        {
-            cgiData.status = 400;
+            cgiData.cgStatusCode = 502;
+            cgiData.cgStatusName = "Bad Gateway";
             cgiData.finFlag = true;
             return;
         }
+        if (cgiData.cgHeaders.find("status") != cgiData.cgHeaders.end())
+            parseLine(cgiData.cgHeaders["status"], cgiData);
+        cgiData.contentLength = std::atoi(cgiData.cgHeaders["content-length"].c_str());
         return;
     }
     size_t colon = line.find(':');
@@ -197,90 +78,28 @@ void getHeaders(CgiHandler &cgiData)
         std::string key = line.substr(0, colon);
         std::string value = line.substr(colon + 1);
         key.erase(std::remove(key.begin(), key.end(), ' '), key.end());
-        if (!isPrintable(key))
-        {
-            req.status = 400;
-            req.finFlag = true;
-            return;
-        }
         value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
-        if (!isLfCr(value)) //useless
+        if (!isPrintable(key) || !isLfCr(value))
         {
-            req.status = 400;
-            req.finFlag = true;
-            return;
+            cgiData.cgStatusCode = 502;
+            cgiData.cgStatusName = "Bad Gateway";
+            cgiData.finFlag = true;
+            return ;
         }
-        req.headers[tolowerStr(key)] = value;
+        cgiData.cgHeaders[tolowerStr(key)] = value;
     }
-    req.lenRead += req.fullLine.substr(0, endLine + 2).length();
-    req.fullLine.erase(0, endLine + 2);
+    else
+    {
+        cgiData.cgStatusCode = 502;
+        cgiData.cgStatusName = "Bad Gateway";
+        cgiData.finFlag = true;
+        return ;
+    }
+    cgiData.lenRead += cgiData.fullLine.substr(0, endLine + 2).length();
+    cgiData.fullLine.erase(0, endLine + 2);
     return;
 }
 
-// void getChunkedBody(Request &req)
-// {
-//     (void)fd;
-//     std::vector<int> nb;
-//     if (req.fdFile == -1)
-//     {
-//         req.fdFile = open("output.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
-//         if (req.fdFile == -1)
-//             throw std::runtime_error("Error file");
-//     }
-//     while (true)
-//     {
-//         if (std::strtol(req.fullLine.c_str(), NULL, 16) == 0 && req.fullLine.length() == 1)
-//             req.fullLine.append("\n");
-//         size_t pos = req.fullLine.find("\n");
-//         if (pos == std::string::npos)
-//         {
-//             break ;
-//         }
-//         std::string sizeStr = req.fullLine.substr(0, pos);
-//         size_t finalRead = req.fullLine.find("0\n\n");
-//         // cout << finalRead << "=>" << req.fullLine << std::endl;
-//         req.fullLine.erase(0, pos + 1);
-
-//         int chunkSize = std::strtol(sizeStr.c_str(), NULL, 16);
-//         nb.push_back(chunkSize);
-//         if (chunkSize == 0)
-//         {
-//             if (finalRead == std::string::npos)
-//             {
-//                 req.status = 400;
-//                 close(req.fdFile);
-//                 throw std::runtime_error("Bad request");
-//             }
-//             req.fullLine.erase(0, 1);
-//             req.getEndFile = true;
-//             close(req.fdFile);
-//             return ;
-//         }
-//         size_t pos2 = req.fullLine.find("\n");
-//         std::string subStr = req.fullLine.substr(0, pos2);
-//         if (subStr.length() < (size_t)chunkSize)
-//         {
-//             req.status = 400;
-//             close(req.fdFile);
-//             throw std::runtime_error("Bad request");
-//         }
-//         std::string data = req.fullLine.substr(0, chunkSize);
-//         write(req.fdFile, data.c_str(), data.size());
-//         req.fullLine.erase(0, pos2 + 1);
-//         if (chunkSize != 0)
-//             readRequest(req, fd);
-//     }
-//     // I Have new logic is made Here ;
-//     int i = 0;
-//     while (i < nb.size())
-//     {
-//         if (nb[i] == 0)
-//             break;
-//         i++;
-//     }
-//     if ( i != nb.size() )
-//         readRequest(req, fd);
-// }
 
 void getFixedBody(Request &req, Config con)
 {
@@ -336,45 +155,38 @@ int parseCgiResponse(CgiHandler &cgiData)
     // "Internal Server Error" in cgiData.cgStatusName and return 1
 
     size_t pos;
-    cgiData.fullLine.append(cgiData.cgBuff, cgiData.cgBuff.length());
+    cgiData.fullLine.append(cgiData.cgBuff.c_str(), cgiData.cgBuff.length());
     cgiData.bodyPath = BODY_FILE_PATH + std::string("cgiCleint") + toStr(1);
+    // cout << cgiData.cgBuff.length() << std::endl;
     while (1)
     {
         if (cgiData.getEndHeaders == false)
             getHeaders(cgiData);
-        if (cgiData.getEndHeaders == false)
-            getHeaders(cgiData);
         else
-            cgiData.reqState = SECOND_ST;
-        if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
-            getFixedBody(req[userId], con);
-        if (req[userId].lenRead == len)
+            cgiData.reqState = SECOND_CGI_ST;
+        // if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
+        //     getFixedBody(req[userId], con);
+        if (cgiData.lenRead == cgiData.cgBuff.length())
         {
-            if ((req[userId].status == 400) || (req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos) )
-                req[userId].clientState = CLIENT_ON;
-            req[userId].lenRead = 0;    
+            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || pos != std::string::npos)
+                cgiData.clientState = CLIENT_CGI_ON;
+            cgiData.lenRead = 0;    
             break ;
         }    
-        // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
-        //     getChunkedBody(req);
-        if ((req[userId].getEndFile) || (req[userId].method != "POST" && !req[userId].method.empty()))
-            req[userId].finFlag = true;
+        // // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
+        // //     getChunkedBody(req);
+        if (cgiData.getEndHeaders)
+            cgiData.finFlag = true;
+        if (cgiData.getEndFile)
+            cgiData.finFlag = true;
 
-        if (req[userId].finFlag)
+        if (cgiData.finFlag)
         {
-            cout << "SFSFSFSF\n";
-            req[userId].reqState = SECOND_ST;
-            req[userId].clientState = CLIENT_ON;
+            cgiData.reqState = SECOND_CGI_ST;
+            cgiData.clientState = CLIENT_CGI_ON;
             break;
         }
     }
-    return;
-
-
-
-
-
-
 
     cgiData.cgBuff.clear();
     return 0;
@@ -382,5 +194,77 @@ int parseCgiResponse(CgiHandler &cgiData)
 
 int main()
 {
+    CgiHandler cgi;
+    std::string buffer;
+    buffer =
+    "Content-Type: text/html\r\n"
+    "Content-Length: 5\r\n"
+    "Set-Cookie: sessionId=abc123xyz789; Path=/; HttpOnly\r\n"
+    "X-Powered-By: custom-cgi-engine\r\n"
+    "Cache-Control: no-cache\r\n"
+    "Status: 404 Not Found\r\n"
+    "Content-Type: text/html\r\n"
+    "X-Error-Code: FILE_MISSING\r\n"
+    "\r\n"
+    "<!DOCTYPE html>\n"
+    "<html lang=\"en\">\n"
+    "<head>\n"
+    "    <title>User Dashboard</title>\n"
+    "    <meta charset=\"UTF-8\">\n"
+    "</head>\n"
+    "<body>\n"
+    "    <h1>Welcome back, Abdessamad</h1>\n"
+    "\n"
+    "    <div class=\"profile\">\n"
+    "        <h2>Account Information</h2>\n"
+    "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"
+    "    </div>\n"
+    "\n"
+    "    <div class=\"notifications\">\n"
+    "        <h2>Notifications</h2>\n"
+    "        <p>You have 5 unread messages.</p>\n"
+    "        <p>Your storage usage is 73%.</p>\n"
+    "    </div>\n"
+    "\n"
+    "    <div class=\"recent-files\">\n"
+    "        <h2>Recent Files</h2>\n"
+    "        <table border=\"1\">\n"
+    "            <tr>\n"
+    "                <th>Filename</th>\n"
+    "                <th>Size</th>\n"
+    "                <th>Modified</th>\n"
+    "            </tr>\n"
+    "            <tr>\n"
+    "                <td>report.pdf</td>\n"
+    "                <td>1.2 MB</td>\n"
+    "                <td>2026-05-11</td>\n"
+    "            </tr>\n"
+    "            <tr>\n"
+    "                <td>notes.txt</td>\n"
+    "                <td>14 KB</td>\n"
+    "                <td>2026-05-10</td>\n"
+    "            </tr>\n"
+    "            <tr>\n"
+    "                <td>archive.tar.gz</td>\n"
+    "                <td>92 MB</td>\n"
+    "                <td>2026-05-08</td>\n"
+    "            </tr>\n"
+    "        </table>\n"
+    "    </div>\n"
+    "</body>\n"
+    "</html>\n";
+    cgi.cgBuff = buffer;
+    parseCgiResponse(cgi);
+    std::map<std::string, std::string>::iterator it;
 
+    for (it = cgi.cgHeaders.begin(); it != cgi.cgHeaders.end(); ++it)
+    {
+        std::cout << it->first << ":" << it->second << std::endl;
+    }   
+    std::cout << "-->" << cgi.cgStatusCode << std::endl;
 }

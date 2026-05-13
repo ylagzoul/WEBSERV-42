@@ -321,6 +321,7 @@ void getFixedBody(Request &req, Config con)
 void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
 {
     size_t pos;
+    std::string tes;
     req[userId].fullLine.append(buffer, len);
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
@@ -337,6 +338,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         else
         {
             pos = req[userId].fullLine.find("\r\n");
+            tes = req[userId].fullLine;
             req[userId].reqState = ONE_ST;
         }
         // size_t pos = req[userId].fullLine.find("\r\n\r\n");
@@ -354,7 +356,8 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
-            if ((req[userId].status == 400) || (req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos) )
+            // cout << tes << "-->" << tes.length() << std::endl;
+            if ((req[userId].status == 400) || (req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos && tes.length() == 2) )
                 req[userId].clientState = CLIENT_ON;
             req[userId].lenRead = 0;    
             break ;

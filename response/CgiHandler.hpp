@@ -4,21 +4,21 @@
 #include "../server/server.hpp"
 
 
-// typedef enum e_client_state
+// typedef enum e_client_state_cgi
 // {
-//     CLIENT_OF,
-//     CLIENT_ON,
-//     CLIENT_ERROR
+//     CLIENT_CGI_OF,
+//     CLIENT_CGI_ON,
+//     CLIENT_CGI_ERROR
 
-// } t_client_state;
+// } t_client_state_cgi;
 
-// typedef enum e_req_state
+// typedef enum e_req_state_cgi
 // {
-//     DEFAULT_ST = 10,
-//     ONE_ST,
-//     SECOND_ST,
+//     DEFAULT_CGI_ST = 10,
+//     ONE_CGI_ST,
+//     SECOND_CGI_ST,
 
-// } t_req_state;
+// } t_req_state_cgi;
 
 class CgiHandler
 {
@@ -44,8 +44,9 @@ class CgiHandler
         // bool        finFlag;
         // bool        getEndFile;
         // size_t      contentLength;
-        // t_client_state  clientState;
-        // t_req_state     reqState;
+        // t_client_state_cgi  clientState;
+        // t_req_state_cgi     reqState;
+        // int bodyType;
 
 };
 

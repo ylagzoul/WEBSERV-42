@@ -12,7 +12,7 @@
 # define MAXIP 256
 
 # define LIST_FILE_PATH "/home/m/Desktop/WEBSERV-42/server"
-# define BODY_FILE_PATH "/home/m/Desktop/goinfre"
+# define BODY_FILE_PATH "/home/m/Desktop/goinfre/"
 # define CONF_FILE_PATH "/home/m/Desktop/WEBSERV-42/config_file/file_config_file/moha.nginx"
 // # define LIST_FILE_PATH "/home/abouhki/goinfre"
 // # define BODY_FILE_PATH "/home/abouhki/goinfre"
