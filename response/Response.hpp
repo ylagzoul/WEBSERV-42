@@ -25,7 +25,7 @@ class playloadData
 {
     public:
         std::string status_code;
-        std::string resMessage;
+        std::string statusName;
         std::string connection;
         std::string contentType;
         std::string realPath;
@@ -44,10 +44,14 @@ class playloadData
         std::string cgiScriptFile;
         std::string cgiFile;
         std::string cgiExecutePath;
+        std::string retPath;
+        int retCode;
         size_t bodySize;
         
         int autoIndex;
         bool isCgi;
+        bool cgiValid;
+        bool retValid;
         int listFd;
         int uploadOn;
         int cgiDataPos;
@@ -59,6 +63,7 @@ class playloadData
 #include "CgiHandler.hpp"
 
 void generateResponse(playloadData &data, std::string &ret_resp, Record &log, t_state pastMethod);
+int getFile(Record &log, playloadData &data);
 
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req);
 

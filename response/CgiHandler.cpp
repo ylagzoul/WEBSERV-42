@@ -207,9 +207,8 @@ void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData, std::vecto
 // while (cgiData.env[++i])
 //     std::cout << env[i] << std::endl;
 
-int cgiHandler(Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts)
+int cgiHandler(CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts)
 {
-    CgiHandler cgiData;
     getCgiEnv(data, req, cgiData, listenPorts);
     runCgi(obj, cgiData, req.method, req.bodyPath);
     return 0;

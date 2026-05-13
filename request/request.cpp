@@ -84,24 +84,25 @@ bool checkPath(std::string &path)
     std::stringstream iss(path);
     std::string splitedPath;
     std::string tmp;
-    std::string oldPath = path;
+
     if (path.at(0) != '/')
         return (false);
     else if (path.at(0) == '/' && path.length() == 1)
         return (true);
     while (getline(iss, splitedPath, '/'))
     {
-        // if (!splitedPath.empty())
-        // {
+        if (!splitedPath.empty())
+        {
+            // cout << splitedPath << std::endl;
             if(!isPrintable(splitedPath))
                 return (false);
-            // tmp.append("/");
             if (!checkPrecentEnc(splitedPath))
                 return (false);
-            tmp += splitedPath;
-        // }
+        }
+        tmp += "/";
+        tmp += splitedPath;
     }
-    path = oldPath;
+    path = tmp;
     return (true);
 }
 
@@ -153,6 +154,8 @@ void getRequestLine(Request &req)
     fillCheck(req, req.fullLine.substr(0, pos));
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
+    // cout << req.method << " " << req.httpVersion << " " << req.path << std::endl; 
+    // cout << "size : " << req.fullLine.size() << " content = "<< req.fullLine << std::endl;
 }
 
 void getHeaders(Request &req)
@@ -177,9 +180,8 @@ void getHeaders(Request &req)
             req.contentLength = std::atoi(req.headers["content-length"].c_str());
             req.bodyType = FIXED;
         }
-        else
+        else if (req.method != "GET")
         {
-            // Check the Get Error
             req.status = 400;
             req.finFlag = true;
             return;
@@ -279,6 +281,7 @@ void getHeaders(Request &req)
 
 void getFixedBody(Request &req, Config con)
 {
+    (void)con;
     static size_t bodyLen;
     req.lenRead += req.fullLine.length();
     if (req.bodyFd == -1)
@@ -292,7 +295,7 @@ void getFixedBody(Request &req, Config con)
         }
     }
     bodyLen += req.fullLine.length();
-    if (bodyLen > con.client_max_body_size)
+    if (bodyLen > 10000000) // after handel
     {
         req.status = 400;
         req.getEndFile = true;
@@ -317,19 +320,34 @@ void getFixedBody(Request &req, Config con)
 
 void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
 {
+    size_t pos;
+    std::string tes;
     req[userId].fullLine.append(buffer, len);
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
+        // cout << "--->" << req[userId].fullLine.length() << std::endl;
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
-        req[userId].reqState = ONE_ST;
+        if (req[userId].method.empty()) // if no /r/n break 
+        {
+            if (req[userId].status == 400)
+                req[userId].clientState = CLIENT_ON;
+            break ;
+        }
+        else
+        {
+            pos = req[userId].fullLine.find("\r\n");
+            tes = req[userId].fullLine;
+            req[userId].reqState = ONE_ST;
+        }
         // size_t pos = req[userId].fullLine.find("\r\n\r\n");
         // if (pos == std::string::npos)
         // {
         //     break;
         // }
-        getHeaders(req[userId]);
+        if (req[userId].getEndHeaders == false)
+            getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
         else
@@ -338,18 +356,21 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
-            if (req[userId].getEndFile)
+            // cout << tes << "-->" << tes.length() << std::endl;
+            if ((req[userId].status == 400) || (req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos && tes.length() == 2) )
                 req[userId].clientState = CLIENT_ON;
-            req[userId].lenRead = 0;
+            req[userId].lenRead = 0;    
             break ;
         }    
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
         //     getChunkedBody(req);
-        if (req[userId].getEndFile || req[userId].method != "POST")
+        if ((req[userId].getEndFile) || (req[userId].method != "POST" && !req[userId].method.empty()))
             req[userId].finFlag = true;
 
         if (req[userId].finFlag)
         {
+            cout << "SFSFSFSF\n";
+            req[userId].reqState = SECOND_ST;
             req[userId].clientState = CLIENT_ON;
             break;
         }

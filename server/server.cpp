@@ -174,7 +174,7 @@ int main(/*int arc,char *arv[]*/)
 
     while (true)
     {
-        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)
+        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)// MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
         {
             std::cout << "poll error\n";
             continue;
@@ -184,7 +184,7 @@ int main(/*int arc,char *arv[]*/)
 
             pollfd &p = obj.fds[obj.index_Client[i]];
 
-            if (p.fd == obj.server_fd && (p.revents & POLLIN))
+            if (p.fd == obj.server_fd && (p.revents & POLLIN))//CHECK ALL SERVER FDS
             {
                 obj.acceptNewCleint(p, i);
                 continue;
