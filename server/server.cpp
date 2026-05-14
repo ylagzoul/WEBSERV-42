@@ -55,6 +55,11 @@ void Server::close_client(pollfd &p, int i)
     close(p.fd);
     fds.erase(fds.begin() + index_Client[i]);
 
+    // fds.erase(fds.begin() + index_Client[i]); close fds dale pipe
+    // fds.erase(fds.begin() + index_Client[i]);
+    // fds.erase(fds.begin() + index_Client[i]);
+    // fds.erase(fds.begin() + index_Client[i]);
+
     req[index_Client[i]].clean();
     req.erase(req.begin() + index_Client[i]); // iteration problem
 
@@ -76,13 +81,13 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         client_poll.revents = 0;
         fds.push_back(client_poll);
         index_Client.push_back(fds.size() - 1);
-        recs.push_back(Record());
         req.push_back(Request());
+        recs.push_back(Record());
         data.push_back(Data());
     }
     else if (client_fd < 0)
     {
-        std::cout << "close in accept\n";
+        std::cout << "close in accept\n"; // is it the right behavior ???
         close_client(p, i);
         return;
     }
@@ -98,8 +103,8 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
         clientId = index_Client[i];
         readRequest(req, clientId, buffer, bytes, conf);
 
-        if (req[index_Client[i]].path.empty())
-            req[index_Client[i]].path = "/";
+        // if (req[index_Client[i]].path.empty()) 7ayed had ster
+        //     req[index_Client[i]].path = "/";
         if (req[clientId].clientState == CLIENT_ON)
             p.events |= POLLOUT;
         return (true);
@@ -128,7 +133,6 @@ bool Server::sendRespond(Server &obj, pollfd &p)
 {
     if (data[index_Client[iClnt]].sendNext)
     {
-
         data[index_Client[iClnt]].response = respond(obj, recs[index_Client[iClnt]].data, recs[index_Client[iClnt]], conf, req[index_Client[iClnt]]);
         if (data[index_Client[iClnt]].response.empty() && recs[index_Client[iClnt]].status == ACTIVE_RS)
             return (true);

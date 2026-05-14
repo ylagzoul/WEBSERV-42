@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <vector>
+#include <deque>
 #include "../request/request.hpp"
 #include "../response/Response.hpp"
 #include "../config_file/config_file.hpp"
@@ -48,7 +49,7 @@ public:
     sockaddr_in addr;
     socklen_t len;
     std::vector<Data> data;
-    std::vector<Record> recs;
+    std::deque<Record> recs;
     std::vector<Request> req;
     Config conf;
 
