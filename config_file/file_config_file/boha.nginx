@@ -39,7 +39,7 @@ server {
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;
-        cgi_data .py  python3; 
+        cgi_data .py  /usr/bin/python3; 
         return 410 file.txt;
     }
 }

@@ -850,7 +850,6 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
         data.retValid = 0;
         return ;
     }
-    std::cout << "khrejt ga3\n";
     std::stringstream res;
     res << "HTTP/1.0 " << data.statusCode << ' ' << data.statusName + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
@@ -864,6 +863,8 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
+    // Record &log = obj.recs[index];
+    // playloadData &data = obj.recs[index].data;
     // std::cout << req.status << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;

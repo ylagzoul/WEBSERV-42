@@ -40,8 +40,9 @@ int parseCgiResponse(CgiHandler &cgiData)
     return 0;
 }
 
-int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
+int NewCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
+    (void)log;
     int outputPipe[2];
     if (pipe(outputPipe) == -1)
         return (erorrCgi(cgiData));
@@ -53,14 +54,12 @@ int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
         client_poll.revents = 0;
         obj.fds.push_back(client_poll);
         obj.recs[obj.iClnt].idFdPipe.push_back(obj.fds.size() - 1);
-        obj.recs.push_back(Record());//
+        obj.recs.push_back(Record());
         obj.req.push_back(Request());
         obj.data.push_back(Data());
     }
     obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].events = POLLIN;
     obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].events = POLLOUT;
-
-
     if (method == "POST")
     {
         int inputPipe[2];
@@ -153,9 +152,10 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
     if (log.status == NEW_RS)
     {
         // std::cout << log.status;
-
-        if (NewCgi(obj, cgiData, method, bodyFile))
+        std::cout << "status: " << log.status << std::endl;
+        if (NewCgi(log, obj, cgiData, method, bodyFile))
             return(1);
+        std::cout << "status: " << log.status << std::endl;
         // std::cout << "NEW_RSS\n";
     }
     else

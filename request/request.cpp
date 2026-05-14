@@ -369,7 +369,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
 
         if (req[userId].finFlag)
         {
-            cout << "SFSFSFSF\n";
             req[userId].reqState = SECOND_ST;
             req[userId].clientState = CLIENT_ON;
             break;
