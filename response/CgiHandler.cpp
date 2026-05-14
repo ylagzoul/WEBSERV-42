@@ -50,14 +50,14 @@ int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
     {
         pollfd client_poll;
         client_poll.fd = outputPipe[i];
-        client_poll.events = POLLIN;
         client_poll.revents = 0;
         obj.fds.push_back(client_poll);
         obj.recs[obj.iClnt].idFdPipe.push_back(obj.fds.size() - 1);
-        obj.recs.push_back(Record());
+        obj.recs.push_back(Record());//
         obj.req.push_back(Request());
         obj.data.push_back(Data());
     }
+    obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].events = POLLIN;
     obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].events = POLLOUT;
 
 
@@ -73,7 +73,6 @@ int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
         {
             pollfd client_poll;
             client_poll.fd = inputPipe[i];
-            client_poll.events = POLLIN;
             client_poll.revents = 0;
             obj.fds.push_back(client_poll);
             obj.recs[obj.iClnt].idFdPipe.push_back(obj.fds.size() - 1);
@@ -81,7 +80,8 @@ int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
             obj.req.push_back(Request());
             obj.data.push_back(Data());
         }
-        obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].events = POLLOUT;
+        obj.fds[obj.recs[obj.iClnt].idFdPipe[2]].events = POLLIN;
+        obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].events = POLLOUT;
     }
     return (0);
 }
@@ -89,6 +89,7 @@ int NewCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bod
 
 int outputcgi(Server &obj, CgiHandler &cgiData, std::string method)
 {
+    // if (1)
     if (obj.fds[obj.recs[obj.iClnt].idFdPipe[1]].revents & POLLOUT)
     {
         if (method == "POST")
@@ -130,7 +131,8 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
         }
     }
 
-    if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & POLLIN)
+    // if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & POLLIN)
+    if (1)
     {
         char buffer[SIZESR];
         int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR-1);
@@ -138,39 +140,49 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
             return (erorrCgi(cgiData));
         cgiData.cgBuff = *buffer;
         buffer[bytes] = '\0';
-        std::cout << buffer << std::endl;
+        std::cout << "buffer =   " << buffer << " emd "<< std::endl;
     }
+
     return (0);
 }
 
 
 
-int runCgi(Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
+int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
-    if (1 /*newcgi == true*/)
+    if (log.status == NEW_RS)
     {
+        // std::cout << log.status;
+
         if (NewCgi(obj, cgiData, method, bodyFile))
             return(1);
-    }
-    
-    pid_t pid = fork();
-    if (pid == -1)
-        return (erorrCgi(cgiData));
-    
-
-    if (pid == 0)
-    {
-        if (outputcgi(obj, cgiData,method))
-            return (1);
+        // std::cout << "NEW_RSS\n";
     }
     else
     {
-        if (readFromCgi(obj, cgiData,method))
-            return (1);
-        // std::cout << "youssef11\n";
+        log.status = CGI_ACTIVE;
+        log.method = CGI_RDWR;
+        pid_t pid = fork();
+        if (pid == -1)
+            return (erorrCgi(cgiData));
+        
+        if (pid == 0)
+        {
+            // std::cout << "cild prosses \n\n";
+            if (outputcgi(obj, cgiData,method))
+                return (1);
+            // std::cout << "finsh   cild\n\n";
+        }
+        else
+        {
+            // std::cout << "parante prosses \n\n";
+            if (readFromCgi(obj, cgiData,method))
+                return (1);
+        }
+        // std::cout << "finsh   parnt\n\n";
+        // if (cgiData.canRead) /* CHEEEECK /!\*/
+        //     parseCgiResponse(cgiData);
     }
-    if (cgiData.canRead) /* CHEEEECK /!\*/
-        parseCgiResponse(cgiData);
     return 0;
 }
 
@@ -254,11 +266,14 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 int cgiProcess(CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req)
 {
     // he should set log.status to CGI_ACTIVE and log.method to CGI_RDWR
-    // he should set log.status to ERROR_RS and cgiData.cgStatusName and cgiData.cgStatusCode
+    // he should set cgiData.cgStatusName and cgiData.cgStatusCode
         // to its proper data
     // he should check whether the parser ends or not to close the file was opened
-    if (runCgi(obj, cgiData, req.method, req.bodyPath))
+    // std::cout << "true " << log.status << "\n\n";
+    if (runCgi(log, obj, cgiData, req.method, req.bodyPath))
         log.status = ERROR_RS;
+    // std::cout << "true " << log.status << "\n\n";
+    
     if (cgiData.dataReady == true || log.status == ERROR_RS)
     {
         if (cgiResponseHandler(log, cgiData, data))

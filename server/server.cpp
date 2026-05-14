@@ -148,8 +148,6 @@ bool Server::sendRespond(Server &obj, pollfd &p)
         }
         else
         {
-            std::cout << "lagzouli 1111   \n\n";
-
             close_client(p, iClnt);
             return (false);
         }
@@ -204,7 +202,6 @@ int main(/*int arc,char *arv[]*/)
             }
             if ((p.revents & (POLLHUP | POLLERR)))
             {
-                std::cout << "lagzouli 4444  \n\n";
                 obj.close_client(p, i);
                 continue;
             }
