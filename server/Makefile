@@ -27,7 +27,6 @@ $(NAME): $(OBJ)
 %.o: %.cpp $(SRC_H)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-
 clean:
 	rm -f $(OBJ)
 
