@@ -54,11 +54,12 @@ void Server::close_client(pollfd &p, int i)
 {
     close(p.fd);
     fds.erase(fds.begin() + index_Client[i]);
+    // if (recs[index_Client[i]].status == )
 
-    // fds.erase(fds.begin() + index_Client[i]); close fds dale pipe
-    // fds.erase(fds.begin() + index_Client[i]);
-    // fds.erase(fds.begin() + index_Client[i]);
-    // fds.erase(fds.begin() + index_Client[i]);
+    // fds.erase(fds.begin() + index_Client[i] + 1);
+    // fds.erase(fds.begin() + index_Client[i] + 2);
+    // fds.erase(fds.begin() + index_Client[i] + 3);
+    // fds.erase(fds.begin() + index_Client[i] + 4);
 
     req[index_Client[i]].clean();
     req.erase(req.begin() + index_Client[i]); // iteration problem
@@ -102,6 +103,7 @@ bool Server::receiveRequest(pollfd &p, size_t &i)
     {
         clientId = index_Client[i];
         readRequest(req, clientId, buffer, bytes, conf);
+        cout << req[i].clientState << std::endl;
 
         // if (req[index_Client[i]].path.empty()) 7ayed had ster
         //     req[index_Client[i]].path = "/";
@@ -134,8 +136,11 @@ bool Server::sendRespond(Server &obj, pollfd &p)
     if (data[index_Client[iClnt]].sendNext)
     {
         data[index_Client[iClnt]].response = respond(obj, recs[index_Client[iClnt]].data, recs[index_Client[iClnt]], conf, req[index_Client[iClnt]]);
-        if (data[index_Client[iClnt]].response.empty() && recs[index_Client[iClnt]].status == ACTIVE_RS)
+        std::cout << obj.recs[index_Client[iClnt]].status << std::endl;
+        // if (data[index_Client[iClnt]].response.empty() && (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
+        if (data[index_Client[iClnt]].response.empty() || (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
             return (true);
+        std::cout << " Youssef ********************** lagzoul\n\n";
     }
     int sent = send(p.fd, data[index_Client[iClnt]].response.c_str(), data[index_Client[iClnt]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[index_Client[iClnt]].number += sent;
@@ -196,13 +201,17 @@ int main(/*int arc,char *arv[]*/)
                 if (!obj.receiveRequest(p, i))
                     continue;
             }
-            if (p.revents & POLLOUT)
+            std::cout << "obj.recs[obj.index_Client[i]].status = " << obj.recs[obj.index_Client[i]].status  << std::endl;
+            if ((p.revents & POLLOUT) || (obj.recs[obj.index_Client[i]].status == CGI_ACTIVE))
             {
                 obj.iClnt = i;
+                std::cout << "111111111111111111111111111111111\n\n";
                 if (!obj.sendRespond(obj, p))
                 {
                     continue;
                 }
+            
+
             }
             if ((p.revents & (POLLHUP | POLLERR)))
             {
@@ -211,6 +220,7 @@ int main(/*int arc,char *arv[]*/)
             }
             i++;
         }
+        
     }
     close(obj.server_fd);
 }
