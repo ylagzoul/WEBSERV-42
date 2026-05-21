@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <map>
-#include <iostream>
 #include <string>
 #include <algorithm>
 #include <stdio.h>
@@ -13,12 +12,15 @@
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
+#include "Sessions.hpp"
+#include "SessionsList.hpp"
 #include <vector>
 #include "../config_file/config_file.hpp"
 
 using std::cout;
 #define FIXED   1
 #define CHUNKED 2
+
 
 typedef enum e_client_state
 {
@@ -37,6 +39,8 @@ typedef enum e_req_state
 } t_req_state;
 
 class Config;
+class SessionsList;
+// class Sessions;
 
 class Request 
 {
@@ -60,13 +64,14 @@ class Request
         size_t          contentLength;
         t_client_state  clientState;
         t_req_state     reqState;
-
-
+        Sessions    *session;
+        std::map<std::string, std::string> cookies;
+        void storeCookies(std::string value);
         void clean();
 
 };
 
-void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con);
+void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con, SessionsList &sList);
 std::string tolowerStr(std::string str);
 
 

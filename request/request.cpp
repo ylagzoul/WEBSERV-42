@@ -2,6 +2,59 @@
 
 Request::Request() : lenRead(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
 
+bool checkDigits(std::string str)
+{
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        int nb = str.at(i);
+        if (!isdigit(nb))
+            return (false);
+    }
+    return (true);
+}
+
+bool isHoldSpace(const std::string& str)
+{
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        if (std::isspace(str.at(i)))
+            return (false);
+    }
+    return (true);
+}
+
+std::string trim(const std::string& str)
+{
+    size_t start = 0;
+    while (start < str.length() && std::isspace(str[start]))
+        start++;
+
+    size_t end = str.length();
+    while (end > start && std::isspace(str[end - 1]))
+        end--;
+
+    return str.substr(start, end - start);
+}
+
+void    Request::storeCookies(std::string value)
+{
+    std::stringstream iss(value);
+    std::string tmp;
+    while (getline(iss, tmp, ';'))
+    {
+        size_t equal = tmp.find('=');
+        if (equal != std::string::npos)
+        {
+            std::string key = tmp.substr(0, equal);
+            std::string value = tmp.substr(equal + 1);
+            if (key == "session_id")
+            {
+                this->cookies[key] = value;
+                return ;
+            }
+        }
+    }
+}
 std::string tolowerStr(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
@@ -24,6 +77,17 @@ std::string toStr(int nb)
     std::stringstream ss;
     ss << nb;
     return (ss.str());
+}
+
+int    count_space(std::string str)
+{
+    int count = 0;
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        if (str.at(i) == ' ')
+            count++;
+    }
+    return (count);
 }
 
 bool isHex(char h)
@@ -85,7 +149,7 @@ bool checkPath(std::string &path)
     std::string splitedPath;
     std::string tmp;
 
-    if (path.at(0) != '/')
+    if (path.at(0) != '/' && path.at(0) != '%')
         return (false);
     else if (path.at(0) == '/' && path.length() == 1)
         return (true);
@@ -103,7 +167,11 @@ bool checkPath(std::string &path)
         tmp += splitedPath;
     }
     path = tmp;
-    return (true);
+    path.erase(0, 1);
+    if (path.length() == 1 && path != "/")
+        return (false);
+    else
+        return (true);
 }
 
 bool isLfCr(const std::string &str)
@@ -121,6 +189,12 @@ void fillCheck(Request &req, std::string reqLine)
     std::stringstream splitReq(reqLine);
     std::string slice;
     std::vector<std::string> array;
+    if (count_space(reqLine) > 2)
+    {
+        req.status = 400;
+        req.finFlag = true;
+        return;
+    }
     while (splitReq >> slice)
         array.push_back(slice);
     if (array.size() != 3)
@@ -154,8 +228,8 @@ void getRequestLine(Request &req)
     fillCheck(req, req.fullLine.substr(0, pos));
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
-    // cout << req.method << " " << req.httpVersion << " " << req.path << std::endl; 
     // cout << "size : " << req.fullLine.size() << " content = "<< req.fullLine << std::endl;
+    cout << req.path << std::endl;
 }
 
 void getHeaders(Request &req)
@@ -173,9 +247,11 @@ void getHeaders(Request &req)
         it = req.headers.find("transfer-encoding");
         if (req.headers.find("host") != req.headers.end())
             req.host = req.headers["host"];
+        if (req.headers.find("set-cookie") != req.headers.end())
+            req.storeCookies(req.headers["set-cookie"]);
         if (it != req.headers.end() && it->second == "chunked")
             req.bodyType = CHUNKED;
-        else if (req.headers.find("content-length") != req.headers.end())
+        else if (req.headers.find("content-length") != req.headers.end() && checkDigits(req.headers["content-length"]))
         {
             req.contentLength = std::atoi(req.headers["content-length"].c_str());
             req.bodyType = FIXED;
@@ -184,7 +260,7 @@ void getHeaders(Request &req)
         {
             req.status = 400;
             req.finFlag = true;
-            return;
+            return ;
         }
         return;
     }
@@ -193,21 +269,20 @@ void getHeaders(Request &req)
     {
         std::string key = line.substr(0, colon);
         std::string value = line.substr(colon + 1);
-        key.erase(std::remove(key.begin(), key.end(), ' '), key.end());
-        if (!isPrintable(key))
+        if (!isPrintable(key) || !isHoldSpace(key))
         {
             req.status = 400;
             req.finFlag = true;
             return;
         }
-        value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
-        if (!isLfCr(value)) //useless
-        {
-            req.status = 400;
-            req.finFlag = true;
-            return;
-        }
+        value = trim(value);
         req.headers[tolowerStr(key)] = value;
+    }
+    else
+    {
+        req.status = 400;
+        req.finFlag = true;
+        return;
     }
     req.lenRead += req.fullLine.substr(0, endLine + 2).length();
     req.fullLine.erase(0, endLine + 2);
@@ -318,7 +393,22 @@ void getFixedBody(Request &req, Config con)
     req.getEndFile = true;
 }
 
-void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con)
+void    generateCookies(Request &req, SessionsList &sList)
+{
+    if (req.session)
+        cout << "last Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
+    if (!req.headers["set-cookie"].empty())
+        cout << "Last Header: " <<  req.headers["set-cookie"] << std::endl;
+    sList.generateSession(req);
+    if (req.session)
+        cout << "New Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
+    if (!req.headers["set-cookie"].empty())
+        cout << "New Header: " <<  req.headers["set-cookie"] << std::endl;
+    // sList.printSesions();
+    // cout << "Final Debug\n";
+}
+
+void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con, SessionsList &sList)
 {
     size_t pos;
     std::string tes;
@@ -326,6 +416,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
+        cout << "id = " <<  userId << std::endl;
         // cout << "--->" << req[userId].fullLine.length() << std::endl;
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
@@ -364,7 +455,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         }    
         // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
         //     getChunkedBody(req);
-        if ((req[userId].getEndFile) || (req[userId].method != "POST" && !req[userId].method.empty()))
+        if ((req[userId].getEndFile) /*|| (req[userId].method != "POST" && !req[userId].method.empty())*/)
             req[userId].finFlag = true;
 
         if (req[userId].finFlag)
@@ -374,5 +465,8 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             break;
         }
     }
+    cout << req[userId].getEndHeaders << std::endl;
+    if (req[userId].getEndHeaders)
+        generateCookies(req[userId], sList);
     return;
 }

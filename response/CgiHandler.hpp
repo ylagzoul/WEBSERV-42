@@ -4,21 +4,21 @@
 #include <string>
 #include <map>
 
-// typedef enum e_client_state_cgi
-// {
-//     CLIENT_CGI_OF,
-//     CLIENT_CGI_ON,
-//     CLIENT_CGI_ERROR
+typedef enum e_client_state_cgi
+{
+    CLIENT_CGI_OF,
+    CLIENT_CGI_ON,
+    CLIENT_CGI_ERROR
 
-// } t_client_state_cgi;
+} t_client_state_cgi;
 
-// typedef enum e_req_state_cgi
-// {
-//     DEFAULT_CGI_ST = 10,
-//     ONE_CGI_ST,
-//     SECOND_CGI_ST,
+typedef enum e_req_state_cgi
+{
+    DEFAULT_CGI_ST = 10,
+    ONE_CGI_ST,
+    SECOND_CGI_ST,
 
-// } t_req_state_cgi;
+} t_req_state_cgi;
 
 class CgiHandler
 {

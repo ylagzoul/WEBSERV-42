@@ -2,7 +2,7 @@
 #include "response/CgiHandler.hpp"
 // #include "server/server.hpp"
 
-CgiHandler::CgiHandler() : cgStatusCode(200), cgStatusName("OK"), lenRead(0), bodyFd(-1), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST) {};
+CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST) {};
 
 
 
@@ -101,43 +101,43 @@ void getHeaders(CgiHandler &cgiData)
 }
 
 
-void getFixedBody(Request &req, Config con)
+void getFixedBody(CgiHandler &cgiData)
 {
-    (void)con;
     static size_t bodyLen;
-    req.lenRead += req.fullLine.length();
-    if (req.bodyFd == -1)
+    cgiData.lenRead += cgiData.fullLine.length();
+    if (cgiData.fd == -1)
     {
-        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
-        if (req.bodyFd == -1)
+        cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+        if (cgiData.fd == -1)
         {
             std::cerr << "Error opening file\n";
-            req.status = 500;
+            cgiData.cgStatusCode = 500;
+            cgiData.cgStatusName = "Internal Server Error";
             return ;
         }
     }
-    bodyLen += req.fullLine.length();
+    bodyLen += cgiData.fullLine.length();
     if (bodyLen > 10000000) // after handel
     {
-        req.status = 400;
-        req.getEndFile = true;
+        cgiData.cgStatusCode = 400;
+        cgiData.getEndFile = true;
         return;
     }
-    if (bodyLen < req.contentLength)
+    if (bodyLen < cgiData.contentLength)
     {
         if (bodyLen != 0)
         {
-            write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length());
-            req.fullLine.clear();
+            write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length());
+            cgiData.fullLine.clear();
         }
         return;
     }
-    int sizePa = (req.contentLength + req.fullLine.length()) - bodyLen;
-    std::string d = req.fullLine.substr(0, sizePa);
+    int sizePa = (cgiData.contentLength + cgiData.fullLine.length()) - bodyLen;
+    std::string d = cgiData.fullLine.substr(0, sizePa);
 
-    write(req.bodyFd, d.c_str(), sizePa);
-    close(req.bodyFd);
-    req.getEndFile = true;
+    write(cgiData.fd, d.c_str(), sizePa);
+    close(cgiData.fd);
+    cgiData.getEndFile = true;
 }
 
 
@@ -155,28 +155,36 @@ int parseCgiResponse(CgiHandler &cgiData)
     // "Internal Server Error" in cgiData.cgStatusName and return 1
 
     size_t pos;
+    std::string tes;
     cgiData.fullLine.append(cgiData.cgBuff.c_str(), cgiData.cgBuff.length());
-    cgiData.bodyPath = BODY_FILE_PATH + std::string("cgiCleint") + toStr(1);
+    cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("cgiCleint") + toStr(1);
     // cout << cgiData.cgBuff.length() << std::endl;
     while (1)
     {
+        pos = cgiData.fullLine.find("\r\n");
+        if (pos == std::string::npos)
+            break ;
+        tes = cgiData.fullLine;
         if (cgiData.getEndHeaders == false)
             getHeaders(cgiData);
         else
             cgiData.reqState = SECOND_CGI_ST;
-        // if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
-        //     getFixedBody(req[userId], con);
+        if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.contentLength > 0)
+            getFixedBody(cgiData);
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {
-            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || pos != std::string::npos)
+            cout << cgiData.getEndFile << std::endl;
+            cout << tes.length() << std::endl;
+
+            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || pos != std::string::npos && tes.length() == 2)
                 cgiData.clientState = CLIENT_CGI_ON;
             cgiData.lenRead = 0;    
             break ;
         }    
         // // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
         // //     getChunkedBody(req);
-        if (cgiData.getEndHeaders)
-            cgiData.finFlag = true;
+        // if (cgiData.getEndHeaders)
+        //     cgiData.finFlag = true;
         if (cgiData.getEndFile)
             cgiData.finFlag = true;
 
@@ -198,13 +206,13 @@ int main()
     std::string buffer;
     buffer =
     "Content-Type: text/html\r\n"
-    "Content-Length: 5\r\n"
+    "Content-Length: 1000\r\n"
     "Set-Cookie: sessionId=abc123xyz789; Path=/; HttpOnly\r\n"
     "X-Powered-By: custom-cgi-engine\r\n"
     "Cache-Control: no-cache\r\n"
     "Status: 404 Not Found\r\n"
     "Content-Type: text/html\r\n"
-    "X-Error-Code: FILE_MISSING\r\n"
+    "X-Error-Code: FILE_MISSI\r\n"
     "\r\n"
     "<!DOCTYPE html>\n"
     "<html lang=\"en\">\n"
@@ -259,7 +267,10 @@ int main()
     "</body>\n"
     "</html>\n";
     cgi.cgBuff = buffer;
-    parseCgiResponse(cgi);
+    // while(cgi.clientState != CLIENT_CGI_ON)
+    // {
+        parseCgiResponse(cgi);
+    // }
     std::map<std::string, std::string>::iterator it;
 
     for (it = cgi.cgHeaders.begin(); it != cgi.cgHeaders.end(); ++it)
@@ -267,4 +278,8 @@ int main()
         std::cout << it->first << ":" << it->second << std::endl;
     }   
     std::cout << "-->" << cgi.cgStatusCode << std::endl;
+    std::cout << "--> " << cgi.cgStatusName << std::endl;
+    std::cout << "--> " << cgi.clientState << std::endl;
+
+
 }
