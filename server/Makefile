@@ -5,6 +5,8 @@ CC = c++
 
 SRC = server.cpp \
 			../request/request.cpp \
+			../request/Sessions.cpp \
+			../request/SessionsList.cpp \
 			../response/Response.cpp \
 			../config_file/config_file.cpp \
 			../config_file/Helpful_functions/get_set_conf.cpp \
@@ -14,7 +16,7 @@ SRC = server.cpp \
 			../config_file/line/error_page.cpp Record.cpp\
 			../response/CgiHandler.cpp
 
-SRC_H = server.hpp Record.hpp ../response/CgiHandler.hpp ../config_file/config_file.hpp
+SRC_H = server.hpp SessionsList.hpp Sessions.hpp Record.hpp ../response/CgiHandler.hpp ../config_file/config_file.hpp
 
 
 OBJ = $(SRC:.cpp=.o)

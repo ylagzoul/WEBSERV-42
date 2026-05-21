@@ -85,14 +85,20 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
 }
 
 
-bool Server::receiveRequest(pollfd &p, size_t &i)
+bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
 {
     char buffer[8192] = {0};
     int bytes = recv(p.fd, buffer, 8192, 0);
     if (bytes > 0)
     {
         clientId = i;
-        readRequest(req, clientId, buffer, bytes, conf);
+        readRequest(req, clientId, buffer, bytes, conf, sList);
+        // if (!req[i].cookies.empty()) // Mat9issch hadchi
+        // {
+        //     cout << "SS\n";
+        //     cout << "--> " << req[i].cookies["session_id"] << std::endl;
+        //     cout << std::endl;
+        // }
         // cout << req[i].clientState << std::endl;
         // cout << req[i].status << std::endl;
 
@@ -164,7 +170,8 @@ int main(/*int arc,char *arv[]*/)
     //     return (1);
     // }
 
-    Server obj;
+    Server       obj;
+    SessionsList sList;
 
     while (true)
     {
@@ -185,7 +192,7 @@ int main(/*int arc,char *arv[]*/)
             }
             if (p.revents & POLLIN)
             {
-                if (!obj.receiveRequest(p, i))
+                if (!obj.receiveRequest(p, i, sList))
                     continue;
             }
             if (p.revents & POLLOUT)
