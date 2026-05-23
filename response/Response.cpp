@@ -856,9 +856,10 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     res << "Content-Type: " << data.contentType << "\r\n";
     res << "Content-Length: " << data.bodySize << "\r\n";
     res << "\r\n";
+    if (data.connection == "Keep-Alive")
+        log.clientState = ALIVE;
     if (log.method != POST_LIST_RS || log.status == ERROR_RS)
         ret_resp = res.str();
-    
 }
 
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)

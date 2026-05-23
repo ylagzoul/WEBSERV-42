@@ -10,6 +10,10 @@ typedef enum e_state
     CGI_ACTIVE,
     ERROR_RS,
 
+    //client_state
+    DISCONNECTED,
+    ALIVE,
+
     //methods
     NONE_RS,
     GET_RS,
