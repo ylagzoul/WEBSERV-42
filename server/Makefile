@@ -7,6 +7,7 @@ SRC = server.cpp \
 			../request/request.cpp \
 			../request/Sessions.cpp \
 			../request/SessionsList.cpp \
+			../request/requestCgi.cpp \
 			../response/Response.cpp \
 			../config_file/config_file.cpp \
 			../config_file/Helpful_functions/get_set_conf.cpp \
