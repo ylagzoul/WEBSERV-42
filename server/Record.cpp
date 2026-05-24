@@ -8,7 +8,7 @@ Record::Record()
     dir = NULL;
     status = NEW_RS;
     method = NO_MD;
-    clientState = DIS;
+    clientState = DISCONNECTED;
 }
 
 void Record::clean()
