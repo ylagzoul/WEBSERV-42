@@ -85,6 +85,7 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         req.push_back(Request());
         recs.push_back(Record());
         data.push_back(Data());
+        data[data.size()-1].time = time(NULL);
     }
     else if (client_fd < 0)
     {
@@ -137,10 +138,8 @@ bool Server::sendRespond(Server &obj, pollfd &p)
     {
         data[index_Client[iClnt]].response = respond(obj, recs[index_Client[iClnt]].data, recs[index_Client[iClnt]], conf, req[index_Client[iClnt]]);
         std::cout << obj.recs[index_Client[iClnt]].status << std::endl;
-        // if (data[index_Client[iClnt]].response.empty() && (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
-        if (data[index_Client[iClnt]].response.empty() || (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
+        if (data[index_Client[iClnt]].response.empty() && (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
             return (true);
-        std::cout << " Youssef ********************** lagzoul\n\n";
     }
     int sent = send(p.fd, data[index_Client[iClnt]].response.c_str(), data[index_Client[iClnt]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[index_Client[iClnt]].number += sent;
@@ -164,6 +163,7 @@ bool Server::sendRespond(Server &obj, pollfd &p)
     if ((data[index_Client[iClnt]].sendNext && recs[index_Client[iClnt]].status == CLOSED_RS) || recs[index_Client[iClnt]].status == ERROR_RS)
     {
         p.events &= ~POLLOUT;
+        data[index_Client[iClnt]].time = time(NULL);
     }
     return (true);
 }
@@ -194,7 +194,7 @@ int main(/*int arc,char *arv[]*/)
             if (p.fd == obj.server_fd && (p.revents & POLLIN))//CHECK ALL SERVER FDS
             {
                 obj.acceptNewCleint(p, i);
-                continue;
+                continue ;
             }
             if (p.revents & POLLIN)
             {
@@ -205,7 +205,6 @@ int main(/*int arc,char *arv[]*/)
             if ((p.revents & POLLOUT) || (obj.recs[obj.index_Client[i]].status == CGI_ACTIVE))
             {
                 obj.iClnt = i;
-                std::cout << "111111111111111111111111111111111\n\n";
                 if (!obj.sendRespond(obj, p))
                 {
                     continue;
@@ -213,7 +212,7 @@ int main(/*int arc,char *arv[]*/)
             
 
             }
-            if ((p.revents & (POLLHUP | POLLERR)))
+            if ((time(NULL) - obj.data[i].time > 200) || (p.revents & (POLLHUP | POLLERR))) 
             {
                 obj.close_client(p, i);
                 continue;
