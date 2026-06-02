@@ -414,6 +414,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     std::string tes;
     req[userId].fullLine.append(buffer, len);
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
+    cout << buffer ;
     while (1)
     {
         // cout << "id = " <<  userId << std::endl;
@@ -447,9 +448,13 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
-            // cout << tes << "-->" << tes.length() << std::endl;
-            if ((req[userId].status == 400) || (req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos && tes.length() == 2) )
-                req[userId].clientState = CLIENT_ON;
+            if (pos != std::string::npos && tes.length() > 2)
+                tes.erase(0, pos + 2);
+            if (req[userId].method == "GET")
+            {
+                if ((req[userId].status == 400) || (req[userId].getEndFile) || (req[userId].method != "POST" && pos != std::string::npos && tes.length() == 2) )
+                    req[userId].clientState = CLIENT_ON;
+            }
             req[userId].lenRead = 0;    
             break ;
         }    

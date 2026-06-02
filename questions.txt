@@ -1,0 +1,5 @@
+1. special chars in boths key and value?
+2. value empty or space?
+
+3. Error opening file
+4. "content-length:        2" --> should it be accepted?

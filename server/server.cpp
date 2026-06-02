@@ -105,7 +105,8 @@ bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
     {
         clientId = index_Client[i];
         readRequest(req, clientId, buffer, bytes, conf, sList);
-
+        cout << req[i].clientState << std::endl;
+        cout << req[i].status << std::endl;
         // if (req[index_Client[i]].path.empty()) 7ayed had ster
         //     req[index_Client[i]].path = "/";
         if (req[clientId].clientState == CLIENT_ON)
