@@ -229,7 +229,7 @@ void getRequestLine(Request &req)
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
     // cout << "size : " << req.fullLine.size() << " content = "<< req.fullLine << std::endl;
-    cout << req.path << std::endl;
+    // cout << req.path << std::endl;
 }
 
 void getHeaders(Request &req)
@@ -395,15 +395,15 @@ void getFixedBody(Request &req, Config con)
 
 void    generateCookies(Request &req, SessionsList &sList)
 {
-    if (req.session)
-        cout << "last Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
-    if (!req.headers["set-cookie"].empty())
-        cout << "Last Header: " <<  req.headers["set-cookie"] << std::endl;
+    // if (req.session)
+        // cout << "last Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
+    // if (!req.headers["set-cookie"].empty())
+        // cout << "Last Header: " <<  req.headers["set-cookie"] << std::endl;
     sList.generateSession(req);
-    if (req.session)
-        cout << "New Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
-    if (!req.headers["set-cookie"].empty())
-        cout << "New Header: " <<  req.headers["set-cookie"] << std::endl;
+    // if (req.session)
+        // cout << "New Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
+    // if (!req.headers["set-cookie"].empty())
+        // cout << "New Header: " <<  req.headers["set-cookie"] << std::endl;
     // sList.printSesions();
     // cout << "Final Debug\n";
 }
@@ -416,7 +416,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
-        cout << "id = " <<  userId << std::endl;
+        // cout << "id = " <<  userId << std::endl;
         // cout << "--->" << req[userId].fullLine.length() << std::endl;
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
@@ -465,7 +465,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             break;
         }
     }
-    cout << req[userId].getEndHeaders << std::endl;
+    // cout << req[userId].getEndHeaders << std::endl;
     if (req[userId].getEndHeaders)
         generateCookies(req[userId], sList);
     return;

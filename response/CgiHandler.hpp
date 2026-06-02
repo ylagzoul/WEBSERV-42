@@ -34,12 +34,12 @@ class CgiHandler
     bool cgiValid;
     
     // --------------attributes for parsing-------------- //
+    int fd;
     std::string cgBuff;
     int cgStatusCode;
     std::string cgStatusName;
     std::map<std::string, std::string> cgHeaders;
     std::string cgBodyFileName;
-    int fd;
     std::string bodyFile;
     std::string fullLine;
     std::string bodyPath;

@@ -1,6 +1,6 @@
 NAME = webserv
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98 -g #-fsanitize=address # -fsanitize=address,undefined -g -O1 
+CFLAGS = -Wextra -Wall -Werror -std=c++98  #-fsanitize=address -g # -fsanitize=address,undefined -g -O1 
 CC = c++
 
 SRC = server.cpp \
@@ -17,7 +17,7 @@ SRC = server.cpp \
 			../config_file/line/error_page.cpp Record.cpp\
 			../response/CgiHandler.cpp
 
-SRC_H = server.hpp SessionsList.hpp Sessions.hpp Record.hpp ../response/CgiHandler.hpp ../config_file/config_file.hpp
+SRC_H = server.hpp ../request/SessionsList.hpp ../request/Sessions.hpp Record.hpp ../response/CgiHandler.hpp ../config_file/config_file.hpp
 
 
 OBJ = $(SRC:.cpp=.o)

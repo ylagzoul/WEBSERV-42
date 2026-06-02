@@ -169,7 +169,7 @@ int parseCgiResponse(CgiHandler &cgiData)
             cout << cgiData.getEndFile << std::endl;
             cout << tes.length() << std::endl;
 
-            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || pos != std::string::npos && tes.length() == 2)
+            if (cgiData.cgStatusCode == 502 || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
                 cgiData.clientState = CLIENT_CGI_ON;
             cgiData.lenRead = 0;    
             break ;
