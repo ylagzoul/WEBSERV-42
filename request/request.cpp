@@ -414,7 +414,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     std::string tes;
     req[userId].fullLine.append(buffer, len);
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
-    cout << buffer ;
     while (1)
     {
         // cout << "id = " <<  userId << std::endl;
