@@ -8,6 +8,7 @@ Record::Record()
     dir = NULL;
     status = NEW_RS;
     method = NO_MD;
+    clientState = DISCONNECTED;
 }
 
 void Record::clean()
@@ -19,4 +20,3 @@ void Record::clean()
     if (dir)
         (closedir(dir), dir = NULL);
 }
-

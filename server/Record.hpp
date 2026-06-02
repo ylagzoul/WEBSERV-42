@@ -15,6 +15,7 @@ public:
     DIR *dir;
     t_state status;
     t_state method;
+    t_state clientState;
     playloadData data;
     std::string fileName;
     std::string buffer;
