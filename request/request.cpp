@@ -416,7 +416,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
-        // cout << "id = " <<  userId << std::endl;
         // cout << "--->" << req[userId].fullLine.length() << std::endl;
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
