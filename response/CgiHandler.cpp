@@ -6,7 +6,7 @@ int erorrCgi(CgiHandler &cgiData)
     cgiData.cgStatusName = "Internal Server Error";
     return 1;
 }
-CgiHandler::CgiHandler()
+CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST)
 {
     dataReady = false;
     cgiValid = false; 

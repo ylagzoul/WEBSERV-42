@@ -6,7 +6,7 @@
 
 typedef enum e_client_state_cgi
 {
-    CLIENT_CGI_OF,
+    CLIENT_CGI_OF = 20,
     CLIENT_CGI_ON,
     CLIENT_CGI_ERROR
 
@@ -41,18 +41,19 @@ class CgiHandler
     std::map<std::string, std::string> cgHeaders;
     std::string cgBodyFileName;
 
-    // std::string bodyFile;
-    // std::string fullLine;
-    // std::string bodyPath;
-    // size_t      lenRead;
+    std::string bodyFile;
+    std::string fullLine;
+    std::string bodyPath;
+    size_t      lenRead;
+    int fd;
     // int         bodyFd;
-    // bool        getEndHeaders;
-    // bool        finFlag;
-    // bool        getEndFile;
-    // size_t      contentLength;
-    // t_client_state_cgi  clientState;
-    // t_req_state_cgi     reqState;
-    // int bodyType;
+    bool        getEndHeaders;
+    bool        finFlag;
+    bool        getEndFile;
+    size_t      contentLength;
+    t_client_state_cgi  clientState;
+    t_req_state_cgi     reqState;
+    int bodyType;
 };
 
 #include "../server/server.hpp"

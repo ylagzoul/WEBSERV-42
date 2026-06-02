@@ -205,7 +205,7 @@ int main()
     CgiHandler cgi;
     std::string buffer;
     buffer =
-    "Content-Type: text/html\r\n"
+    // "Content-Type: text/html\r\n"
     "Content-Length: 1000\r\n"
     "Set-Cookie: sessionId=abc123xyz789; Path=/; HttpOnly\r\n"
     "X-Powered-By: custom-cgi-engine\r\n"
