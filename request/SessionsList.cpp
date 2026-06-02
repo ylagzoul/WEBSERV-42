@@ -6,6 +6,7 @@ void    SessionsList::createUnicId()
     std::string alphaU = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string digits = "0123456789";
 
+    id = "";
     for (size_t i = 0; i < 3; i++)
     {
         for (size_t j = 0; j < 4; j++)
