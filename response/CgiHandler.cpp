@@ -26,8 +26,7 @@ std::string normalizeKey(std::string key)
 
 int parseCgiResponse_yl(Server &obj, std::string method, CgiHandler &cgiData)
 {
-    cgiData.cgBuff.clear();
-    // std::cout << "obj.recs[obj.iClnt].cont =   " << obj.recs[obj.iClnt].cont;
+
     if (obj.recs[obj.iClnt].cont != 0)
     {
         if (method == "POST")
@@ -68,7 +67,7 @@ int NewCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
     if (pipe(outputPipe) == -1)
         return (erorrCgi(cgiData));
 
-     pollfd client_poll;
+    pollfd client_poll;
     client_poll.fd = outputPipe[0];
     client_poll.events = POLLIN;
     client_poll.revents = 0;
@@ -136,7 +135,6 @@ int outputcgi(Server &obj, CgiHandler &cgiData, std::string method)
 
 int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
 {
-    // std::cout << "youssef why?";
 
     if (method == "POST")
     {
@@ -148,16 +146,13 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
             if (bytes_r < 0)
                 return (erorrCgi(cgiData));
             
-            // close(obj.recs[obj.iClnt].idFdPipe[2]);
             if (write(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd, buffer, bytes_r) < 0)
                 return (erorrCgi(cgiData));
         }
     }
-    // std::cout << "youssef lagozuli\n";
     if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & POLLIN)
     {
 
-        // close(obj.recs[obj.iClnt].idFdPipe[1]);
         char buffer[SIZESR];
         int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR-1);
         if (bytes < 0)
@@ -169,7 +164,6 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
             buffer[bytes] = '\0';
             cgiData.cgBuff.append(buffer, bytes);
         }
-        // std::cout << "buffer =  { " << buffer << " } emd "<< std::endl;
         obj.recs[obj.iClnt].cont++;
     }
 
@@ -183,7 +177,6 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
     if (log.status == NEW_RS)
     {
 
-        // std::cout << "NEW_RSS\n";
         if (NewCgi(log, obj, cgiData, method, bodyFile))
             return(1);
         log.status = CGI_ACTIVE;
@@ -201,10 +194,7 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
             parseCgiResponse(cgiData);
             parseCgiResponse_yl(obj,method,cgiData);
         }
-        // std::cout << "readfromcgi   =  endl\n";
     }
-    // std::cout << "size ==   " << obj.fds.size() << std::endl;
-    // std::cout << "reqoust   =  \n";
     return 0;
 }
 

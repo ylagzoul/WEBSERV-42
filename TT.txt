@@ -1,0 +1,7 @@
+
+GET / HTTP/1.0
+
+
+connection: Keep-Alive
+
+Connection: Close

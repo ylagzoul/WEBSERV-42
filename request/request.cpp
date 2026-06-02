@@ -427,6 +427,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         }
         else
         {
+
             pos = req[userId].fullLine.find("\r\n");
             tes = req[userId].fullLine;
             req[userId].reqState = ONE_ST;
@@ -471,5 +472,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     // cout << req[userId].getEndHeaders << std::endl;
     if (req[userId].getEndHeaders)
         generateCookies(req[userId], sList);
+    
     return;
 }
