@@ -54,12 +54,6 @@ void Server::close_client(pollfd &p, int i)
 {
     close(p.fd);
     fds.erase(fds.begin() + index_Client[i]);
-    // if (recs[index_Client[i]].status == )
-
-    // fds.erase(fds.begin() + index_Client[i] + 1);
-    // fds.erase(fds.begin() + index_Client[i] + 2);
-    // fds.erase(fds.begin() + index_Client[i] + 3);
-    // fds.erase(fds.begin() + index_Client[i] + 4);
 
     req[index_Client[i]].clean();
     req.erase(req.begin() + index_Client[i]); // iteration problem
@@ -101,19 +95,29 @@ bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
 {
     char buffer[SIZESR] = {0};
     int bytes = recv(p.fd, buffer, SIZESR, 0);
+
+    std::cout << "buffer = " << buffer << std::endl;
     if (bytes > 0)
     {
+        cout << "test11\n\n";
         clientId = index_Client[i];
+        cout << "clientId =  "  << clientId << std::endl;
         readRequest(req, clientId, buffer, bytes, conf, sList);
+        cout << "--> " << req[i].clientState << std::endl;
+        cout << "--> " << req[i].status << std::endl;
 
-        // if (req[index_Client[i]].path.empty()) 7ayed had ster
-        //     req[index_Client[i]].path = "/";
+        cout << "test21\n\n";
+
         if (req[clientId].clientState == CLIENT_ON)
+        {
+            cout << "pillout\n\n";
             p.events |= POLLOUT;
+        }
         return (true);
     }
     else if (bytes == 0)
     {
+        std::cout << "bytes 0\n"; 
         close_client(p, i);
 
         return (false);
@@ -141,6 +145,7 @@ bool Server::sendRespond(Server &obj, pollfd &p)
         if (data[index_Client[iClnt]].response.empty() && (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
             return (true);
     }
+    cout << "test33\n\n";
     int sent = send(p.fd, data[index_Client[iClnt]].response.c_str(), data[index_Client[iClnt]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[index_Client[iClnt]].number += sent;
     if (sent > 0)
@@ -163,6 +168,15 @@ bool Server::sendRespond(Server &obj, pollfd &p)
     if ((data[index_Client[iClnt]].sendNext && recs[index_Client[iClnt]].status == CLOSED_RS) || recs[index_Client[iClnt]].status == ERROR_RS)
     {
         p.events &= ~POLLOUT;
+
+        if (recs[index_Client[iClnt]].clientState  == DISCONNECTED)
+            close_client(p, iClnt);
+        else
+        {
+            req[index_Client[iClnt]] = Request();
+            recs[index_Client[iClnt]] = Record();
+        }
+
         data[index_Client[iClnt]].time = time(NULL);
     }
     return (true);
@@ -202,9 +216,10 @@ int main(/*int arc,char *arv[]*/)
                 if (!obj.receiveRequest(p, i, sList))
                     continue;
             }
-            // std::cout << "obj.recs[obj.index_Client[i]].status = " << obj.recs[obj.index_Client[i]].status  << std::endl;
+
             if ((p.revents & POLLOUT) || (obj.recs[obj.index_Client[i]].status == CGI_ACTIVE))
             {
+
                 obj.iClnt = i;
                 if (!obj.sendRespond(obj, p))
                 {
