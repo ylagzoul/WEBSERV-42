@@ -60,5 +60,6 @@ class CgiHandler
 int cgiHandler(Record &log, CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts);
 
 int cgiProcess(CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req);
+int parseCgiResponse(CgiHandler &cgiData);
 
 #endif

@@ -2,6 +2,7 @@
 
 Record::Record()
 {
+    cont = 0;
     number = 0;
     fileFd = -1;
     fd = -1;

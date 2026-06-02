@@ -6,8 +6,8 @@ typedef enum e_state
     //status
     NEW_RS = 100,
     ACTIVE_RS,
-    CLOSED_RS,
     CGI_ACTIVE,
+    CLOSED_RS,
     ERROR_RS,
 
     //methods

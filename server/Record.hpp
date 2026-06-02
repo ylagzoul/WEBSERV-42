@@ -18,8 +18,10 @@ public:
     playloadData data;
     std::string fileName;
     std::string buffer;
+    CgiHandler cgiData;
     // ~Record(){std::cout << "dist\n\n";}
     std::vector<int> idFdPipe;
+    int cont;
 };
 
 #endif

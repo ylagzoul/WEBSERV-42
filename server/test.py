@@ -1,23 +1,36 @@
-import time
-def get_cgi_path_info(script_path, extension=".cgi"):
-    """
-    Extract PATH_INFO from CGI request
-    Example: "/cgi-bin/script.cgi/user/profile" -> "/user/profile"
-    """
-    ext_pos = script_path.find(extension)
-    if ext_pos != -1:
-        return script_path[ext_pos + len(extension):]
-    return ""
+#!/usr/bin/env python3
+# file: /var/www/cgi-bin/hello.py
 
-# Usage
-cgi_uri = "/cgi-bin/test.cgi/user/john/details"
-path_info = get_cgi_path_info(cgi_uri, ".cgi")
-print(path_info)  # Output: /user/john/details
+import os
 
+# ── Read environment variables ────────────
+method       = os.environ.get("REQUEST_METHOD", "")
+query_string = os.environ.get("QUERY_STRING",   "")
+remote_addr  = os.environ.get("REMOTE_ADDR",    "")
 
+# ── Parse query string ────────────────────
+# query_string = "name=John&age=25"
+params = {}
+if query_string:
+    for pair in query_string.split("&"):
+        if "=" in pair:
+            key, value = pair.split("=", 1)
+            params[key] = value
 
-# while True:
-#     pass
+name = params.get("name", "World")
 
+# ── Output HTTP headers FIRST ─────────────
+print("Content-Type: text/html")
+print()    # blank line — REQUIRED!
 
-# time.sleep(20)
+# ── Output HTML body ──────────────────────
+print(f"""
+<html>
+<head><title>CGI Hello</title></head>
+<body>
+    <h1>Hello, {name}!</h1>
+    <p>Your IP: {remote_addr}</p>
+    <p>Method: {method}</p>
+</body>
+</html>
+""")
