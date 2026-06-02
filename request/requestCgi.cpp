@@ -1,19 +1,13 @@
+#include "../response/CgiHandler.hpp"
 
-#include "response/CgiHandler.hpp"
-// #include "server/server.hpp"
-
-CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST) {};
-
-
-
-std::string tolowerStr(std::string str)
+std::string tolowerStri(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
         str[i] = std::tolower(str[i]);
     return (str);
 }
 
-bool isPrintable(const std::string &str)
+bool isPrintableC(const std::string &str)
 {
     for (size_t i = 0; i < str.size(); i++)
     {
@@ -23,7 +17,7 @@ bool isPrintable(const std::string &str)
     return true;
 }
 
-std::string toStr(int nb)
+std::string toStrC(int nb)
 {
     std::stringstream ss;
     ss << nb;
@@ -31,7 +25,7 @@ std::string toStr(int nb)
 }
 
 
-bool isLfCr(const std::string &str)
+bool isLfCrCgi(const std::string &str)
 {
     for (size_t i = 0; i < str.size(); i++)
     {
@@ -49,7 +43,7 @@ void    parseLine(std::string str, CgiHandler &cgiData)
         cgiData.cgStatusName.erase(0, 1);
 }
 
-void getHeaders(CgiHandler &cgiData)
+void getHeadersCgi(CgiHandler &cgiData)
 {
     size_t endLine = cgiData.fullLine.find("\r\n");
     if (endLine == std::string::npos)
@@ -79,14 +73,14 @@ void getHeaders(CgiHandler &cgiData)
         std::string value = line.substr(colon + 1);
         key.erase(std::remove(key.begin(), key.end(), ' '), key.end());
         value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
-        if (!isPrintable(key) || !isLfCr(value))
+        if (!isPrintableC(key) || !isLfCrCgi(value))
         {
             cgiData.cgStatusCode = 502;
             cgiData.cgStatusName = "Bad Gateway";
             cgiData.finFlag = true;
             return ;
         }
-        cgiData.cgHeaders[tolowerStr(key)] = value;
+        cgiData.cgHeaders[tolowerStri(key)] = value;
     }
     else
     {
@@ -101,7 +95,7 @@ void getHeaders(CgiHandler &cgiData)
 }
 
 
-void getFixedBody(CgiHandler &cgiData)
+void getBody(CgiHandler &cgiData)
 {
     static size_t bodyLen;
     cgiData.lenRead += cgiData.fullLine.length();
@@ -140,7 +134,6 @@ void getFixedBody(CgiHandler &cgiData)
     cgiData.getEndFile = true;
 }
 
-
 int parseCgiResponse(CgiHandler &cgiData)
 {
     //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
@@ -157,7 +150,7 @@ int parseCgiResponse(CgiHandler &cgiData)
     size_t pos;
     std::string tes;
     cgiData.fullLine.append(cgiData.cgBuff.c_str(), cgiData.cgBuff.length());
-    cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("cgiCleint") + toStr(1);
+    cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("cgiCleint") + toStrC(1);
     // cout << cgiData.cgBuff.length() << std::endl;
     while (1)
     {
@@ -166,17 +159,17 @@ int parseCgiResponse(CgiHandler &cgiData)
             break ;
         tes = cgiData.fullLine;
         if (cgiData.getEndHeaders == false)
-            getHeaders(cgiData);
+            getHeadersCgi(cgiData);
         else
             cgiData.reqState = SECOND_CGI_ST;
         if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.contentLength > 0)
-            getFixedBody(cgiData);
+            getBody(cgiData);
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {
             cout << cgiData.getEndFile << std::endl;
             cout << tes.length() << std::endl;
 
-            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || pos != std::string::npos && tes.length() == 2)
+            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
                 cgiData.clientState = CLIENT_CGI_ON;
             cgiData.lenRead = 0;    
             break ;
@@ -198,88 +191,4 @@ int parseCgiResponse(CgiHandler &cgiData)
 
     cgiData.cgBuff.clear();
     return 0;
-}
-
-int main()
-{
-    CgiHandler cgi;
-    std::string buffer;
-    buffer =
-    // "Content-Type: text/html\r\n"
-    "Content-Length: 1000\r\n"
-    "Set-Cookie: sessionId=abc123xyz789; Path=/; HttpOnly\r\n"
-    "X-Powered-By: custom-cgi-engine\r\n"
-    "Cache-Control: no-cache\r\n"
-    "Status: 404 Not Found\r\n"
-    "Content-Type: text/html\r\n"
-    "X-Error-Code: FILE_MISSI\r\n"
-    "\r\n"
-    "<!DOCTYPE html>\n"
-    "<html lang=\"en\">\n"
-    "<head>\n"
-    "    <title>User Dashboard</title>\n"
-    "    <meta charset=\"UTF-8\">\n"
-    "</head>\n"
-    "<body>\n"
-    "    <h1>Welcome back, Abdessamad</h1>\n"
-    "\n"
-    "    <div class=\"profile\">\n"
-    "        <h2>Account Information</h2>\n"
-    "        <ul>\n"
-    "            <li>User ID: 48291</li>\n"
-    "            <li>Plan: Premium</li>\n"
-    "            <li>Status: Active</li>\n"
-    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
-    "        </ul>\n"
-    "    </div>\n"
-    "\n"
-    "    <div class=\"notifications\">\n"
-    "        <h2>Notifications</h2>\n"
-    "        <p>You have 5 unread messages.</p>\n"
-    "        <p>Your storage usage is 73%.</p>\n"
-    "    </div>\n"
-    "\n"
-    "    <div class=\"recent-files\">\n"
-    "        <h2>Recent Files</h2>\n"
-    "        <table border=\"1\">\n"
-    "            <tr>\n"
-    "                <th>Filename</th>\n"
-    "                <th>Size</th>\n"
-    "                <th>Modified</th>\n"
-    "            </tr>\n"
-    "            <tr>\n"
-    "                <td>report.pdf</td>\n"
-    "                <td>1.2 MB</td>\n"
-    "                <td>2026-05-11</td>\n"
-    "            </tr>\n"
-    "            <tr>\n"
-    "                <td>notes.txt</td>\n"
-    "                <td>14 KB</td>\n"
-    "                <td>2026-05-10</td>\n"
-    "            </tr>\n"
-    "            <tr>\n"
-    "                <td>archive.tar.gz</td>\n"
-    "                <td>92 MB</td>\n"
-    "                <td>2026-05-08</td>\n"
-    "            </tr>\n"
-    "        </table>\n"
-    "    </div>\n"
-    "</body>\n"
-    "</html>\n";
-    cgi.cgBuff = buffer;
-    // while(cgi.clientState != CLIENT_CGI_ON)
-    // {
-        parseCgiResponse(cgi);
-    // }
-    std::map<std::string, std::string>::iterator it;
-
-    for (it = cgi.cgHeaders.begin(); it != cgi.cgHeaders.end(); ++it)
-    {
-        std::cout << it->first << ":" << it->second << std::endl;
-    }   
-    std::cout << "-->" << cgi.cgStatusCode << std::endl;
-    std::cout << "--> " << cgi.cgStatusName << std::endl;
-    std::cout << "--> " << cgi.clientState << std::endl;
-
-
 }

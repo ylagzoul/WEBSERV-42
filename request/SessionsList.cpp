@@ -6,6 +6,7 @@ void    SessionsList::createUnicId()
     std::string alphaU = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string digits = "0123456789";
 
+    id = "";
     for (size_t i = 0; i < 3; i++)
     {
         for (size_t j = 0; j < 4; j++)
@@ -33,11 +34,9 @@ void SessionsList::generateSession(Request &req)
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
             req.headers["set-cookie"] = "session_id=" + id + ";path=/";
-            cout << "Khokho Bla3\n";
         }
         else
         { // I will improve the code to evit the repetition
-            cout << "Khokho fla3\n";
             createUnicId();
             Sessions tmpSession;
             tmpSession.userName = id;
@@ -50,7 +49,6 @@ void SessionsList::generateSession(Request &req)
     }
     else
     {
-        cout << "KO#KO#\n";
         createUnicId();
         Sessions tmpSession;
         tmpSession.userName = id;

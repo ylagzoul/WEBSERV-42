@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iostream>
 #include <cstring>
+#include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -32,6 +33,7 @@ public:
     int recvSize;
     int recvNum;
     bool recvNext;
+    time_t time;
 };
 
 class Server

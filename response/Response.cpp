@@ -577,7 +577,7 @@ void getImportantData(Config &conf, playloadData &data)
 {
     data.cgiExt.push_back(".py");      // tmp
     data.cgiExt.push_back(".cgi");     // tmp
-    data.cgiPath.push_back("/bin/ls"); // tmp
+    data.cgiPath.push_back("/usr/bin/python3"); // tmp
     data.cgiPath.push_back("/bin/lb"); // tmp
     if (data.location.empty())
     {
@@ -864,30 +864,34 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
+
     // Record &log = obj.recs[index];
     // playloadData &data = obj.recs[index].data;
     // std::cout << req.status << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
-    CgiHandler cgiData;
+
     if (log.status == NEW_RS)
     {
+
         data.bodySize = 0;
         loadExtensions(data);
         data.connection = "Close";
-        if (responseHandler(cgiData, obj, log, req, conf, data))
+        if (responseHandler(log.cgiData, obj, log, req, conf, data))
         {
             chooseErrorHandler(conf, data);
             data.contentType = data.mime["html"];
             log.status = ERROR_RS;
         }
+        // std::cout << "lpoooooooooooooooooooo\n\n";
     }
     else if (log.status == ACTIVE_RS || log.status == CGI_ACTIVE)
     {
+        // std::cout << "youssef why why why \n\n";
         if (log.method == CGI_RDWR)
         {
-            if (cgiProcess(cgiData, log, obj, data, req))
+            if (cgiProcess(log.cgiData, log, obj, data, req))
             {
                 data.contentType = data.mime["html"];
                 chooseErrorHandler(conf, data);
@@ -923,14 +927,16 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
             // remove bodyfile
         }
     }
+
     if (log.method == POST_LIST_RS || log.status == CGI_ACTIVE)
         return "";
+    
     if (pastStatus == NEW_RS
         // || (log.method == NONE_RS && log.status == ERROR_RS) /!\  TEST
         || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS))
         || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
     {
-        generateResponse(cgiData, data, ret_resp, log);
+        generateResponse(log.cgiData, data, ret_resp, log);
         if (log.status == ERROR_RS)
             ret_resp += data.bodyStr;
         else
@@ -941,5 +947,6 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
     else
         ret_resp = log.buffer;
     log.buffer.clear();
+
     return (ret_resp);
 }

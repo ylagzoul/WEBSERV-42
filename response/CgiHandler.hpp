@@ -24,7 +24,6 @@ class CgiHandler
 {
     public:
     CgiHandler();
-    int bodyFd;
     char *const *executeablePath;
     std::string path;
     char *const *env;
@@ -35,18 +34,17 @@ class CgiHandler
     bool cgiValid;
     
     // --------------attributes for parsing-------------- //
+    int fd;
     std::string cgBuff;
     int cgStatusCode;
     std::string cgStatusName;
     std::map<std::string, std::string> cgHeaders;
     std::string cgBodyFileName;
-
     std::string bodyFile;
     std::string fullLine;
     std::string bodyPath;
     size_t      lenRead;
-    int fd;
-    // int         bodyFd;
+    int         bodyFd;
     bool        getEndHeaders;
     bool        finFlag;
     bool        getEndFile;
@@ -62,5 +60,6 @@ class CgiHandler
 int cgiHandler(Record &log, CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts);
 
 int cgiProcess(CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req);
+int parseCgiResponse(CgiHandler &cgiData);
 
 #endif
