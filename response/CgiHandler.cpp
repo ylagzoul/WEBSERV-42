@@ -6,12 +6,12 @@ int erorrCgi(CgiHandler &cgiData)
     cgiData.cgStatusName = "Internal Server Error";
     return 1;
 }
-CgiHandler::CgiHandler()
+CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST)
 {
     dataReady = false;
     cgiValid = false; 
     canRead = false;
-}
+};
 
 std::string normalizeKey(std::string key)
 {
@@ -24,21 +24,21 @@ std::string normalizeKey(std::string key)
     return key;
 }
 
-int parseCgiResponse(CgiHandler &cgiData)
-{
-    //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
-    //and "Bad Gateway" to cgiData.cgStatusName and return 
-        //                process
-        //                   |
-        //                   |
-        //                   |
-        //                   |
-    //result: cgiHeadersData + bodyFile
-    // case error happen while creating BodyFile , 500 should be set to cgiData.cgStatusCode
-    // "Internal Server Error" in cgiData.cgStatusName and return 1
-    cgiData.cgBuff.clear();
-    return 0;
-}
+// int parseCgiResponse(CgiHandler &cgiData)
+// {
+//     //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
+//     //and "Bad Gateway" to cgiData.cgStatusName and return 
+//         //                process
+//         //                   |
+//         //                   |
+//         //                   |
+//         //                   |
+//     //result: cgiHeadersData + bodyFile
+//     // case error happen while creating BodyFile , 500 should be set to cgiData.cgStatusCode
+//     // "Internal Server Error" in cgiData.cgStatusName and return 1
+//     cgiData.cgBuff.clear();
+//     return 0;
+// }
 
 int NewCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {

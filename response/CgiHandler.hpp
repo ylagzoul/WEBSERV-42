@@ -24,7 +24,6 @@ class CgiHandler
 {
     public:
     CgiHandler();
-    int bodyFd;
     char *const *executeablePath;
     std::string path;
     char *const *env;
@@ -40,19 +39,19 @@ class CgiHandler
     std::string cgStatusName;
     std::map<std::string, std::string> cgHeaders;
     std::string cgBodyFileName;
-
-    // std::string bodyFile;
-    // std::string fullLine;
-    // std::string bodyPath;
-    // size_t      lenRead;
-    // int         bodyFd;
-    // bool        getEndHeaders;
-    // bool        finFlag;
-    // bool        getEndFile;
-    // size_t      contentLength;
-    // t_client_state_cgi  clientState;
-    // t_req_state_cgi     reqState;
-    // int bodyType;
+    int fd;
+    std::string bodyFile;
+    std::string fullLine;
+    std::string bodyPath;
+    size_t      lenRead;
+    int         bodyFd;
+    bool        getEndHeaders;
+    bool        finFlag;
+    bool        getEndFile;
+    size_t      contentLength;
+    t_client_state_cgi  clientState;
+    t_req_state_cgi     reqState;
+    int bodyType;
 };
 
 #include "../server/server.hpp"
