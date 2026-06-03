@@ -80,8 +80,7 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         req.push_back(Request());
         recs.push_back(Record());
         data.push_back(Data());
-        data[data.size()-1].time = time(NULL);
-        std::cout << "data.size()-1 = " << data.size()-1<< std::endl; 
+        data[data.size()-1].time = time(NULL); 
 
     }
     else if (client_fd < 0)
