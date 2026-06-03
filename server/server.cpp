@@ -46,6 +46,7 @@ Server::Server()
     data.push_back(Data());
     recs.push_back(Record());
     req.push_back(Request());
+    data[data.size()-1].time = time(NULL);
 
     clientId = 0;
 }
@@ -80,6 +81,8 @@ void Server::acceptNewCleint(pollfd &p, size_t &i)
         recs.push_back(Record());
         data.push_back(Data());
         data[data.size()-1].time = time(NULL);
+        std::cout << "data.size()-1 = " << data.size()-1<< std::endl; 
+
     }
     else if (client_fd < 0)
     {
@@ -228,8 +231,10 @@ int main(/*int arc,char *arv[]*/)
             
 
             }
-            if ((time(NULL) - obj.data[i].time > 200) || (p.revents & (POLLHUP | POLLERR))) 
+            if ((i != 0 && time(NULL) - obj.data[i].time > 1000) || (p.revents & (POLLHUP | POLLERR))) 
             {
+                std::cout << "i = " << i << std::endl;
+                std::cout << "close clneit about finsh time..............................................\n\n";
                 obj.close_client(p, i);
                 continue;
             }
