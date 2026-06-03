@@ -2,7 +2,7 @@
 
 void Request::clean() // add youssef
 {
-    if (access(bodyFile.c_str(), F_OK) != -1)
+    if (access(bodyPath.c_str(), F_OK) != -1)
         std::remove(bodyPath.c_str());
 }
 
@@ -161,6 +161,8 @@ int postBody(Record &log, playloadData &data)
     const int size = 8192;
     char buff[size];
     int bytes = read(log.fileFd, buff, sizeof(buff));
+    buff[bytes] = '\0';
+    std::cout << "readed by fd from mohammed: <" << buff << ">" << std::endl;
     if (bytes == -1)
     {
         data.statusCode = "500";

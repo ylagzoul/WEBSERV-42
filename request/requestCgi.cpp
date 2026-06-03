@@ -113,7 +113,7 @@ void getBody(CgiHandler &cgiData)
     bodyLen += cgiData.fullLine.length();
     if (bodyLen > 10000000) // after handel
     {
-        cgiData.cgStatusCode = 400;
+        cgiData.cgStatusCode = 502;
         cgiData.getEndFile = true;
         return;
     }

@@ -258,8 +258,10 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 {
     if (cgiData.cgStatusCode != 200)
     {
+        std::stringstream ss;
+        ss << cgiData.cgStatusCode;
         data.statusName = cgiData.cgStatusName;
-        data.statusCode = cgiData.cgStatusCode;
+        data.statusCode = ss.str();
         return 1;
     }
     log.fd = open(cgiData.cgBodyFileName.c_str(), O_RDONLY);
