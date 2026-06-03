@@ -396,15 +396,15 @@ void getFixedBody(Request &req, Config con)
 
 void    generateCookies(Request &req, SessionsList &sList)
 {
-    if (req.session)
-        cout << "last Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
-    if (!req.headers["set-cookie"].empty())
-        cout << "Last Header: " <<  req.headers["set-cookie"] << std::endl;
+    // if (req.session)
+    //     cout << "last Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
+    // if (!req.headers["set-cookie"].empty())
+    //     cout << "Last Header: " <<  req.headers["set-cookie"] << std::endl;
     sList.generateSession(req);
-    if (req.session)
-        cout << "New Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
-    if (!req.headers["set-cookie"].empty())
-        cout << "New Header: " <<  req.headers["set-cookie"] << std::endl;
+    // if (req.session)
+    //     cout << "New Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
+    // if (!req.headers["set-cookie"].empty())
+    //     cout << "New Header: " <<  req.headers["set-cookie"] << std::endl;
     // sList.printSesions();
     // cout << "Final Debug\n";
 }
@@ -471,7 +471,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         }
     }
     // cout << req[userId].getEndHeaders << std::endl;
-    cout << "[ " << userId << " ]" <<  std::endl;
+    // cout << "[ " << userId << " ]" <<  std::endl;
     if (req[userId].getEndHeaders)
         generateCookies(req[userId], sList);
     

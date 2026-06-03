@@ -178,8 +178,8 @@ bool Server::sendRespond(Server &obj, pollfd &p)
             req[index_Client[iClnt]] = Request();
             recs[index_Client[iClnt]] = Record();
         }
-
         data[index_Client[iClnt]].time = time(NULL);
+
     }
     return (true);
 }
