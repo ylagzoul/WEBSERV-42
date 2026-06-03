@@ -865,7 +865,7 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
 
-    std::cout << req.path << std::endl;
+    // std::cout << req.path << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
@@ -886,7 +886,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
     }
     else if (log.status == ACTIVE_RS || log.status == CGI_ACTIVE)
     {
-        // std::cout << "youssef why why why \n\n";
+        // std::cout << "youssef \n\n";
         if (log.method == CGI_RDWR)
         {
             if (cgiProcess(log.cgiData, log, obj, data, req))

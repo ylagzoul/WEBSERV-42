@@ -96,21 +96,21 @@ bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
     char buffer[SIZESR] = {0};
     int bytes = recv(p.fd, buffer, SIZESR, 0);
 
-    std::cout << "buffer = " << buffer << std::endl;
+    // std::cout << "buffer = " << buffer << std::endl;
     if (bytes > 0)
     {
-        cout << "test11\n\n";
+        // cout << "test11\n\n";
         clientId = index_Client[i];
-        cout << "clientId =  "  << clientId << std::endl;
+        // cout << "clientId =  "  << clientId << std::endl;
         readRequest(req, clientId, buffer, bytes, conf, sList);
-        cout << "--> " << req[i].clientState << std::endl;
-        cout << "--> " << req[i].status << std::endl;
+        // cout << "--> " << req[i].clientState << std::endl;
+        // cout << "--> " << req[i].status << std::endl;
 
-        cout << "test21\n\n";
+        // cout << "test21\n\n";
 
         if (req[clientId].clientState == CLIENT_ON)
         {
-            cout << "pillout\n\n";
+            // cout << "pillout\n\n";
             p.events |= POLLOUT;
         }
         return (true);
@@ -145,7 +145,7 @@ bool Server::sendRespond(Server &obj, pollfd &p)
         if (data[index_Client[iClnt]].response.empty() && (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
             return (true);
     }
-    cout << "test33\n\n";
+    // cout << "test33\n\n";
     int sent = send(p.fd, data[index_Client[iClnt]].response.c_str(), data[index_Client[iClnt]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[index_Client[iClnt]].number += sent;
     if (sent > 0)
@@ -225,8 +225,6 @@ int main(/*int arc,char *arv[]*/)
                 {
                     continue;
                 }
-            
-
             }
             if ((time(NULL) - obj.data[i].time > 200) || (p.revents & (POLLHUP | POLLERR))) 
             {
