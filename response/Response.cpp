@@ -865,9 +865,7 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
 
-    // Record &log = obj.recs[index];
-    // playloadData &data = obj.recs[index].data;
-    // std::cout << req.status << std::endl;
+    std::cout << req.path << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
@@ -930,7 +928,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
 
     if (log.method == POST_LIST_RS || log.status == CGI_ACTIVE)
         return "";
-    
+
     if (pastStatus == NEW_RS
         // || (log.method == NONE_RS && log.status == ERROR_RS) /!\  TEST
         || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS))
