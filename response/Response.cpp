@@ -882,11 +882,9 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
             data.contentType = data.mime["html"];
             log.status = ERROR_RS;
         }
-        // std::cout << "lpoooooooooooooooooooo\n\n";
     }
     else if (log.status == ACTIVE_RS || log.status == CGI_ACTIVE)
     {
-        // std::cout << "youssef \n\n";
         if (log.method == CGI_RDWR)
         {
             if (cgiProcess(log.cgiData, log, obj, data, req))
