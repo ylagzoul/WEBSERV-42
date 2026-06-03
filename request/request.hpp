@@ -54,6 +54,7 @@ class Request
         std::string bodyFile;
         std::string fullLine;
         std::string bodyPath;
+        size_t      bodyLen;
         size_t      lenRead;
         int         bodyFd;
         int         status;
