@@ -162,7 +162,6 @@ int postBody(Record &log, playloadData &data)
     char buff[size];
     int bytes = read(log.fileFd, buff, sizeof(buff));
     buff[bytes] = '\0';
-    std::cout << "readed by fd from mohammed: <" << buff << ">" << std::endl;
     if (bytes == -1)
     {
         data.statusCode = "500";
