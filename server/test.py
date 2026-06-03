@@ -1,36 +1,53 @@
 #!/usr/bin/env python3
-# file: /var/www/cgi-bin/hello.py
-
 import os
+import sys
 
-# ── Read environment variables ────────────
-method       = os.environ.get("REQUEST_METHOD", "")
-query_string = os.environ.get("QUERY_STRING",   "")
-remote_addr  = os.environ.get("REMOTE_ADDR",    "")
+# Define the CRLF delimiter
+CRLF = b"\r\n"
 
-# ── Parse query string ────────────────────
-# query_string = "name=John&age=25"
-params = {}
-if query_string:
-    for pair in query_string.split("&"):
-        if "=" in pair:
-            key, value = pair.split("=", 1)
-            params[key] = value
+# 1. Prepare the HTTP Headers
+headers = [
+    b"Content-Type: text/html; charset=utf-8",
+    b"Content-length: 400",
+    b"Cache-Control: no-cache",
 
-name = params.get("name", "World")
+]
 
-# ── Output HTTP headers FIRST ─────────────
-print("Content-Type: text/html")
-print()    # blank line — REQUIRED!
-
-# ── Output HTML body ──────────────────────
-print(f"""
+# 2. Prepare the HTML Body
+html_body = """<!DOCTYPE html>
 <html>
-<head><title>CGI Hello</title></head>
+<head>
+    <title>CGI Test Success</title>
+</head>
 <body>
-    <h1>Hello, {name}!</h1>
-    <p>Your IP: {remote_addr}</p>
-    <p>Method: {method}</p>
+    <h1>Hello from Python CGI!</h1>
+    <p>This page was generated without using the old <code>cgi</code> library.</p>
+    <h2>Environment Details:</h2>
+    <ul>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li>
+    </ul>
 </body>
 </html>
-""")
+""".format(
+    gateway=os.environ.get('GATEWAY_INTERFACE', 'Not found'),
+    method=os.environ.get('REQUEST_METHOD', 'Not found'),
+    query=os.environ.get('QUERY_STRING', 'None')
+)
+
+# 3. Write everything to stdout as bytes
+try:
+    # Write headers joined by CRLF
+    for header in headers:
+        sys.stdout.buffer.write(header + CRLF)
+    
+    # Crucial: An empty line (extra CRLF) signals the end of headers
+    sys.stdout.buffer.write(CRLF)
+    
+    # Write the body encoded as bytes
+    sys.stdout.buffer.write(html_body.encode('utf-8'))
+    sys.stdout.flush()
+except Exception as e:
+    # Fallback minimal error handling
+    sys.stderr.write(f"Error in CGI script: {str(e)}\n")

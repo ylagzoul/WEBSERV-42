@@ -224,7 +224,7 @@ int main(/*int arc,char *arv[]*/)
             if ((p.revents & POLLOUT) || (obj.recs[obj.index_Client[i]].status == CGI_ACTIVE))
             {
 
-                // obj.iClnt = i;
+                obj.iClnt = i;
                 if (!obj.sendRespond(obj,i, p))
                 {
                     continue;

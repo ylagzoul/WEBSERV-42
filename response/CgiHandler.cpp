@@ -138,8 +138,10 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
 
     if (method == "POST")
     {
+        std::cout << "post read form cgi\n\n";
         if (obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].revents & POLLOUT)
         {
+            std::cout << "post writed form cgi if\n\n";
             int bytes_r;
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
@@ -152,19 +154,25 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
     }
     if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & POLLIN)
     {
+        std::cout << " read form cgi\n\n";
 
         char buffer[SIZESR];
         int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR-1);
+
+        std::cout << "buffer = " << buffer << std::endl;
         if (bytes < 0)
             return (erorrCgi(cgiData));
         
         if (bytes > 0)
         {
+            std::cout << "read form cgi -> bytes = "<< bytes <<std::endl;
             cgiData.canRead = true;
             buffer[bytes] = '\0';
             cgiData.cgBuff.append(buffer, bytes);
+            std::cout << "cgiData.cgBuff = " << cgiData.cgBuff << std::endl;
         }
         obj.recs[obj.iClnt].cont++;
+
     }
 
     return (0);
@@ -176,6 +184,7 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
 {
     if (log.status == NEW_RS)
     {
+        std::cout << "new cgi                       .....\n\n";
 
         if (NewCgi(log, obj, cgiData, method, bodyFile))
             return(1);
@@ -191,8 +200,12 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
         
         if (cgiData.canRead) /* CHEEEECK /!\*/
         {
+            std::cout << "parseCgiResponse   //  cgiData.cgBuff = " << cgiData.cgBuff << std::endl;
+            std::cout << "parseCgiResponse\n\n";
             parseCgiResponse(cgiData);
+            std::cout << "parseCgiResponse_yl\n\n";
             parseCgiResponse_yl(obj,method,cgiData);
+            std::cout << "finsh\n\n";
         }
     }
     return 0;

@@ -2,7 +2,7 @@
 
 void Request::clean() // add youssef
 {
-    if (access(bodyFile.c_str(), F_OK) != -1)
+    if (access(bodyPath.c_str(), F_OK) != -1)
         std::remove(bodyPath.c_str());
 }
 
