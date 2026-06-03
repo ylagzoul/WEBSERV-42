@@ -16,7 +16,7 @@
 // # define CONF_FILE_PATH "/home/ylagzoul/Desktop/web/config_file/file_config_file/config.nginx"
 
 # define LIST_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/server"
-# define BODY_FILE_PATH "/home/mradouan/goinfre/"
+# define BODY_FILE_PATH "/home/m/goinfre/"
 # define CONF_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/config_file/file_config_file/moha.nginx"
 
 // # define LIST_FILE_PATH "/home/abouhki/goinfre"

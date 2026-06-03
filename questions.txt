@@ -1,5 +1,5 @@
-1. special chars in boths key and value?
-2. value empty or space?
+1. special chars in boths key and value? just in the value 
+2. value empty or space ? it's normal
 
 3. Error opening file
-4. "content-length:        2" --> should it be accepted?
+4. "content-length:        2" --> should it be accepted ? yes
