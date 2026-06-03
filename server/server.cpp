@@ -172,7 +172,10 @@ bool Server::sendRespond(Server &obj, pollfd &p)
         p.events &= ~POLLOUT;
 
         if (recs[index_Client[iClnt]].clientState  == DISCONNECTED)
+        {
             close_client(p, iClnt);
+            return(false);
+        }
         else
         {
             req[index_Client[iClnt]] = Request();
