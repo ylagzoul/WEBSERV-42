@@ -23,6 +23,13 @@ bool isHoldSpace(const std::string& str)
     return (true);
 }
 
+std::string toStr(int nb)
+{
+    std::stringstream ss;
+    ss << nb;
+    return (ss.str());
+}
+
 std::string trim(const std::string& str)
 {
     size_t start = 0;
@@ -34,6 +41,14 @@ std::string trim(const std::string& str)
         end--;
 
     return str.substr(start, end - start);
+}
+
+void Request::generateRandomName(std::string value)
+{
+    static int i = 1;
+    if (access(value.c_str(), X_OK))
+        this->bodyPath = value + toStr(i + 1);
+    i++;
 }
 
 void    Request::storeCookies(std::string value)
@@ -70,13 +85,6 @@ bool isPrintable(const std::string &str)
             return false;
     }
     return true;
-}
-
-std::string toStr(int nb)
-{
-    std::stringstream ss;
-    ss << nb;
-    return (ss.str());
 }
 
 int    count_space(std::string str)
@@ -141,6 +149,14 @@ bool checkPrecentEnc(std::string &pathSlice)
         }
     }
     return (true);
+}
+
+bool checkMethod(std::string &method)
+{
+    if (!method.compare("POST") || !method.compare("GET") || !method.compare("DELETE"))
+        return (false);
+    else
+        return (true);
 }
 
 bool checkPath(std::string &path)
@@ -212,11 +228,11 @@ void fillCheck(Request &req, std::string reqLine)
     req.method = array[0];
     req.path = array[1];
     req.httpVersion = array[2];
-    if (!checkPath(req.path))
+    if (!checkPath(req.path) || !checkMethod(req.method))
     {
         req.status = 400;
         req.finFlag = true;
-        return;
+        return ;
     }
 }
 
@@ -262,7 +278,7 @@ void getHeaders(Request &req)
             req.finFlag = true;
             return ;
         }
-        return;
+        return ;
     }
     size_t colon = line.find(':');
     if (colon != std::string::npos)
@@ -362,6 +378,7 @@ void getFixedBody(Request &req, Config con)
     if (req.bodyFd == -1)
     {
         bodyLen = 0;
+        req.generateRandomName(BODY_FILE_PATH + std::string("client"));
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (req.bodyFd == -1)
         {
@@ -418,7 +435,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     std::string tes;
     (void)sList;
     req[userId].fullLine.append(buffer, len);
-    req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
+    // req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
         // cout << "--->" << req[userId].fullLine.length() << std::endl;
