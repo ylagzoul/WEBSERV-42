@@ -8,3 +8,10 @@
 
 
 valgrind with webserb : 2 requests!
+
+
+Error in CGI script: [Errno 32] Broken pipe
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+bytes 0
+new cgi

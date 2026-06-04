@@ -8,7 +8,7 @@ CRLF = b"\r\n"
 # 1. Prepare the HTTP Headers
 headers = [
     b"Content-Type: text/html; charset=utf-8",
-    b"Content-length: 400",
+    b"Content-length: 9000",
     b"Cache-Control: no-cache",
 
 ]
@@ -26,7 +26,121 @@ html_body = """<!DOCTYPE html>
     <ul>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
         <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Query String:</strong> {query}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Query String:</strong> {query}</li>v
     </ul>
 </body>
 </html>

@@ -131,6 +131,7 @@ void Config::config_file()
                                 if (obj.conf.str.size() > 1)
                                     throw std::runtime_error("error in closing curly brace in location");
                                 break;
+                                
                             }
                             obj.conf.function();
                         }
