@@ -21,6 +21,7 @@ server {
         error_page 404 /errors/404.html;
         autoindex on;
     }
+
     location / {
         methods GET POST DELETE;
         root /home/ylagzoul/Desktop//WEBSERV-42/;
