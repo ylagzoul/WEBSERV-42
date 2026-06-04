@@ -54,7 +54,7 @@ void getHeadersCgi(CgiHandler &cgiData)
         cgiData.getEndHeaders = true;
         cgiData.lenRead += cgiData.fullLine.substr(0, endLine + 2).length();
         cgiData.fullLine.erase(0, endLine + 2);
-        if (cgiData.cgHeaders.find("content-length") == cgiData.cgHeaders.end() || cgiData.cgHeaders.find("content-type") == cgiData.cgHeaders.end())
+        if (cgiData.cgHeaders.find("content-type") == cgiData.cgHeaders.end())
         {
             cgiData.cgStatusCode = 502;
             cgiData.cgStatusName = "Bad Gateway";
@@ -63,7 +63,7 @@ void getHeadersCgi(CgiHandler &cgiData)
         }
         if (cgiData.cgHeaders.find("status") != cgiData.cgHeaders.end())
             parseLine(cgiData.cgHeaders["status"], cgiData);
-        cgiData.contentLength = std::atoi(cgiData.cgHeaders["content-length"].c_str());
+        // cgiData.contentLength = std::atoi(cgiData.cgHeaders["content-length"].c_str());
         return;
     }
     size_t colon = line.find(':');
@@ -101,6 +101,7 @@ void getBody(CgiHandler &cgiData)
     cgiData.lenRead += cgiData.fullLine.length();
     if (cgiData.fd == -1)
     {
+        bodyLen = 0;
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
         {
@@ -111,27 +112,24 @@ void getBody(CgiHandler &cgiData)
         }
     }
     bodyLen += cgiData.fullLine.length();
-    if (bodyLen > 10000000) // after handel
+    if (bodyLen > 10000000) // after handel 
     {
         cgiData.cgStatusCode = 502;
         cgiData.getEndFile = true;
-        return;
+        return ;
     }
-    if (bodyLen < cgiData.contentLength)
+    if (cgiData.endRead == false)
     {
         if (bodyLen != 0)
         {
             write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length());
             cgiData.fullLine.clear();
         }
-        return;
+        return ;
     }
-    int sizePa = (cgiData.contentLength + cgiData.fullLine.length()) - bodyLen;
-    std::string d = cgiData.fullLine.substr(0, sizePa);
-
-    write(cgiData.fd, d.c_str(), sizePa);
     close(cgiData.fd);
     cgiData.getEndFile = true;
+    // cgiData.endRead = true;
 }
 
 int parseCgiResponse(CgiHandler &cgiData)
@@ -162,7 +160,7 @@ int parseCgiResponse(CgiHandler &cgiData)
             getHeadersCgi(cgiData);
         else
             cgiData.reqState = SECOND_CGI_ST;
-        if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.contentLength > 0)
+        if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.endRead == false)
             getBody(cgiData);
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {

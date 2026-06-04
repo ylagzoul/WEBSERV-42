@@ -253,7 +253,7 @@ void getHeaders(Request &req)
             req.bodyType = CHUNKED;
         else if (req.headers.find("content-length") != req.headers.end() && checkDigits(req.headers["content-length"]))
         {
-            req.contentLength = std::atoi(req.headers["content-length"].c_str());
+            req.contentLength = std::strtol(req.headers["content-length"].c_str(), NULL, 10); // long number fix atoi; 
             req.bodyType = FIXED;
         }
         else if (req.method != "GET")
@@ -478,7 +478,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         }
     }
     // cout << req[userId].getEndHeaders << std::endl;
-    // cout << "[ " << userId << " ]" <<  std::endl;
+    cout << "[ " << userId << " ]" <<  std::endl;
     // if (req[userId].getEndHeaders)
     //     generateCookies(req[userId], sList);
     

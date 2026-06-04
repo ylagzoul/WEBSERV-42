@@ -6,10 +6,10 @@ int erorrCgi(CgiHandler &cgiData)
     cgiData.cgStatusName = "Internal Server Error";
     return 1;
 }
-CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST)
+CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false)
 {
     dataReady = false;
-    cgiValid = false; 
+    cgiValid = false;
     canRead = false;
 };
 
@@ -157,8 +157,9 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
         int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR-1);
         if (bytes < 0)
             return (erorrCgi(cgiData));
-        
-        if (bytes > 0)
+        else if (bytes == 0)
+            cgiData.endRead = true;
+        else if (bytes > 0)
         {
             cgiData.canRead = true;
             buffer[bytes] = '\0';

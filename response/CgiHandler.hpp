@@ -39,19 +39,20 @@ class CgiHandler
     int cgStatusCode;
     std::string cgStatusName;
     std::map<std::string, std::string> cgHeaders;
-    std::string cgBodyFileName;
-    std::string bodyFile;
-    std::string fullLine;
-    std::string bodyPath;
-    size_t      lenRead;
-    int         bodyFd;
-    bool        getEndHeaders;
-    bool        finFlag;
-    bool        getEndFile;
-    size_t      contentLength;
+    std::string         cgBodyFileName;
+    std::string         bodyFile;
+    std::string         fullLine;
+    std::string         bodyPath;
+    size_t              lenRead;
+    int                 bodyFd;
+    bool                getEndHeaders;
+    bool                finFlag;
+    bool                getEndFile;
+    size_t              contentLength;
     t_client_state_cgi  clientState;
     t_req_state_cgi     reqState;
     int bodyType;
+    bool             endRead;
 };
 
 #include "../server/server.hpp"
