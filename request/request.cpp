@@ -487,7 +487,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
                 req[userId].clientState = CLIENT_ON;
             if (pos != std::string::npos && tes.length() > 2)
                 tes.erase(0, pos + 2);
-            if (req[userId].method == "GET")
+            if (req[userId].method == "GET" || req[userId].method == "DELETE")
             {
                 if ((req[userId].method != "POST" && pos != std::string::npos && tes.length() == 2) )
                     req[userId].clientState = CLIENT_ON;
