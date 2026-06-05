@@ -98,12 +98,12 @@ bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
     char buffer[SIZESR] = {0};
     int bytes = recv(p.fd, buffer, SIZESR, 0);
 
-    // std::cout << "buffer = " << buffer << std::endl;
     if (bytes > 0)
     {
         // cout << "test11\n\n";
         clientId = index_Client[i];
         // cout << "clientId =  "  << clientId << std::endl;
+        // std::cout << "bytes =  <" << bytes << ">\n\n"; 
         readRequest(req, clientId, buffer, bytes, conf, sList);
         // cout << "--> " << req[i].clientState << std::endl;
         // cout << "--> " << req[i].status << std::endl;

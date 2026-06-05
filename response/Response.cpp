@@ -2,8 +2,8 @@
 
 void Request::clean() // add youssef
 {
-    if (access(bodyPath.c_str(), F_OK) != -1)
-        std::remove(bodyPath.c_str());
+    // if (access(bodyPath.c_str(), F_OK) != -1)
+    //     std::remove(bodyPath.c_str());
 }
 
 void defaultErrorPage(playloadData &data)
@@ -182,6 +182,7 @@ int postBody(Record &log, playloadData &data)
     if (bytes < size)
     {
         log.status = CLOSED_RS;
+        log.method = NONE_RS;
         // close(log.fd);
         // close(log.fileFd);
     }
@@ -208,6 +209,7 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
         if (S_ISDIR(info.st_mode))
         {
             log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
+            // std::cout << req.bodyPath << std::endl;
             if (log.fileFd == -1)
             {
                 data.statusCode = "500";
@@ -597,11 +599,9 @@ void getImportantData(Config &conf, playloadData &data)
     }
     for (size_t i = 0; i < conf.location.size(); i++)
     {
-
         if (conf.location[i].location_name == data.location)
         {
             // if (conf.location[i].conf.error_page.empty())
-                
             data.errorPages = conf.location[i].conf.error_page;
             data.methods = conf.location[i].conf.methods;
             data.index = conf.location[i].conf.index;
@@ -731,15 +731,23 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     }
     data.uploadOn = 0;
     if (data.upload.empty())
+    {
         return 0;
+    }
     if (data.root[data.root.length() - 1] != '/' && data.upload[0] != '/')
         data.upload.insert(0, "/");
     std::string rootUploadDir = data.root + data.upload;
     std::string compare = data.realPath.substr(0, rootUploadDir.length());
-    // std::cout << rootUploadDir << std::endl;
+    // std::cout << data.realPath << std::endl;
     // std::cout << compare << std::endl;
+    // std::cout << rootUploadDir << std::endl;
+    if (compare[compare.length()-1] != '/')
+        compare.push_back('/');
+    if (rootUploadDir[rootUploadDir.length()-1] != '/')
+        rootUploadDir.push_back('/'); ////Fiiiiiiiiiiix 
     if (compare == rootUploadDir)
         data.uploadOn = 1;
+    // else cout << "kidertiliha\n";
     return 0;
 }
 
@@ -783,7 +791,17 @@ int responseHandler(CgiHandler &cgiData, Server &obj, Record &log, Request &req,
     else if (req.method == "POST")
     {
         if (postHandler(log, data, req, conf))
+        {
+            if (access(req.bodyPath.c_str(), F_OK) != -1)
+                std::remove(req.bodyPath.c_str());
+            log.method = NONE_RS;
             return 1;
+        }
+        if (log.status == CLOSED_RS)
+        {
+            if (access(req.bodyPath.c_str(), F_OK) != -1)
+                std::remove(req.bodyPath.c_str());
+        }
     }
     else if (req.method == "DELETE")
     {
@@ -859,13 +877,14 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     res << "\r\n";
     if (data.connection == "Keep-Alive")
         log.clientState = ALIVE;
-    if (log.method != POST_LIST_RS || log.status == ERROR_RS)
+    if ((log.method != POST_RS && log.method != POST_LIST_RS) || log.status == ERROR_RS)
+    {
         ret_resp = res.str();
+    }	
 }
 
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
-
     // std::cout << req.path << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -873,7 +892,6 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
 
     if (log.status == NEW_RS)
     {
-
         data.bodySize = 0;
         loadExtensions(data);
         data.connection = "Close";
@@ -919,8 +937,15 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
             if (postBody(log, data))
             {
                 // may be something
+                log.method = NONE_RS;
                 log.status = ERROR_RS;
             }
+            if (log.status == ERROR_RS || log.status == CLOSED_RS)
+            {
+                if (access(req.bodyPath.c_str(), F_OK) != -1)
+                    std::remove(req.bodyPath.c_str());
+            }
+
             // remove bodyfile
         }
     }
@@ -930,6 +955,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
 
     if (pastStatus == NEW_RS
         // || (log.method == NONE_RS && log.status == ERROR_RS) /!\  TEST
+        || (pastMethod == POST_RS && log.method == NONE_RS)
         || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS))
         || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
     {
@@ -944,6 +970,5 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
     else
         ret_resp = log.buffer;
     log.buffer.clear();
-
     return (ret_resp);
 }

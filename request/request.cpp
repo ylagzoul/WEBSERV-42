@@ -391,6 +391,7 @@ void getFixedBody(Request &req, Config con)
         req.bodyLen = 0;
         req.generateRandomName(BODY_FILE_PATH + std::string("client"));
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+
         if (req.bodyFd == -1)
         {
             std::cerr << "Error opening file\n";
@@ -423,7 +424,7 @@ void getFixedBody(Request &req, Config con)
     write(req.bodyFd, d.c_str(), sizePa);
     close(req.bodyFd);
     req.getEndFile = true;
-    // cout << "chalala\n";
+    cout << "- finishing - \n";
 }
 
 void    generateCookies(Request &req, SessionsList &sList)
@@ -498,7 +499,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         //     getChunkedBody(req);
         if ((req[userId].getEndFile) /*|| (req[userId].method != "POST" && !req[userId].method.empty())*/)
             req[userId].finFlag = true;
-
         if (req[userId].finFlag)
         {
             req[userId].reqState = SECOND_ST;
@@ -507,7 +507,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         }
     }
     // cout << req[userId].getEndHeaders << std::endl;
-    cout << "[ " << userId << " ]" <<  std::endl;
+    // cout << "[ " << userId << " ]" <<  std::endl;
 
     // if (req[userId].getEndHeaders)
     //     generateCookies(req[userId], sList);
