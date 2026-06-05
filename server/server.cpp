@@ -138,24 +138,22 @@ bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
     }
 }
 
-bool Server::sendRespond(Server &obj, pollfd &p)
+bool Server::sendRespond(Server &obj, size_t &i, pollfd &p)
 {
-    if (data[index_Client[iClnt]].sendNext)
+    if (data[index_Client[i]].sendNext)
     {
-        data[index_Client[iClnt]].response = respond(obj, recs[index_Client[iClnt]].data, recs[index_Client[iClnt]], conf, req[index_Client[iClnt]]);
-        // std::cout << obj.recs[index_Client[iClnt]].status << std::endl;
-        //  cout << "method: " <<recs[index_Client[iClnt]].method << " status: " << recs[index_Client[iClnt]].status << std::endl;
-
-        if (data[index_Client[iClnt]].response.empty() && (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
+        data[index_Client[i]].response = respond(obj, recs[index_Client[i]].data, recs[index_Client[i]], conf, req[index_Client[i]]);
+        // std::cout << obj.recs[index_Client[i]].status << std::endl;
+        if (data[index_Client[i]].response.empty() && (recs[index_Client[i]].status == ACTIVE_RS || recs[index_Client[i]].status == CGI_ACTIVE))
             return (true);
     }
     // cout << "test33\n\n";
-    int sent = send(p.fd, data[index_Client[iClnt]].response.c_str(), data[index_Client[iClnt]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
-    recs[index_Client[iClnt]].number += sent;
+    int sent = send(p.fd, data[index_Client[i]].response.c_str(), data[index_Client[i]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
+    recs[index_Client[i]].number += sent;
     if (sent > 0)
     {
-        data[index_Client[iClnt]].response = data[index_Client[iClnt]].response.substr(sent);
-        data[index_Client[iClnt]].sendNext = data[index_Client[iClnt]].response.empty();
+        data[index_Client[i]].response = data[index_Client[i]].response.substr(sent);
+        data[index_Client[i]].sendNext = data[index_Client[i]].response.empty();
     }
     if (sent < 0)
     {
@@ -165,26 +163,25 @@ bool Server::sendRespond(Server &obj, pollfd &p)
         }
         else
         {
-            close_client(p, iClnt);
+            close_client(p, i);
             return (false);
         }
     }
-    if ((data[index_Client[iClnt]].sendNext && recs[index_Client[iClnt]].status == CLOSED_RS) || recs[index_Client[iClnt]].status == ERROR_RS)
+    if ((data[index_Client[i]].sendNext && recs[index_Client[i]].status == CLOSED_RS) || recs[index_Client[i]].status == ERROR_RS)
     {
         p.events &= ~POLLOUT;
 
-        if (recs[index_Client[iClnt]].clientState  == DISCONNECTED)
+        if (recs[index_Client[i]].clientState  == DISCONNECTED)
         {
-            close_client(p, iClnt);
-            return(false);
+            close_client(p, i);
+            return (false);
         }
         else
         {
-            req[index_Client[iClnt]] = Request();
-            recs[index_Client[iClnt]] = Record();
+            req[index_Client[i]] = Request();
+            recs[index_Client[i]] = Record();
+            data[index_Client[i]].time = time(NULL);
         }
-        data[index_Client[iClnt]].time = time(NULL);
-
     }
     return (true);
 }
@@ -203,7 +200,7 @@ int main(/*int arc,char *arv[]*/)
 
     while (true)
     {
-        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)// MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
+        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
         {
             std::cout << "poll error\n";
             continue;
@@ -228,7 +225,7 @@ int main(/*int arc,char *arv[]*/)
             {
 
                 obj.iClnt = i;
-                if (!obj.sendRespond(obj, p))
+                if (!obj.sendRespond(obj,i, p))
                 {
                     continue;
                 }

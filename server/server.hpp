@@ -57,7 +57,7 @@ public:
 
     void acceptNewCleint(pollfd &p, size_t &i);
     bool receiveRequest(pollfd &p, size_t &i, SessionsList &sList);
-    bool sendRespond(Server &obj, pollfd &p);
+    bool sendRespond(Server &obj,size_t &i, pollfd &p);
     void close_client(pollfd &p, int i);
 };
 

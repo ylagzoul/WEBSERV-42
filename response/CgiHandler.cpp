@@ -6,10 +6,10 @@ int erorrCgi(CgiHandler &cgiData)
     cgiData.cgStatusName = "Internal Server Error";
     return 1;
 }
-CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST)
+CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false)
 {
     dataReady = false;
-    cgiValid = false; 
+    cgiValid = false;
     canRead = false;
 };
 
@@ -42,7 +42,6 @@ int parseCgiResponse_yl(Server &obj, std::string method, CgiHandler &cgiData)
             obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
 
             obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
-
         }
         close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
 
@@ -89,7 +88,7 @@ int NewCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
             return (erorrCgi(cgiData));
 
         obj.recs[obj.iClnt].idFdPipe.push_back(inputPipe[0]);
-        
+
         pollfd client_poll;
         client_poll.fd = inputPipe[1];
         client_poll.events = POLLOUT;
@@ -99,17 +98,15 @@ int NewCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
         obj.recs.push_back(Record());
         obj.req.push_back(Request());
         obj.data.push_back(Data());
-
     }
     return (0);
 }
 
-
 int outputcgi(Server &obj, CgiHandler &cgiData, std::string method)
 {
     pid_t pid = fork();
-        if (pid == -1)
-            return (erorrCgi(cgiData));
+    if (pid == -1)
+        return (erorrCgi(cgiData));
     if (pid == 0)
     {
         // std::cout << "llloollllllllllllllllllllllllllllllllllllllll\n";
@@ -124,7 +121,7 @@ int outputcgi(Server &obj, CgiHandler &cgiData, std::string method)
         if (dup2(obj.recs[obj.iClnt].idFdPipe[1], STDOUT_FILENO) < 0)
             return (erorrCgi(cgiData));
         close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
-        close (obj.recs[obj.iClnt].idFdPipe[1]);
+        close(obj.recs[obj.iClnt].idFdPipe[1]);
 
         execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
         perror("execve");
@@ -138,31 +135,39 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
 
     if (method == "POST")
     {
+        std::cout << "post read form cgi\n\n";
         if (obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].revents & POLLOUT)
         {
+            std::cout << "post writed form cgi if\n\n";
             int bytes_r;
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
             if (bytes_r < 0)
                 return (erorrCgi(cgiData));
-            
+
             if (write(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd, buffer, bytes_r) < 0)
                 return (erorrCgi(cgiData));
         }
     }
     if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & POLLIN)
     {
+        std::cout << " read form cgi\n\n";
 
         char buffer[SIZESR];
-        int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR-1);
+        int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR - 1);
+
+        std::cout << "buffer = " << buffer << std::endl;
         if (bytes < 0)
             return (erorrCgi(cgiData));
-        
-        if (bytes > 0)
+        else if (bytes == 0)
+            cgiData.endRead = true;
+        else if (bytes > 0)
         {
+            std::cout << "read form cgi -> bytes = " << bytes << std::endl;
             cgiData.canRead = true;
             buffer[bytes] = '\0';
             cgiData.cgBuff.append(buffer, bytes);
+            std::cout << "cgiData.cgBuff = " << cgiData.cgBuff << std::endl;
         }
         obj.recs[obj.iClnt].cont++;
     }
@@ -170,29 +175,32 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
     return (0);
 }
 
-
-
 int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
     if (log.status == NEW_RS)
     {
+        std::cout << "new cgi                       .....\n\n";
 
         if (NewCgi(log, obj, cgiData, method, bodyFile))
-            return(1);
+            return (1);
         log.status = CGI_ACTIVE;
         log.method = CGI_RDWR;
-        if (outputcgi(obj, cgiData,method))
+        if (outputcgi(obj, cgiData, method))
             return (1);
     }
     else
     {
-        if (readFromCgi(obj, cgiData,method))
+        std::cout << "anadkholch\n\n\n";
+        if (readFromCgi(obj, cgiData, method))
             return (1);
-        
         if (cgiData.canRead) /* CHEEEECK /!\*/
         {
+            std::cout << "parseCgiResponse   //  cgiData.cgBuff = " << cgiData.cgBuff << std::endl;
+            std::cout << "parseCgiResponse\n\n";
             parseCgiResponse(cgiData);
-            parseCgiResponse_yl(obj,method,cgiData);
+            std::cout << "parseCgiResponse_yl\n\n";
+            parseCgiResponse_yl(obj, method, cgiData);
+            std::cout << "finsh\n\n";
         }
     }
     return 0;
@@ -245,13 +253,12 @@ void getCgiEnv(std::vector<std::string> &headers, std::vector<char *> &env, std:
     exFile.push_back(NULL);
     cgiData.executeablePath = &exFile[0];
     // std::cout << "-------------->" << *cgiData.executeablePath << std::endl;
-    
+
     cgiData.path = data.cgiScriptFile;
 
-// int i = -1;
-// while (cgiData.env[++i])
-//     std::cout << env[i] << std::endl;
-
+    // int i = -1;
+    // while (cgiData.env[++i])
+    //     std::cout << env[i] << std::endl;
 }
 
 int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
@@ -281,19 +288,18 @@ int cgiProcess(CgiHandler &cgiData, Record &log, Server &obj, playloadData &data
 {
     // he should set log.status to CGI_ACTIVE and log.method to CGI_RDWR
     // he should set cgiData.cgStatusName and cgiData.cgStatusCode
-        // to its proper data
+    // to its proper data
     // he should check whether the parser ends or not to close the file was opened
     // std::cout << "true " << log.status << "\n\n";
     if (runCgi(log, obj, cgiData, req.method, req.bodyPath))
     {
-        // std::cout << "ERROR_RS\n";
+        std::cout << "ERROR_RS\n";
         log.status = ERROR_RS;
     }
     // std::cout << "true " << log.status << "\n\n";
-    
+
     if (cgiData.dataReady == true || log.status == ERROR_RS)
     {
-        // std::cout << "dkhelt\n\n\n";
         if (cgiResponseHandler(log, cgiData, data))
             return 1;
         else
@@ -314,6 +320,6 @@ int cgiHandler(Record &log, CgiHandler &cgiData, Server &obj, playloadData &data
     if (cgiProcess(cgiData, log, obj, data, req))
         return 1;
     // std::cout << "true 9999" << log.status << "\n\n";
-    
+
     return 0;
 }
