@@ -11,23 +11,17 @@
 # define MAXPORT 65535
 # define MAXIP 256
 
-# define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
-# define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
-# define CONF_FILE_PATH "/home/ylagzoul/Desktop//WEBSERV-42/config_file/file_config_file/config.nginx"
+// # define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
+// # define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
+// # define CONF_FILE_PATH "/home/ylagzoul/Desktop//WEBSERV-42/config_file/file_config_file/config.nginx"
 
-# define LIST_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/server"
-# define BODY_FILE_PATH "/home/mradouan/goinfre/"
-# define CONF_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/config_file/file_config_file/moha.nginx"
+// # define LIST_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/server"
+// # define BODY_FILE_PATH "/home/mradouan/goinfre/"
+// # define CONF_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/config_file/file_config_file/moha.nginx"
 
-<<<<<<< HEAD
-# define LIST_FILE_PATH "/home/abouhki/goinfre/"
-# define BODY_FILE_PATH "/home/abouhki/goinfre/"
+# define LIST_FILE_PATH "/home/abouhki/goinfre"
+# define BODY_FILE_PATH "/home/abouhki/goinfre"
 # define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/boha.nginx"
-=======
-// # define LIST_FILE_PATH "/home/abouhki/goinfre"
-// # define BODY_FILE_PATH "/home/abouhki/goinfre"
-// # define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/boha.nginx"
->>>>>>> 98d411632f98e8a43fdb952fd054aaa91794ece3
 
 class Location;
 

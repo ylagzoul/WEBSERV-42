@@ -507,7 +507,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         }
     }
     // cout << req[userId].getEndHeaders << std::endl;
-    cout << "[ " << userId << " ]" <<  std::endl;
+    // cout << "[ " << userId << " ]" <<  std::endl;
 
     // if (req[userId].getEndHeaders)
     //     generateCookies(req[userId], sList);
