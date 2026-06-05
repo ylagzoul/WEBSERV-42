@@ -16,8 +16,8 @@
 #include "state.h"
 #include "Record.hpp"
 
-# define DEFAULTBODY 1024
-#define SIZESR 8192
+# define DEFAULT_MAX_BODY_SIZE 1000000
+# define SIZESR 8192
 
 // GET /file
 

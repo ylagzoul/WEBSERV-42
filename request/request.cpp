@@ -363,6 +363,7 @@ void getFixedBody(Request &req, Config con)
     {
         bodyLen = 0;
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+
         if (req.bodyFd == -1)
         {
             std::cerr << "Error opening file\n";
@@ -373,7 +374,7 @@ void getFixedBody(Request &req, Config con)
     }
     // cout << bodyLen << " | " << req.fullLine.length() << " =>" << req.fullLine ;
     bodyLen += req.fullLine.length();
-    if (bodyLen > 10000000) // after handel
+    if (bodyLen > 1004857600000) // after handel
     {
         req.status = 400;
         req.getEndFile = true;
@@ -394,7 +395,7 @@ void getFixedBody(Request &req, Config con)
     write(req.bodyFd, d.c_str(), sizePa);
     close(req.bodyFd);
     req.getEndFile = true;
-    // cout << "chalala\n";
+    cout << "- finishing - \n";
 }
 
 void    generateCookies(Request &req, SessionsList &sList)
@@ -469,7 +470,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         //     getChunkedBody(req);
         if ((req[userId].getEndFile) /*|| (req[userId].method != "POST" && !req[userId].method.empty())*/)
             req[userId].finFlag = true;
-
         if (req[userId].finFlag)
         {
             req[userId].reqState = SECOND_ST;

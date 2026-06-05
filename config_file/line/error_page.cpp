@@ -43,11 +43,11 @@ void Config::ft_client_max_body_size()
     }
     client_max_body_size = atoi(str[1].c_str());
     if (c == 'G')
-        client_max_body_size = client_max_body_size * DEFAULTBODY * DEFAULTBODY * DEFAULTBODY;
+        client_max_body_size = client_max_body_size * DEFAULT_MAX_BODY_SIZE * DEFAULT_MAX_BODY_SIZE * DEFAULT_MAX_BODY_SIZE;
     else if (c == 'K')
-        client_max_body_size = client_max_body_size * DEFAULTBODY;
+        client_max_body_size = client_max_body_size * DEFAULT_MAX_BODY_SIZE;
     else if (c == 'M')
-        client_max_body_size = client_max_body_size * DEFAULTBODY * DEFAULTBODY;
+        client_max_body_size = client_max_body_size * DEFAULT_MAX_BODY_SIZE * DEFAULT_MAX_BODY_SIZE;
 }
 
 void Config::ft_upload_path()

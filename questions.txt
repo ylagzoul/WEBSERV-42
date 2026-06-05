@@ -1,13 +1,11 @@
-1. special chars in boths key and value? just in the value 
-2. value empty or space ? it's normal
-
-3. Error opening file > has been solved
-4. "content-length:        2" --> should it be accepted ? yes
-
 --------server---------
 
 
-valgrind with webserb : 2 requests!
+valgrind with webserv : 2 requests!
 
-----------------------------------------------
+-----------------requests-----------------------------
 
+----------response----------
+to ask:
+    if deleted the file was serving on the middle of the process in post does it should serv a response error or what?
+to handle:

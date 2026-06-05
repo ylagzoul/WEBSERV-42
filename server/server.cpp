@@ -98,12 +98,12 @@ bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
     char buffer[SIZESR] = {0};
     int bytes = recv(p.fd, buffer, SIZESR, 0);
 
-    // std::cout << "buffer = " << buffer << std::endl;
     if (bytes > 0)
     {
         // cout << "test11\n\n";
         clientId = index_Client[i];
         // cout << "clientId =  "  << clientId << std::endl;
+        // std::cout << "bytes =  <" << bytes << ">\n\n"; 
         readRequest(req, clientId, buffer, bytes, conf, sList);
         // cout << "--> " << req[i].clientState << std::endl;
         // cout << "--> " << req[i].status << std::endl;
@@ -144,6 +144,8 @@ bool Server::sendRespond(Server &obj, pollfd &p)
     {
         data[index_Client[iClnt]].response = respond(obj, recs[index_Client[iClnt]].data, recs[index_Client[iClnt]], conf, req[index_Client[iClnt]]);
         // std::cout << obj.recs[index_Client[iClnt]].status << std::endl;
+        //  cout << "method: " <<recs[index_Client[iClnt]].method << " status: " << recs[index_Client[iClnt]].status << std::endl;
+
         if (data[index_Client[iClnt]].response.empty() && (recs[index_Client[iClnt]].status == ACTIVE_RS || recs[index_Client[iClnt]].status == CGI_ACTIVE))
             return (true);
     }
