@@ -1,6 +1,6 @@
 #include "../server/server.hpp"
 
-Request::Request() : lenRead(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
+Request::Request() : bodyLen(0), lenRead(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
 
 bool checkDigits(std::string str)
 {
@@ -94,6 +94,8 @@ int    count_space(std::string str)
     {
         if (str.at(i) == ' ')
             count++;
+        if (!isprint(str.at(i)))
+            return (count = 5, count);
     }
     return (count);
 }
@@ -153,7 +155,7 @@ bool checkPrecentEnc(std::string &pathSlice)
 
 bool checkMethod(std::string &method)
 {
-    if (!method.compare("POST") || !method.compare("GET") || !method.compare("DELETE"))
+    if (!method.compare("POST") && !method.compare("GET") && !method.compare("DELETE"))
         return (false);
     else
         return (true);
@@ -165,6 +167,8 @@ bool checkPath(std::string &path)
     std::string splitedPath;
     std::string tmp;
 
+    if (path.find("%00") != std::string::npos)
+        return (false);
     if (path.at(0) != '/' && path.at(0) != '%')
         return (false);
     else if (path.at(0) == '/' && path.length() == 1)
@@ -205,6 +209,7 @@ void fillCheck(Request &req, std::string reqLine)
     std::stringstream splitReq(reqLine);
     std::string slice;
     std::vector<std::string> array;
+
     if (count_space(reqLine) > 2)
     {
         req.status = 400;
@@ -267,12 +272,12 @@ void getHeaders(Request &req)
             req.storeCookies(req.headers["set-cookie"]);
         if (it != req.headers.end() && it->second == "chunked")
             req.bodyType = CHUNKED;
-        else if (req.headers.find("content-length") != req.headers.end() && checkDigits(req.headers["content-length"]))
+        else if (req.headers.find("content-length") != req.headers.end())
         {
             req.contentLength = std::strtol(req.headers["content-length"].c_str(), NULL, 10); // long number fix atoi; 
             req.bodyType = FIXED;
         }
-        else if (req.method != "GET")
+        else if (req.method != "GET" && req.method != "DELETE")
         {
             req.status = 400;
             req.finFlag = true;
@@ -293,6 +298,12 @@ void getHeaders(Request &req)
         }
         value = trim(value);
         req.headers[tolowerStr(key)] = value;
+        if (req.method == "POST" && req.headers.find("content-length") != req.headers.end() && !checkDigits(req.headers["content-length"]))
+        {
+            req.status = 400;
+            req.finFlag = true;
+            return;
+        }
     }
     else
     {
@@ -373,11 +384,11 @@ void getHeaders(Request &req)
 void getFixedBody(Request &req, Config con)
 {
     (void)con;
-    static size_t bodyLen;
+    // static size_t bodyLen;
     req.lenRead += req.fullLine.length();
     if (req.bodyFd == -1)
     {
-        bodyLen = 0;
+        req.bodyLen = 0;
         req.generateRandomName(BODY_FILE_PATH + std::string("client"));
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (req.bodyFd == -1)
@@ -388,24 +399,25 @@ void getFixedBody(Request &req, Config con)
             return ;
         }
     }
-    // cout << bodyLen << " | " << req.fullLine.length() << " =>" << req.fullLine ;
-    bodyLen += req.fullLine.length();
-    if (bodyLen > 10000000) // after handel
+    // cout << req.bodyLen << " | " << req.fullLine.length() << " =>" << req.fullLine ;
+    req.bodyLen += req.fullLine.length();
+    if (req.bodyLen > 1000000000000) // after handel
     {
+        cout << "PPP\n";
         req.status = 400;
         req.getEndFile = true;
         return ;
     }
-    if (bodyLen < req.contentLength)
+    if (req.bodyLen < req.contentLength)
     {
-        if (bodyLen != 0)
+        if (req.bodyLen != 0)
         {
             write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length());
             req.fullLine.clear();
         }
         return;
     }
-    int sizePa = (req.contentLength + req.fullLine.length()) - bodyLen;
+    int sizePa = (req.contentLength + req.fullLine.length()) - req.bodyLen;
     std::string d = req.fullLine.substr(0, sizePa);
 
     write(req.bodyFd, d.c_str(), sizePa);
@@ -496,6 +508,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     }
     // cout << req[userId].getEndHeaders << std::endl;
     cout << "[ " << userId << " ]" <<  std::endl;
+
     // if (req[userId].getEndHeaders)
     //     generateCookies(req[userId], sList);
     
