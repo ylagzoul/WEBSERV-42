@@ -200,86 +200,107 @@ int parseCgiResponse(CgiHandler &cgiData)
     return 0;
 }
 
+// int main()
+// {
+//     CgiHandler cgi;
+//     std::string buffer;
+//     buffer =
+//     "Content-Type: text/html\r\n"
+//     "Content-Length: 1000\r\n"
+//     "Set-Cookie: sessionId=abc123xyz789; Path=/; HttpOnly\r\n"
+//     "X-Powered-By: custom-cgi-engine\r\n"
+//     "Cache-Control: no-cache\r\n"
+//     "Status: 404 Not Found\r\n"
+//     "Content-Type: text/html\r\n"
+//     "X-Error-Code: FILE_MISSI\r\n"
+//     "\r\n"
+//     "<!DOCTYPE html>\n"
+//     "<html lang=\"en\">\n"
+//     "<head>\n"
+//     "    <title>User Dashboard</title>\n"
+//     "    <meta charset=\"UTF-8\">\n"
+//     "</head>\n"
+//     "<body>\n"
+//     "    <h1>Welcome back, Abdessamad</h1>\n"
+//     "\n"
+//     "    <div class=\"profile\">\n"
+//     "        <h2>Account Information</h2>\n"
+//     "        <ul>\n"
+//     "            <li>User ID: 48291</li>\n"
+//     "            <li>Plan: Premium</li>\n"
+//     "            <li>Status: Active</li>\n"
+//     "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+//     "        </ul>\n"
+//     "    </div>\n"
+//     "\n"
+//     "    <div class=\"notifications\">\n"
+//     "        <h2>Notifications</h2>\n"
+//     "        <p>You have 5 unread messages.</p>\n"
+//     "        <p>Your storage usage is 73%.</p>\n"
+//     "    </div>\n"
+//     "\n"
+//     "    <div class=\"recent-files\">\n"
+//     "        <h2>Recent Files</h2>\n"
+//     "        <table border=\"1\">\n"
+//     "            <tr>\n"
+//     "                <th>Filename</th>\n"
+//     "                <th>Size</th>\n"
+//     "                <th>Modified</th>\n"
+//     "            </tr>\n"
+//     "            <tr>\n"
+//     "                <td>report.pdf</td>\n"
+//     "                <td>1.2 MB</td>\n"
+//     "                <td>2026-05-11</td>\n"
+//     "            </tr>\n"
+//     "            <tr>\n"
+//     "                <td>notes.txt</td>\n"
+//     "                <td>14 KB</td>\n"
+//     "                <td>2026-05-10</td>\n"
+//     "            </tr>\n"
+//     "            <tr>\n"
+//     "                <td>archive.tar.gz</td>\n"
+//     "                <td>92 MB</td>\n"
+//     "                <td>2026-05-08</td>\n"
+//     "            </tr>\n"
+//     "        </table>\n"
+//     "    </div>\n"
+//     "</body>\n"
+//     "</html>\n";
+//     cgi.cgBuff = buffer;
+//     // while(cgi.clientState != CLIENT_CGI_ON)
+//     // {
+//         parseCgiResponse(cgi);
+//     // }
+//     std::map<std::string, std::string>::iterator it;
+
+//     for (it = cgi.cgHeaders.begin(); it != cgi.cgHeaders.end(); ++it)
+//     {
+//         std::cout << it->first << ":" << it->second << std::endl;
+//     }   
+//     std::cout << "-->" << cgi.cgStatusCode << std::endl;
+//     std::cout << "--> " << cgi.cgStatusName << std::endl;
+//     std::cout << "--> " << cgi.clientState << std::endl;
+
+
+// }
+
+#include <iostream>
+#include <fcntl.h>
+#include <unistd.h>
+
+using namespace std;
+# define KB 1024
+
 int main()
 {
-    CgiHandler cgi;
-    std::string buffer;
-    buffer =
-    "Content-Type: text/html\r\n"
-    "Content-Length: 1000\r\n"
-    "Set-Cookie: sessionId=abc123xyz789; Path=/; HttpOnly\r\n"
-    "X-Powered-By: custom-cgi-engine\r\n"
-    "Cache-Control: no-cache\r\n"
-    "Status: 404 Not Found\r\n"
-    "Content-Type: text/html\r\n"
-    "X-Error-Code: FILE_MISSI\r\n"
-    "\r\n"
-    "<!DOCTYPE html>\n"
-    "<html lang=\"en\">\n"
-    "<head>\n"
-    "    <title>User Dashboard</title>\n"
-    "    <meta charset=\"UTF-8\">\n"
-    "</head>\n"
-    "<body>\n"
-    "    <h1>Welcome back, Abdessamad</h1>\n"
-    "\n"
-    "    <div class=\"profile\">\n"
-    "        <h2>Account Information</h2>\n"
-    "        <ul>\n"
-    "            <li>User ID: 48291</li>\n"
-    "            <li>Plan: Premium</li>\n"
-    "            <li>Status: Active</li>\n"
-    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
-    "        </ul>\n"
-    "    </div>\n"
-    "\n"
-    "    <div class=\"notifications\">\n"
-    "        <h2>Notifications</h2>\n"
-    "        <p>You have 5 unread messages.</p>\n"
-    "        <p>Your storage usage is 73%.</p>\n"
-    "    </div>\n"
-    "\n"
-    "    <div class=\"recent-files\">\n"
-    "        <h2>Recent Files</h2>\n"
-    "        <table border=\"1\">\n"
-    "            <tr>\n"
-    "                <th>Filename</th>\n"
-    "                <th>Size</th>\n"
-    "                <th>Modified</th>\n"
-    "            </tr>\n"
-    "            <tr>\n"
-    "                <td>report.pdf</td>\n"
-    "                <td>1.2 MB</td>\n"
-    "                <td>2026-05-11</td>\n"
-    "            </tr>\n"
-    "            <tr>\n"
-    "                <td>notes.txt</td>\n"
-    "                <td>14 KB</td>\n"
-    "                <td>2026-05-10</td>\n"
-    "            </tr>\n"
-    "            <tr>\n"
-    "                <td>archive.tar.gz</td>\n"
-    "                <td>92 MB</td>\n"
-    "                <td>2026-05-08</td>\n"
-    "            </tr>\n"
-    "        </table>\n"
-    "    </div>\n"
-    "</body>\n"
-    "</html>\n";
-    cgi.cgBuff = buffer;
-    // while(cgi.clientState != CLIENT_CGI_ON)
-    // {
-        parseCgiResponse(cgi);
-    // }
-    std::map<std::string, std::string>::iterator it;
-
-    for (it = cgi.cgHeaders.begin(); it != cgi.cgHeaders.end(); ++it)
+    int fd = open("/home/mradouan/goinfre/dfile.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd==-1)
+        cout << "kayn chi error a wld 3ammi\n";
+    int i = 0;
+    string buff(10000, 'e');
+    while (i < KB * KB)
     {
-        std::cout << it->first << ":" << it->second << std::endl;
-    }   
-    std::cout << "-->" << cgi.cgStatusCode << std::endl;
-    std::cout << "--> " << cgi.cgStatusName << std::endl;
-    std::cout << "--> " << cgi.clientState << std::endl;
-
-
+        write(fd, buff.c_str() , 10000);
+        i++;
+    }
 }

@@ -12,9 +12,9 @@ server {
     autoindex on;
 
 location / {
-    methods GET POST DELETE;
-        upload_path server;
-        root /home/mradouan/Desktop/WEBSERV-42/;
+
+    upload_path goinfre;
+        root /home/mradouan/;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;
