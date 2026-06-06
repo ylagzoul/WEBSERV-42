@@ -23,7 +23,7 @@ server {
 
     location / {
         client_max_body_size 100G;
-        methods GET POST;
+        methods DELETE GET POST;
         root /home/abouhki/Desktop/owebserv/;
         error_page 400 /errors/400.html;
         error_page 404 /errors/404.html;
