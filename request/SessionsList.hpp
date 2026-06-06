@@ -21,6 +21,7 @@ class SessionsList
         void    printSesions();
         void    generateSession(Request &req);
         void    checkLimitSessions();
+        bool    checkIfNotNull();
 
 };
 
