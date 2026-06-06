@@ -138,7 +138,6 @@ void getBody(CgiHandler &cgiData)
 int 
 parseCgiResponse(CgiHandler &cgiData)
 {
-    std::cout <<"cgiData.cgBuff  = " <<  cgiData.cgBuff <<" \n";
 
     //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
     //and "Bad Gateway" to cgiData.cgStatusName and return 
