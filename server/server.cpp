@@ -207,7 +207,8 @@ int main(/*int arc,char *arv[]*/)
         }
         for (size_t i = 0; i < obj.index_Client.size();)
         {
-
+            if (sList.checkIfNotNull())
+                sList.checkLimitSessions();
             pollfd &p = obj.fds[obj.index_Client[i]];
 
             if (p.fd == obj.server_fd && (p.revents & POLLIN))//CHECK ALL SERVER FDS
