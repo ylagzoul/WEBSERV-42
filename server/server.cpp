@@ -16,6 +16,7 @@ Server::Server()
     conf.config_file();
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    // std::cout << "server_fd " << server_fd << std::endl;
 
     int opt = 1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
@@ -58,7 +59,22 @@ void Server::close_client(pollfd &p, int i)
 
     req[index_Client[i]].clean();
     req.erase(req.begin() + index_Client[i]); // iteration problem
+    if (recs[index_Client[i]].isItCgi == true)
+    {
+        // if (req[index_Client[i]].method == "POST")
+        // {
+        //     close();
+        // }
+        std::cout << "before seg: " << recs[iClnt].idFdPipe[0] << std::endl;
+        std::cout << "before seg1: " << fds.size() << std::endl;
+        // close(fds[recs[iClnt].idFdPipe[0]].fd);
+        // fds.erase(fds.begin() + recs[iClnt].idFdPipe[0]);
 
+        // req.erase(req.begin() + recs[iClnt].idFdPipe[0]); // iteration problem
+        // recs.erase(recs.begin() + recs[iClnt].idFdPipe[0]);
+        // data.erase(data.begin() + recs[iClnt].idFdPipe[0]);
+
+    }
     recs[index_Client[i]].clean();
     recs.erase(recs.begin() + index_Client[i]);
 
@@ -69,6 +85,7 @@ void Server::close_client(pollfd &p, int i)
 void Server::acceptNewCleint(pollfd &p, size_t &i)
 {
     int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
+    // std::cout << "client_fd  = " << client_fd  << std::endl;
     if (client_fd != -1)
     {
         pollfd client_poll;
@@ -98,12 +115,12 @@ bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
     char buffer[SIZESR] = {0};
     int bytes = recv(p.fd, buffer, SIZESR, 0);
 
-    // std::cout << "buffer = " << buffer << std::endl;
     if (bytes > 0)
     {
         // cout << "test11\n\n";
         clientId = index_Client[i];
         // cout << "clientId =  "  << clientId << std::endl;
+        // std::cout << "bytes =  <" << bytes << ">\n\n"; 
         readRequest(req, clientId, buffer, bytes, conf, sList);
         // cout << "--> " << req[i].clientState << std::endl;
         // cout << "--> " << req[i].status << std::endl;
@@ -146,6 +163,7 @@ bool Server::sendRespond(Server &obj, size_t &i, pollfd &p)
         // std::cout << obj.recs[index_Client[i]].status << std::endl;
         if (data[index_Client[i]].response.empty() && (recs[index_Client[i]].status == ACTIVE_RS || recs[index_Client[i]].status == CGI_ACTIVE))
             return (true);
+       
     }
     // cout << "test33\n\n";
     int sent = send(p.fd, data[index_Client[i]].response.c_str(), data[index_Client[i]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
@@ -198,13 +216,24 @@ int main(/*int arc,char *arv[]*/)
     Server       obj;
     SessionsList sList;
 
+    // for (int t = 0; t < 10;t++)
     while (true)
     {
-        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1)// MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
+        if (poll(obj.fds.data(), obj.fds.size(), -1) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
         {
             std::cout << "poll error\n";
             continue;
         }
+        // static int sh;
+        // sh ++;
+        // if (sh < 10)
+        // {
+    
+        //     std::cout << "****************************************************************\n";
+        //     for(size_t i = 0; i < obj.fds.size(); i++)
+        //         std::cout << obj.fds[i].fd << ": event" << obj.fds[i].events << " revents: " << obj.fds[i].revents << "\n";
+        // }
+
         for (size_t i = 0; i < obj.index_Client.size();)
         {
 
@@ -221,23 +250,48 @@ int main(/*int arc,char *arv[]*/)
                     continue;
             }
 
+              static int sh;
+                sh ++;
+                if (sh < 10)
+                {
+                
+                    std::cout << "****************************************************************\n";
+                    // for(size_t i = 0; i < obj.fds.size(); i++)
+                        std::cout << "obj.recs[obj.index_Client[i]].status  = " << obj.recs[obj.index_Client[i]].status << std::endl;
+                }
+                //     sh = 0;
+                // std::cout << obj.fds[i].fd << ": event" << obj.fds[i].events << " revents: " << obj.fds[i].revents << "\n";
             if ((p.revents & POLLOUT) || (obj.recs[obj.index_Client[i]].status == CGI_ACTIVE))
             {
 
+                // sh = 0;
                 obj.iClnt = i;
+
+                //  static int sh;
+                // sh ++;
+                // if (sh < 10)
+                // {
+                
+                //     std::cout << "****************************************************************\n";
+                //     for(size_t i = 0; i < obj.fds.size(); i++)
+                //         std::cout << obj.fds[i].fd << ": event" << obj.fds[i].events << " revents: " << obj.fds[i].revents << "\n";
+                // }
+                // sh = 0;
                 if (!obj.sendRespond(obj,i, p))
                 {
                     continue;
                 }
             }
-            if ((i != 0 && time(NULL) - obj.data[i].time > 1000) || (p.revents & (POLLHUP | POLLERR))) 
+            if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLHUP | POLLERR))) 
             {
                 std::cout << "i = " << i << std::endl;
                 std::cout << "close clneit about finsh time..............................................\n\n";
                 obj.close_client(p, i);
+                std::cout << time(NULL) - obj.data[i].time << std::endl;
                 continue;
             }
             i++;
+            p.revents = 0;
         }
         
     }

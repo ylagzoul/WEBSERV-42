@@ -20,6 +20,7 @@ public:
     std::string fileName;
     std::string buffer;
     CgiHandler cgiData;
+    bool isItCgi;
     // ~Record(){std::cout << "dist\n\n";}
     std::vector<int> idFdPipe;
     int cont;

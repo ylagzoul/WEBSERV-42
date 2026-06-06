@@ -6,6 +6,7 @@ import sys
 CRLF = b"\r\n"
 
 # 1. Prepare the HTTP Headers
+sys.stderr.write("hello\n")
 headers = [
     b"Content-Type: text/html; charset=utf-8",
     b"Cache-Control: no-cache",
@@ -23,146 +24,377 @@ html_body = """<!DOCTYPE html>
     <h2>Environment Details:</h2>
     <ul>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>GGateway Interface Interface Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
         <li><strong>Gateway Interface:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Gateway Interfaceeeeeeeeeeeeeeee:</strong> {gateway}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
-        <li><strong>Request Method:</strong> {method}</li>
+        <li><strong>Gatew4444444444///////////////////////////ay Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+<li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>G***********************************ateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li><li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gateway Interface:</strong> {gateway}</li>
+        <li><strong>Gaccccccccccccccccccccccccccteway Interface:</strong> {gateway}</li>
         mohammed radouani
     </ul>
 </body>

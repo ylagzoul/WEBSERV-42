@@ -1,19 +1,25 @@
 
+// 
+
+
+
 #include "response/CgiHandler.hpp"
-// #include "server/server.hpp"
 
-CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST) {};
+CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false)
+{
+    dataReady = false;
+    cgiValid = false;
+    canRead = false;
+};
 
-
-
-std::string tolowerStr(std::string str)
+std::string tolowerStri(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
         str[i] = std::tolower(str[i]);
     return (str);
 }
 
-bool isPrintable(const std::string &str)
+bool isPrintableC(const std::string &str)
 {
     for (size_t i = 0; i < str.size(); i++)
     {
@@ -23,7 +29,7 @@ bool isPrintable(const std::string &str)
     return true;
 }
 
-std::string toStr(int nb)
+std::string toStrC(int nb)
 {
     std::stringstream ss;
     ss << nb;
@@ -31,7 +37,7 @@ std::string toStr(int nb)
 }
 
 
-bool isLfCr(const std::string &str)
+bool isLfCrCgi(const std::string &str)
 {
     for (size_t i = 0; i < str.size(); i++)
     {
@@ -49,7 +55,7 @@ void    parseLine(std::string str, CgiHandler &cgiData)
         cgiData.cgStatusName.erase(0, 1);
 }
 
-void getHeaders(CgiHandler &cgiData)
+void getHeadersCgi(CgiHandler &cgiData)
 {
     size_t endLine = cgiData.fullLine.find("\r\n");
     if (endLine == std::string::npos)
@@ -60,7 +66,7 @@ void getHeaders(CgiHandler &cgiData)
         cgiData.getEndHeaders = true;
         cgiData.lenRead += cgiData.fullLine.substr(0, endLine + 2).length();
         cgiData.fullLine.erase(0, endLine + 2);
-        if (cgiData.cgHeaders.find("content-length") == cgiData.cgHeaders.end() || cgiData.cgHeaders.find("content-type") == cgiData.cgHeaders.end())
+        if (cgiData.cgHeaders.find("content-type") == cgiData.cgHeaders.end())
         {
             cgiData.cgStatusCode = 502;
             cgiData.cgStatusName = "Bad Gateway";
@@ -69,7 +75,7 @@ void getHeaders(CgiHandler &cgiData)
         }
         if (cgiData.cgHeaders.find("status") != cgiData.cgHeaders.end())
             parseLine(cgiData.cgHeaders["status"], cgiData);
-        cgiData.contentLength = std::atoi(cgiData.cgHeaders["content-length"].c_str());
+        // cgiData.contentLength = std::atoi(cgiData.cgHeaders["content-length"].c_str());
         return;
     }
     size_t colon = line.find(':');
@@ -79,14 +85,14 @@ void getHeaders(CgiHandler &cgiData)
         std::string value = line.substr(colon + 1);
         key.erase(std::remove(key.begin(), key.end(), ' '), key.end());
         value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
-        if (!isPrintable(key) || !isLfCr(value))
+        if (!isPrintableC(key) || !isLfCrCgi(value))
         {
             cgiData.cgStatusCode = 502;
             cgiData.cgStatusName = "Bad Gateway";
             cgiData.finFlag = true;
             return ;
         }
-        cgiData.cgHeaders[tolowerStr(key)] = value;
+        cgiData.cgHeaders[tolowerStri(key)] = value;
     }
     else
     {
@@ -101,12 +107,14 @@ void getHeaders(CgiHandler &cgiData)
 }
 
 
-void getFixedBody(CgiHandler &cgiData)
+void getBody(CgiHandler &cgiData)
 {
+
     static size_t bodyLen;
     cgiData.lenRead += cgiData.fullLine.length();
     if (cgiData.fd == -1)
     {
+        bodyLen = 0;
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
         {
@@ -117,31 +125,29 @@ void getFixedBody(CgiHandler &cgiData)
         }
     }
     bodyLen += cgiData.fullLine.length();
-    if (bodyLen > 10000000) // after handel
+    if (bodyLen > 10000000) // after handel 
     {
-        cgiData.cgStatusCode = 400;
+        cgiData.cgStatusCode = 502;
         cgiData.getEndFile = true;
-        return;
+        return ;
     }
-    if (bodyLen < cgiData.contentLength)
+    if (cgiData.endRead == false)
     {
         if (bodyLen != 0)
         {
             write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length());
             cgiData.fullLine.clear();
         }
-        return;
+        std::cout << "Khrejt\n\n";
+        return ;
     }
-    int sizePa = (cgiData.contentLength + cgiData.fullLine.length()) - bodyLen;
-    std::string d = cgiData.fullLine.substr(0, sizePa);
-
-    write(cgiData.fd, d.c_str(), sizePa);
     close(cgiData.fd);
+    std::cout << "ENd file true\n\n";
     cgiData.getEndFile = true;
+    // cgiData.endRead = true;
 }
 
-
-int parseCgiResponse(CgiHandler &cgiData)
+int parseCgaadasdiResponse(CgiHandler &cgiData)
 {
     //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
     //and "Bad Gateway" to cgiData.cgStatusName and return 
@@ -157,7 +163,7 @@ int parseCgiResponse(CgiHandler &cgiData)
     size_t pos;
     std::string tes;
     cgiData.fullLine.append(cgiData.cgBuff.c_str(), cgiData.cgBuff.length());
-    cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("cgiCleint") + toStr(1);
+    cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("cgiCleint") + toStrC(1);
     // cout << cgiData.cgBuff.length() << std::endl;
     while (1)
     {
@@ -166,17 +172,17 @@ int parseCgiResponse(CgiHandler &cgiData)
             break ;
         tes = cgiData.fullLine;
         if (cgiData.getEndHeaders == false)
-            getHeaders(cgiData);
+            getHeadersCgi(cgiData);
         else
             cgiData.reqState = SECOND_CGI_ST;
-        if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.contentLength > 0)
-            getFixedBody(cgiData);
+        if (cgiData.getEndHeaders && cgiData.getEndFile == false)
+            getBody(cgiData);
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {
             cout << cgiData.getEndFile << std::endl;
             cout << tes.length() << std::endl;
 
-            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || pos != std::string::npos && tes.length() == 2)
+            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
                 cgiData.clientState = CLIENT_CGI_ON;
             cgiData.lenRead = 0;    
             break ;
@@ -200,17 +206,16 @@ int parseCgiResponse(CgiHandler &cgiData)
     return 0;
 }
 
+
 int main()
 {
     CgiHandler cgi;
     std::string buffer;
     buffer =
     "Content-Type: text/html\r\n"
-    "Content-Length: 1000\r\n"
     "Set-Cookie: sessionId=abc123xyz789; Path=/; HttpOnly\r\n"
     "X-Powered-By: custom-cgi-engine\r\n"
     "Cache-Control: no-cache\r\n"
-    "Status: 404 Not Found\r\n"
     "Content-Type: text/html\r\n"
     "X-Error-Code: FILE_MISSI\r\n"
     "\r\n"
@@ -226,6 +231,437 @@ int main()
     "    <div class=\"profile\">\n"
     "        <h2>Account Information</h2>\n"
     "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"
+       "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
+    "            <li>User ID: 48291</li>\n"
+    "            <li>Plan: Premium</li>\n"
+    "            <li>Status: Active</li>\n"
+    "            <li>Last Login: Tue May 12 2026 09:14:22 GMT</li>\n"
+    "        </ul>\n"   "        <ul>\n"
     "            <li>User ID: 48291</li>\n"
     "            <li>Plan: Premium</li>\n"
     "            <li>Status: Active</li>\n"
@@ -269,17 +705,22 @@ int main()
     cgi.cgBuff = buffer;
     // while(cgi.clientState != CLIENT_CGI_ON)
     // {
-        parseCgiResponse(cgi);
+    // parseCgiResponse(cgi);
+    // parseCgiResponse(cgi);
+// 
     // }
-    std::map<std::string, std::string>::iterator it;
+    // std::map<std::string, std::string>::iterator it;
 
-    for (it = cgi.cgHeaders.begin(); it != cgi.cgHeaders.end(); ++it)
-    {
-        std::cout << it->first << ":" << it->second << std::endl;
-    }   
-    std::cout << "-->" << cgi.cgStatusCode << std::endl;
-    std::cout << "--> " << cgi.cgStatusName << std::endl;
+    // for (it = cgi.cgHeaders.begin(); it != cgi.cgHeaders.end(); ++it)
+    // {
+    //     std::cout << it->first << ":" << it->second << std::endl;
+    // }   
+
     std::cout << "--> " << cgi.clientState << std::endl;
+    std::cout << "-->>> " << cgi.getEndFile << std::endl;
+
+
+
 
 
 }

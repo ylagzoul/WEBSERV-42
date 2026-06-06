@@ -712,19 +712,22 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
             continue;
         if (stat(data.cgiScriptFile.c_str(), &info) != -1)
         {
-            if (S_ISDIR(info.st_mode))
+            if (S_ISDIR(info.st_mode))    
                 continue;
             data.isCgi = true;
             return 0;
         }
         else
         {
+
             if (!data.cgiInfo.empty())
             {
+                
                 data.statusCode = "404";
                 data.statusName = "Not Found";
                 return 1;
             }
+           
             data.isCgi = true;
             return 0;
         }
@@ -866,6 +869,8 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
 
+
+
     // std::cout << req.path << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -873,6 +878,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
 
     if (log.status == NEW_RS)
     {
+
 
         data.bodySize = 0;
         loadExtensions(data);
@@ -886,6 +892,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
     }
     else if (log.status == ACTIVE_RS || log.status == CGI_ACTIVE)
     {
+        
         if (log.method == CGI_RDWR)
         {
             if (cgiProcess(log.cgiData, log, obj, data, req))
