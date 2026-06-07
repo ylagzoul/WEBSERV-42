@@ -7,6 +7,44 @@ std::string tolowerStri(std::string str)
     return (str);
 }
 
+bool isHoldSpaceCgi(const std::string& str)
+{
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        if (std::isspace(str.at(i)))
+            return (false);
+    }
+    return (true);
+}
+
+std::string getRandomName(CgiHandler &cgi)
+{
+    std::stringstream ss;
+    time_t tStamp = time(NULL);
+    struct tm *currentTime = localtime(&tStamp);
+    char arr[9];
+
+    strftime(arr, sizeof(arr), "%H%M%S", currentTime);
+    std::string randName = arr;
+    ss << cgi.count++;
+    randName += '_';
+    randName += ss.str();
+    return randName;
+}
+
+std::string trimCgi(const std::string& str)
+{
+    size_t start = 0;
+    while (start < str.length() && std::isspace(str[start]))
+        start++;
+
+    size_t end = str.length();
+    while (end > start && std::isspace(str[end - 1]))
+        end--;
+
+    return str.substr(start, end - start);
+}
+
 bool isPrintableC(const std::string &str)
 {
     for (size_t i = 0; i < str.size(); i++)
@@ -15,13 +53,6 @@ bool isPrintableC(const std::string &str)
             return false;
     }
     return true;
-}
-
-std::string toStrC(int nb)
-{
-    std::stringstream ss;
-    ss << nb;
-    return (ss.str());
 }
 
 
@@ -63,7 +94,6 @@ void getHeadersCgi(CgiHandler &cgiData)
         }
         if (cgiData.cgHeaders.find("status") != cgiData.cgHeaders.end())
             parseLine(cgiData.cgHeaders["status"], cgiData);
-        // cgiData.contentLength = std::atoi(cgiData.cgHeaders["content-length"].c_str());
         return;
     }
     size_t colon = line.find(':');
@@ -71,15 +101,14 @@ void getHeadersCgi(CgiHandler &cgiData)
     {
         std::string key = line.substr(0, colon);
         std::string value = line.substr(colon + 1);
-        key.erase(std::remove(key.begin(), key.end(), ' '), key.end());
-        value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
-        if (!isPrintableC(key) || !isLfCrCgi(value))
+        if (!isPrintableC(key) || !isHoldSpaceCgi(key))
         {
             cgiData.cgStatusCode = 502;
             cgiData.cgStatusName = "Bad Gateway";
             cgiData.finFlag = true;
             return ;
         }
+        value = trimCgi(value);
         cgiData.cgHeaders[tolowerStri(key)] = value;
     }
     else
@@ -97,22 +126,22 @@ void getHeadersCgi(CgiHandler &cgiData)
 
 void getBody(CgiHandler &cgiData)
 {
-    static size_t bodyLen;
     cgiData.lenRead += cgiData.fullLine.length();
     if (cgiData.fd == -1)
     {
-        bodyLen = 0;
+        cgiData.cgBodyFileName = BODY_FILE_PATH_CGI + getRandomName(cgiData);
+        cgiData.bodyLen = 0;
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
         {
-            std::cerr << "Error opening file\n";
+            cout << "MOMO\n";
             cgiData.cgStatusCode = 500;
             cgiData.cgStatusName = "Internal Server Error";
             return ;
         }
     }
-    bodyLen += cgiData.fullLine.length();
-    if (bodyLen > 10000000) // after handel 
+    cgiData.bodyLen += cgiData.fullLine.length();
+    if (cgiData.bodyLen > 10000000) // after handel 
     {
         cgiData.cgStatusCode = 502;
         cgiData.getEndFile = true;
@@ -120,7 +149,7 @@ void getBody(CgiHandler &cgiData)
     }
     if (cgiData.endRead == false)
     {
-        if (bodyLen != 0)
+        if (cgiData.bodyLen != 0)
         {
             write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length());
             cgiData.fullLine.clear();
@@ -131,26 +160,11 @@ void getBody(CgiHandler &cgiData)
     }
 }
 
-int 
-parseCgiResponse(CgiHandler &cgiData)
+int parseCgiResponse(CgiHandler &cgiData)
 {
-
-    //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
-    //and "Bad Gateway" to cgiData.cgStatusName and return 
-        //                process
-        //                   |
-        //                   |
-        //                   |
-        //                   |
-    //result: cgiHeadersData + bodyFile
-    // case error happen while creating BodyFile , 500 should be set to cgiData.cgStatusCode
-    // "Internal Server Error" in cgiData.cgStatusName and return 1
-
     size_t pos;
     std::string tes;
     cgiData.fullLine.append(cgiData.cgBuff.c_str(), cgiData.cgBuff.length());
-    cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("cgiCleint") + toStrC(1);
-    // cout << cgiData.cgBuff.length() << std::endl;
     while (1)
     {
         pos = cgiData.fullLine.find("\r\n");
@@ -165,26 +179,17 @@ parseCgiResponse(CgiHandler &cgiData)
             getBody(cgiData);
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {
-            cout << cgiData.getEndFile << std::endl;
-            cout << tes.length() << std::endl;
-
             if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
-            {
                 cgiData.clientState = CLIENT_CGI_ON;
-            }
             cgiData.lenRead = 0;    
             break ;
         }    
-        // // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
-        // //     getChunkedBody(req);
-        // if (cgiData.getEndHeaders)
-        //     cgiData.finFlag = true;
         if (cgiData.getEndFile)
             cgiData.finFlag = true;
 
         if (cgiData.finFlag)
         {
-            cgiData.reqState = SECOND_CGI_ST;
+            // cgiData.reqState = SECOND_CGI_ST;
             cgiData.clientState = CLIENT_CGI_ON;
             break;
         }

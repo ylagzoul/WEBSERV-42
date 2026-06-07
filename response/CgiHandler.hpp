@@ -20,6 +20,8 @@ typedef enum e_req_state_cgi
 
 } t_req_state_cgi;
 
+#define BODY_FILE_PATH_CGI "/home/mradouan/goinfre/clientCgi_"
+
 class CgiHandler
 {
     public:
@@ -30,6 +32,7 @@ class CgiHandler
     int canRead;
     
     // -------------------------------------------------- //
+    size_t bodyLen;
     bool dataReady;
     bool cgiValid;
     
@@ -53,6 +56,7 @@ class CgiHandler
     t_req_state_cgi     reqState;
     int bodyType;
     bool             endRead;
+    size_t           count;
 };
 
 #include "../server/server.hpp"

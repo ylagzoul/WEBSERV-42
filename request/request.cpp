@@ -404,7 +404,6 @@ void getFixedBody(Request &req, Config con)
     req.bodyLen += req.fullLine.length();
     if (req.bodyLen > 1000000000000) // after handel
     {
-        cout << "PPP\n";
         req.status = 400;
         req.getEndFile = true;
         return ;
@@ -424,7 +423,6 @@ void getFixedBody(Request &req, Config con)
     write(req.bodyFd, d.c_str(), sizePa);
     close(req.bodyFd);
     req.getEndFile = true;
-    cout << "- finishing - \n";
 }
 
 void    generateCookies(Request &req, SessionsList &sList)

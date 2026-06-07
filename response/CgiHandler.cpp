@@ -1,13 +1,20 @@
 #include "CgiHandler.hpp"
 int k = 0;
 
+std::string toStrC(int nb)
+{
+    std::stringstream ss;
+    ss << nb;
+    return (ss.str());
+}
+
 int erorrCgi(CgiHandler &cgiData)
 {
     cgiData.cgStatusCode = 500;
     cgiData.cgStatusName = "Internal Server Error";
     return 1;
 }
-CgiHandler::CgiHandler() : fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false)
+CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false)
 {
     dataReady = false;
     cgiValid = false;
