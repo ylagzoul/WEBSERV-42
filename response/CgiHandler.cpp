@@ -201,10 +201,6 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
         {
 
             parseCgiResponse(cgiData);
-            if (cgiData.clientState == CLIENT_CGI_ON)
-            {
-                cgiData.dataReady = true;
-            }
             cgiData.canRead = false;
         }
     }

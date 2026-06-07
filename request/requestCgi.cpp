@@ -125,13 +125,10 @@ void getBody(CgiHandler &cgiData)
             write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length());
             cgiData.fullLine.clear();
         }
+        if (cgiData.dataReady == true)
+            close(cgiData.fd);
         return ;
     }
-    std::cout << "endfile true\n\n";
-
-    close(cgiData.fd);
-    cgiData.getEndFile = true;
-    // cgiData.endRead = true;
 }
 
 int 
