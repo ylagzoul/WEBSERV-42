@@ -166,7 +166,7 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
         else if (bytes == 0)
         {
             cgiData.dataReady = true;
-            close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
+            // close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
             cgiData.endRead = true;
         }
         else if (bytes > 0)

@@ -125,6 +125,7 @@ void getBody(CgiHandler &cgiData)
             write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length());
             cgiData.fullLine.clear();
         }
+        std::cout << "Khrejt\n\n";
         return ;
     }
     std::cout << "endfile true\n\n";
