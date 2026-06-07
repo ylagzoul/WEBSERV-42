@@ -23,8 +23,8 @@ Server::Server()
 
     len = sizeof(addr);
     addr.sin_family = AF_INET;
-    // addr.sin_port = htons(conf.listen_Port[0]);
-    addr.sin_port = htons(3050);
+    addr.sin_port = htons(conf.listen_Port[0]);
+    // addr.sin_port = htons(3050);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
@@ -58,22 +58,6 @@ void Server::close_client(pollfd &p, int i)
 
     req[index_Client[i]].clean();
     req.erase(req.begin() + index_Client[i]); // iteration problem
-    // if (recs[index_Client[i]].isItCgi == true)
-    // {
-        // if (req[index_Client[i]].method == "POST")
-        // {
-        //     close();
-        // }
-        // std::cout << "before seg: " << recs[iClnt].idFdPipe[0] << std::endl;
-        // std::cout << "before seg1: " << fds.size() << std::endl;
-        // close(fds[recs[iClnt].idFdPipe[0]].fd);
-        // fds.erase(fds.begin() + recs[iClnt].idFdPipe[0]);
-
-        // req.erase(req.begin() + recs[iClnt].idFdPipe[0]); // iteration problem
-        // recs.erase(recs.begin() + recs[iClnt].idFdPipe[0]);
-        // data.erase(data.begin() + recs[iClnt].idFdPipe[0]);
-
-    // }
     recs[index_Client[i]].clean();
     recs.erase(recs.begin() + index_Client[i]);
 
