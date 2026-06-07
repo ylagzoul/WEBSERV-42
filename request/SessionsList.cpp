@@ -26,6 +26,8 @@ void    SessionsList::createUnicId()
 
 void SessionsList::generateSession(Request &req)
 {
+
+    std::cout << "test test test " <<  std::endl;
     if (req.cookies.find("session_id") != req.cookies.end())
     {
         id = req.cookies["session_id"];

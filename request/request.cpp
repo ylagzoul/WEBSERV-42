@@ -429,16 +429,16 @@ void getFixedBody(Request &req, Config con)
 
 void    generateCookies(Request &req, SessionsList &sList)
 {
-    if (req.session)
-        cout << "last Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
-    if (!req.headers["set-cookie"].empty())
-        cout << "Last Header: " <<  req.headers["set-cookie"] << std::endl;
+    // if (req.session)
+    //     cout << "last Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
+    // if (!req.headers["set-cookie"].empty())
+    //     cout << "Last Header: " <<  req.headers["set-cookie"] << std::endl;
     sList.generateSession(req);
-    if (req.session)
-        cout << "New Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
-    if (!req.headers["set-cookie"].empty())
-        cout << "New Header: " <<  req.headers["set-cookie"] << std::endl;
-    sList.printSesions();
+    // if (req.session)
+    //     cout << "New Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
+    // if (!req.headers["set-cookie"].empty())
+    //     cout << "New Header: " <<  req.headers["set-cookie"] << std::endl;
+    // sList.printSesions();
     // cout << "Final Debug\n";
 }
 
