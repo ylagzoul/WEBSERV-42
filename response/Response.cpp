@@ -2,8 +2,8 @@
 int v = 0;
 void Request::clean() // add youssef
 {
-    // if (access(bodyPath.c_str(), F_OK) != -1)
-    //     std::remove(bodyPath.c_str());
+    if (access(bodyPath.c_str(), F_OK) != -1)
+        std::remove(bodyPath.c_str());
 }
 
 void defaultErrorPage(playloadData &data)

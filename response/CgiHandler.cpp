@@ -1,5 +1,21 @@
 #include "CgiHandler.hpp"
-int k = 0;
+
+void closeCGI(Server &obj, std::string method)
+{
+    if (method == "POST")
+    {
+        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd);
+        obj.fds.erase(obj.fds.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
+        obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
+        obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
+        obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
+    }
+    close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
+    obj.fds.erase(obj.fds.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
+    obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
+    obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
+    obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
+}
 
 int erorrCgi(CgiHandler &cgiData)
 {
@@ -25,40 +41,6 @@ std::string normalizeKey(std::string key)
     return key;
 }
 
-int parseCgiResponse_yl(Server &obj, std::string method, CgiHandler &cgiData)
-{
-
-    if (cgiData.dataReady == true)
-    {
-        if (method == "POST")
-        {
-            close(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd);
-
-            obj.fds.erase(obj.fds.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
-
-            obj.req[obj.recs[obj.iClnt].idFdPipe[3]].clean();
-            obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].idFdPipe[3]); // iteration problem
-
-            obj.recs[obj.recs[obj.iClnt].idFdPipe[3]].clean();
-            obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
-
-            obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
-        }
-        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
-
-        obj.fds.erase(obj.fds.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
-        obj.req[obj.recs[obj.iClnt].idFdPipe[0]].clean();
-        obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].idFdPipe[0]); // iteration problem
-
-        obj.recs[obj.recs[obj.iClnt].idFdPipe[0]].clean();
-        obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
-
-        obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
-        cgiData.dataReady = true;
-    }
-
-    return 0;
-}
 
 int createPipes(Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
@@ -166,8 +148,8 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
         else if (bytes == 0)
         {
             cgiData.dataReady = true;
-            close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
             cgiData.endRead = true;
+            closeCGI(obj, method);
         }
         else if (bytes > 0)
         {
@@ -201,10 +183,6 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
         {
 
             parseCgiResponse(cgiData);
-            if (cgiData.clientState == CLIENT_CGI_ON)
-            {
-                cgiData.dataReady = true;
-            }
             cgiData.canRead = false;
         }
     }
