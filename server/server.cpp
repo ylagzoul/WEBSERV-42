@@ -58,7 +58,22 @@ void Server::close_client(pollfd &p, int i)
 
     req[index_Client[i]].clean();
     req.erase(req.begin() + index_Client[i]); // iteration problem
+    // if (recs[index_Client[i]].isItCgi == true)
+    // {
+        // if (req[index_Client[i]].method == "POST")
+        // {
+        //     close();
+        // }
+        // std::cout << "before seg: " << recs[iClnt].idFdPipe[0] << std::endl;
+        // std::cout << "before seg1: " << fds.size() << std::endl;
+        // close(fds[recs[iClnt].idFdPipe[0]].fd);
+        // fds.erase(fds.begin() + recs[iClnt].idFdPipe[0]);
 
+        // req.erase(req.begin() + recs[iClnt].idFdPipe[0]); // iteration problem
+        // recs.erase(recs.begin() + recs[iClnt].idFdPipe[0]);
+        // data.erase(data.begin() + recs[iClnt].idFdPipe[0]);
+
+    // }
     recs[index_Client[i]].clean();
     recs.erase(recs.begin() + index_Client[i]);
 
@@ -100,26 +115,14 @@ bool Server::receiveRequest(pollfd &p, size_t &i, SessionsList &sList)
 
     if (bytes > 0)
     {
-        // cout << "test11\n\n";
         clientId = index_Client[i];
-        // cout << "clientId =  "  << clientId << std::endl;
-        // std::cout << "bytes =  <" << bytes << ">\n\n"; 
         readRequest(req, clientId, buffer, bytes, conf, sList);
-        // cout << "--> " << req[i].clientState << std::endl;
-        // cout << "--> " << req[i].status << std::endl;
-
-        // cout << "test21\n\n";
-
         if (req[clientId].clientState == CLIENT_ON)
-        {
-            // cout << "pillout\n\n";
             p.events |= POLLOUT;
-        }
         return (true);
     }
     else if (bytes == 0)
     {
-        std::cout << "bytes 0\n"; 
         close_client(p, i);
 
         return (false);
@@ -143,11 +146,10 @@ bool Server::sendRespond(Server &obj, size_t &i, pollfd &p)
     if (data[index_Client[i]].sendNext)
     {
         data[index_Client[i]].response = respond(obj, recs[index_Client[i]].data, recs[index_Client[i]], conf, req[index_Client[i]]);
-        // std::cout << obj.recs[index_Client[i]].status << std::endl;
         if (data[index_Client[i]].response.empty() && (recs[index_Client[i]].status == ACTIVE_RS || recs[index_Client[i]].status == CGI_ACTIVE))
             return (true);
+       
     }
-    // cout << "test33\n\n";
     int sent = send(p.fd, data[index_Client[i]].response.c_str(), data[index_Client[i]].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
     recs[index_Client[i]].number += sent;
     if (sent > 0)
@@ -158,9 +160,7 @@ bool Server::sendRespond(Server &obj, size_t &i, pollfd &p)
     if (sent < 0)
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
-        {
             return (true);
-        }
         else
         {
             close_client(p, i);
@@ -216,28 +216,28 @@ int main(/*int arc,char *arv[]*/)
                 obj.acceptNewCleint(p, i);
                 continue ;
             }
-            if (p.revents & POLLIN)
+            if (p.revents & (POLLIN))
             {
                 if (!obj.receiveRequest(p, i, sList))
                     continue;
             }
-
-            if ((p.revents & POLLOUT) || (obj.recs[obj.index_Client[i]].status == CGI_ACTIVE))
+            if ((p.revents & POLLOUT))
             {
 
-                obj.iClnt = i;
+                obj.iClnt = i;   
                 if (!obj.sendRespond(obj,i, p))
                 {
                     continue;
                 }
             }
-            if ((i != 0 && time(NULL) - obj.data[i].time > 1000) || (p.revents & (POLLHUP | POLLERR))) 
-            {
-                std::cout << "i = " << i << std::endl;
-                std::cout << "close clneit about finsh time..............................................\n\n";
-                obj.close_client(p, i);
-                continue;
-            }
+            // if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLERR))) 
+            // {
+            //     std::cout << "i = " << i << std::endl;
+            //     std::cout << "close clneit about finsh time..............................................\n\n";
+            //     obj.close_client(p, i);
+            //     std::cout << time(NULL) - obj.data[i].time << std::endl;
+            //     continue;
+            // }
             i++;
         }
         

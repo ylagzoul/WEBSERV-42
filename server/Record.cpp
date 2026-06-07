@@ -7,6 +7,7 @@ Record::Record()
     fileFd = -1;
     fd = -1;
     dir = NULL;
+    isItCgi = false;
     status = NEW_RS;
     method = NO_MD;
     clientState = DISCONNECTED;

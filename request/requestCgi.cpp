@@ -127,13 +127,17 @@ void getBody(CgiHandler &cgiData)
         }
         return ;
     }
+    std::cout << "endfile true\n\n";
+
     close(cgiData.fd);
     cgiData.getEndFile = true;
     // cgiData.endRead = true;
 }
 
-int parseCgiResponse(CgiHandler &cgiData)
+int 
+parseCgiResponse(CgiHandler &cgiData)
 {
+
     //conditions : must be key: value, and content type, otherWise 502 must be set to : cgiData.cgStatusCode
     //and "Bad Gateway" to cgiData.cgStatusName and return 
         //                process
@@ -153,14 +157,14 @@ int parseCgiResponse(CgiHandler &cgiData)
     while (1)
     {
         pos = cgiData.fullLine.find("\r\n");
-        if (pos == std::string::npos)
+        if (pos == std::string::npos && cgiData.getEndHeaders == false)
             break ;
         tes = cgiData.fullLine;
         if (cgiData.getEndHeaders == false)
             getHeadersCgi(cgiData);
         else
             cgiData.reqState = SECOND_CGI_ST;
-        if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.endRead == false)
+        if (cgiData.getEndHeaders && cgiData.getEndFile == false)
             getBody(cgiData);
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {
@@ -168,7 +172,9 @@ int parseCgiResponse(CgiHandler &cgiData)
             cout << tes.length() << std::endl;
 
             if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
+            {
                 cgiData.clientState = CLIENT_CGI_ON;
+            }
             cgiData.lenRead = 0;    
             break ;
         }    

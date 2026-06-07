@@ -1,5 +1,5 @@
 #include "../server/server.hpp"
-
+int v = 0;
 void Request::clean() // add youssef
 {
     // if (access(bodyPath.c_str(), F_OK) != -1)
@@ -265,7 +265,8 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
 
 int getFile(Record &log, playloadData &data)
 {
-    const int size = 8192;
+    v += 8192;
+    const int size = 8192; // macro
     char buffer[size];
     int bytes = 0;
     bytes = read(log.fd, buffer, size);
@@ -278,6 +279,7 @@ int getFile(Record &log, playloadData &data)
             std::remove(log.fileName.c_str());
         return 1;
     }
+
     log.buffer.append(buffer, bytes);
     if (bytes < size)
     {
@@ -347,7 +349,7 @@ int postFilesList(Record &log, playloadData &data)
     {
         tmp = rdir->d_name;
         if (tmp == "." || tmp == "..")
-            continue ;
+            continue;
         buff = "<a href=\"" + tmpPath + '/' + fileNameHandler(tmp) + "\">" + tmp + "</a><br>\n";
         tmpBuff += buff;
         if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
@@ -385,7 +387,7 @@ int postFilesList(Record &log, playloadData &data)
     log.fd = open(log.fileName.c_str(), O_RDONLY);
     if (log.fd == -1)
     {
-        log.method = NONE_RS;   
+        log.method = NONE_RS;
         return 1;
     }
     return 0;
@@ -575,13 +577,13 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) // 
 // std::cout << reqPath.length() << '\n' << data.location << '\n';
 // std::cout << data.uri << std::endl;
 // exit(0);
-    
+
 void getImportantData(Config &conf, playloadData &data)
 {
-    data.cgiExt.push_back(".py");      // tmp
-    data.cgiExt.push_back(".cgi");     // tmp
+    data.cgiExt.push_back(".py");               // tmp
+    data.cgiExt.push_back(".cgi");              // tmp
     data.cgiPath.push_back("/usr/bin/python3"); // tmp
-    data.cgiPath.push_back("/bin/lb"); // tmp
+    data.cgiPath.push_back("/bin/lb");          // tmp
     if (data.location.empty())
     {
         data.location = "/";
@@ -687,7 +689,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     (void)conf;
     std::string tmpPath;
     struct stat info;
-    
+
     // stat(data.realPath.c_str(), &info);// cgi
     std::stringstream ssPath(data.root + data.uri);
     std::vector<std::string> realNames;
@@ -719,12 +721,15 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
         }
         else
         {
+
             if (!data.cgiInfo.empty())
             {
+
                 data.statusCode = "404";
                 data.statusName = "Not Found";
                 return 1;
             }
+
             data.isCgi = true;
             return 0;
         }
@@ -741,10 +746,10 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     // std::cout << data.realPath << std::endl;
     // std::cout << compare << std::endl;
     // std::cout << rootUploadDir << std::endl;
-    if (compare[compare.length()-1] != '/')
+    if (compare[compare.length() - 1] != '/')
         compare.push_back('/');
-    if (rootUploadDir[rootUploadDir.length()-1] != '/')
-        rootUploadDir.push_back('/'); ////Fiiiiiiiiiiix 
+    if (rootUploadDir[rootUploadDir.length() - 1] != '/')
+        rootUploadDir.push_back('/'); ////Fiiiiiiiiiiix
     if (compare == rootUploadDir)
         data.uploadOn = 1;
     // else cout << "kidertiliha\n";
@@ -805,7 +810,7 @@ int responseHandler(CgiHandler &cgiData, Server &obj, Record &log, Request &req,
     }
     else if (req.method == "DELETE")
     {
-        if (deleteHandler(log,data))
+        if (deleteHandler(log, data))
             return 1;
     }
     return 0;
@@ -818,7 +823,7 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
     res << "HTTP/1.0 " << cgiData.cgStatusCode << ' ' << cgiData.cgStatusName + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     std::map<std::string, std::string>::iterator iter;
-    for(iter = cgiData.cgHeaders.begin(); iter != cgiData.cgHeaders.end(); iter++)
+    for (iter = cgiData.cgHeaders.begin(); iter != cgiData.cgHeaders.end(); iter++)
         res << iter->first << ": " << iter->second << "\r\n";
     res << "\r\n";
     ret_resp = res.str();
@@ -847,7 +852,7 @@ void generateRetResponse(playloadData &data, std::string &ret_resp)
         res << "\r\n";
     }
     ret_resp = res.str();
-    return ;
+    return;
 }
 
 void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log)
@@ -860,14 +865,14 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     if (cgiData.cgiValid)
     {
         generateCgiResponse(cgiData, data, ret_resp);
-        return ;
+        return;
     }
 
     if (data.retValid)
     {
         generateRetResponse(data, ret_resp);
         data.retValid = 0;
-        return ;
+        return;
     }
     std::stringstream res;
     res << "HTTP/1.0 " << data.statusCode << ' ' << data.statusName + "\r\n";
@@ -880,16 +885,14 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     if ((log.method != POST_RS && log.method != POST_LIST_RS) || log.status == ERROR_RS)
     {
         ret_resp = res.str();
-    }	
+    }
 }
 
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
-    // std::cout << req.path << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
-
     if (log.status == NEW_RS)
     {
         data.bodySize = 0;
@@ -904,6 +907,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
     }
     else if (log.status == ACTIVE_RS || log.status == CGI_ACTIVE)
     {
+
         if (log.method == CGI_RDWR)
         {
             if (cgiProcess(log.cgiData, log, obj, data, req))
@@ -949,15 +953,12 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
             // remove bodyfile
         }
     }
-
     if (log.method == POST_LIST_RS || log.status == CGI_ACTIVE)
         return "";
 
     if (pastStatus == NEW_RS
         // || (log.method == NONE_RS && log.status == ERROR_RS) /!\  TEST
-        || (pastMethod == POST_RS && log.method == NONE_RS)
-        || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS))
-        || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
+        || (pastMethod == POST_RS && log.method == NONE_RS) || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS)) || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
     {
         generateResponse(log.cgiData, data, ret_resp, log);
         if (log.status == ERROR_RS)
