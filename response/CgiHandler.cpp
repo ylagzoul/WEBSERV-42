@@ -106,9 +106,6 @@ int createPipes(Record &log, Server &obj, CgiHandler &cgiData, std::string metho
 
 int createCgi(Server &obj, CgiHandler &cgiData, std::string method)
 {
-    std::cout << "cgi fork \n";
-    obj.fds[obj.index_Client[obj.iClnt]].events = 0;
-
     pid_t pid = fork();
 
     if (pid == -1)
@@ -157,21 +154,19 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
                 return (erorrCgi(cgiData));
         }
     }
-    std::cout << "yyyyyyyyyyyyyyyyyyyyyy011yyy"<< obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents << std::endl;
     if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & (POLLIN | POLLHUP))
     {
 
         char buffer[SIZESR];
         int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR - 1);
-        std::cout << "dkhelt l 0llllllllllllllllllllllllllllllllllllllllllllllllll" << bytes << std::endl;
+
 
         if (bytes < 0)
             return (erorrCgi(cgiData));
         else if (bytes == 0)
         {
-            // cgiData.canRead = true;
             cgiData.dataReady = true;
-            std::cout << "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh\n";
+            close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
             cgiData.endRead = true;
         }
         else if (bytes > 0)
@@ -180,8 +175,6 @@ int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
             buffer[bytes] = '\0';
             cgiData.cgBuff.append(buffer, bytes);
         }
-        std::cout << "parseCgiResponse   //  cgiData.cgBuff = " << cgiData.cgBuff << std::endl;
-        std::cout << "//////////////////       bytes   =   " << bytes << std::endl;
     }
 
     return (0);
@@ -192,7 +185,6 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
 
     if (log.status == NEW_RS)
     {
-        std::cout << "new cgi                       .....  " << obj.fds.size() << std::endl;
         log.isItCgi = true;
         if (createPipes(log, obj, cgiData, method, bodyFile))
             return (1);
@@ -203,8 +195,6 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
     }
     else
     {
-
-        // cout << "tseta7777777777777777777777777777777777777777777777777777777777777777777t\n";
         if (readFromCgi(obj, cgiData, method))
             return (1);
         if (cgiData.canRead) /* CHEEEECK /!\*/
@@ -213,23 +203,10 @@ int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, st
             parseCgiResponse(cgiData);
             if (cgiData.clientState == CLIENT_CGI_ON)
             {
-                cout << "tseta7777777777777777777777777777777777777777777777777777777777777777777t\n";
                 cgiData.dataReady = true;
             }
-
             cgiData.canRead = false;
         }
-
-        // static int sh;
-        // sh ++;
-        // if (sh < 10)
-        // {
-
-        //     std::cout << "****************************************************************\n";
-        //     for(size_t i = 0; i < obj.fds.size(); i++)
-        //         std::cout << obj.fds[i].fd << ": event" << obj.fds[i].events << " revents: " << obj.fds[i].revents << "\n";
-        // }
-        // sh = 0;
     }
     return 0;
 }
@@ -314,26 +291,19 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 
 int cgiProcess(CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req)
 {
-    // he should set log.status to CGI_ACTIVE and log.method to CGI_RDWR
-    // he should set cgiData.cgStatusName and cgiData.cgStatusCode
-    // to its proper data
-    // he should check whether the parser ends or not to close the file was opened
-    // std::cout << "true " << log.status << "\n\n";
     if (runCgi(log, obj, cgiData, req.method, req.bodyPath))
     {
         std::cout << "ERROR_RS\n";
         log.status = ERROR_RS;
     }
-    // std::cout << "true " << log.status << "\n\n";
-
     if (cgiData.dataReady == true || log.status == ERROR_RS)
     {
+        std::cerr << "to true\n";
         if (cgiResponseHandler(log, cgiData, data))
             return 1;
         else
             cgiData.cgiValid = true;
     }
-    // std::cout << "true11 " << log.status << "\n\n";
     return 0;
 }
 

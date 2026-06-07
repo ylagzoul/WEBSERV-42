@@ -1,0 +1,17 @@
+[ 1 ]
+new cgi                       .....  2
+   : 2
+cgi fork 
+Khrejt
+
+0
+8126
+Khrejt
+
+0
+8191
+Khrejt
+
+0
+7802
+hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh

@@ -1,5 +1,5 @@
 #include "../server/server.hpp"
-
+int v =0;
 void Request::clean() // add youssef
 {
     if (access(bodyPath.c_str(), F_OK) != -1)
@@ -263,7 +263,8 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
 
 int getFile(Record &log, playloadData &data)
 {
-    const int size = 8192;
+    v+=8192;
+    const int size = 8192;//macro
     char buffer[size];
     int bytes = 0;
     bytes = read(log.fd, buffer, size);
@@ -276,6 +277,7 @@ int getFile(Record &log, playloadData &data)
             std::remove(log.fileName.c_str());
         return 1;
     }
+    
     log.buffer.append(buffer, bytes);
     if (bytes < size)
     {
@@ -869,17 +871,11 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
 
-
-
-    // std::cout << req.path << std::endl;
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
-
     if (log.status == NEW_RS)
     {
-
-
         data.bodySize = 0;
         loadExtensions(data);
         data.connection = "Close";
@@ -931,7 +927,6 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
             // remove bodyfile
         }
     }
-
     if (log.method == POST_LIST_RS || log.status == CGI_ACTIVE)
         return "";
 
