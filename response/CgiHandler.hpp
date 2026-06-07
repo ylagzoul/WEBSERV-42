@@ -20,7 +20,6 @@ typedef enum e_req_state_cgi
 
 } t_req_state_cgi;
 
-#define BODY_FILE_PATH_CGI "/home/mradouan/goinfre/clientCgi_"
 
 class CgiHandler
 {

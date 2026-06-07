@@ -129,7 +129,7 @@ void getBody(CgiHandler &cgiData)
     cgiData.lenRead += cgiData.fullLine.length();
     if (cgiData.fd == -1)
     {
-        cgiData.cgBodyFileName = BODY_FILE_PATH_CGI + getRandomName(cgiData);
+        cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandomName(cgiData);
         cgiData.bodyLen = 0;
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
