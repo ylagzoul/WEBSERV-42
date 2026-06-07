@@ -29,7 +29,7 @@ class Config {
     public:
         std::vector<std::string> listen_Ip;
         std::vector<int> listen_Port;
-        std::map<int,std::string> server_name;
+        std::string server_name;
         std::string root;
         std::map<std::string, bool> methods;
         std::map<int,std::string> error_page;
@@ -43,7 +43,7 @@ class Config {
         std::vector<std::string> cgiExt;
         std::vector<std::string> cgiPath;
 
-        bool emptyFile;
+        
 
         int                      size;
         int                      ser_num;
@@ -52,7 +52,7 @@ class Config {
         std::vector<std::string> str;
         std::string              line;
         std::vector<Location> location;
-        void config_file();
+        
         void splite();
         void function();
         Config();
@@ -95,12 +95,13 @@ class Location {
 };
 
 
-// class Location {
-//     public:
-//         std::string location_name;
-//         std::vector<std::string> cheke;
-//         Config conf;
-// };
+class Mserver {
+    public:
+        std::map<std::string, int> index_mserver;
+        std::vector<Config> mserver;
+        void config_file();
+
+};
 
 
 

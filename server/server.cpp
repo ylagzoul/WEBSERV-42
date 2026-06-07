@@ -13,7 +13,7 @@ Data::Data()
 
 Server::Server()
 {
-    conf.config_file();
+    // conf.config_file();
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -172,6 +172,8 @@ bool Server::sendRespond(Server &obj, size_t &i, pollfd &p)
 
 int main(/*int arc,char *arv[]*/)
 {
+    Mserver ob;
+    ob.config_file();
     // (void)arv;
     // if (arc != 2)
     // {
