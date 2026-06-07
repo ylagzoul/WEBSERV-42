@@ -2,7 +2,7 @@ server {
     listen 0.0.0.1:8001;
     listen 127.0.0.1;
     listen 65535;
-    root /home/ylagzoul/Desktop/WEBSERV-42/server/;
+    root /home/ylagzoul/Desktop/vv/server/;
     methods GET;
     error_page 400 /errors/400.html;
     error_page 403 /errors/403.html;
@@ -24,7 +24,7 @@ server {
 
     location / {
         methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/WEBSERV-42/;
+        root /home/ylagzoul/Desktop/vv/;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         upload_path server;
