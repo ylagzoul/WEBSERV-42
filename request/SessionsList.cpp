@@ -34,6 +34,7 @@ void SessionsList::generateSession(Request &req)
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
             req.headers["set-cookie"] = "session_id=" + id + ";path=/";
+            cout << "WAAA3\n";
         }
         else
         { // I will improve the code to evit the repetition
@@ -45,6 +46,7 @@ void SessionsList::generateSession(Request &req)
 
             req.session = &sessionLis[id];
             req.headers["set-cookie"] = "session_id=" + id + ";path=/";
+            cout << "BAAA3\n";
         }
     }
     else
@@ -82,9 +84,22 @@ void    SessionsList::checkLimitSessions()
 
     for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end();)
     {
-        if ( now - it->second.lastLog > 300 )
+        if ( now - it->second.lastLog > 30 )
+        {
             sessionLis.erase(it++);
+            cout << "DKHELT\n";
+        }
         else
             ++it;
     }
+    cout << "FROM CHEKING : ";
+    this->printSesions();
+    cout << std::endl;
+}
+bool    SessionsList::checkIfNotNull()
+{
+    if (!this->sessionLis.empty())
+        return (true);
+    else
+        return (false);
 }

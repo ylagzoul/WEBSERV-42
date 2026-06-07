@@ -55,8 +55,6 @@ class playloadData
         int uploadOn;
         int cgiDataPos;
         std::map <std::string, std::string> mime;
-
-
 };
 
 #include "CgiHandler.hpp"

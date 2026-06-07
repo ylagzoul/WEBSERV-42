@@ -1,9 +1,9 @@
 #include "../server/server.hpp"
-int v =0;
+int v = 0;
 void Request::clean() // add youssef
 {
-    if (access(bodyPath.c_str(), F_OK) != -1)
-        std::remove(bodyPath.c_str());
+    // if (access(bodyPath.c_str(), F_OK) != -1)
+    //     std::remove(bodyPath.c_str());
 }
 
 void defaultErrorPage(playloadData &data)
@@ -182,6 +182,7 @@ int postBody(Record &log, playloadData &data)
     if (bytes < size)
     {
         log.status = CLOSED_RS;
+        log.method = NONE_RS;
         // close(log.fd);
         // close(log.fileFd);
     }
@@ -208,6 +209,7 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
         if (S_ISDIR(info.st_mode))
         {
             log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
+            // std::cout << req.bodyPath << std::endl;
             if (log.fileFd == -1)
             {
                 data.statusCode = "500";
@@ -263,8 +265,8 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
 
 int getFile(Record &log, playloadData &data)
 {
-    v+=8192;
-    const int size = 8192;//macro
+    v += 8192;
+    const int size = 8192; // macro
     char buffer[size];
     int bytes = 0;
     bytes = read(log.fd, buffer, size);
@@ -277,7 +279,7 @@ int getFile(Record &log, playloadData &data)
             std::remove(log.fileName.c_str());
         return 1;
     }
-    
+
     log.buffer.append(buffer, bytes);
     if (bytes < size)
     {
@@ -347,7 +349,7 @@ int postFilesList(Record &log, playloadData &data)
     {
         tmp = rdir->d_name;
         if (tmp == "." || tmp == "..")
-            continue ;
+            continue;
         buff = "<a href=\"" + tmpPath + '/' + fileNameHandler(tmp) + "\">" + tmp + "</a><br>\n";
         tmpBuff += buff;
         if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
@@ -385,7 +387,7 @@ int postFilesList(Record &log, playloadData &data)
     log.fd = open(log.fileName.c_str(), O_RDONLY);
     if (log.fd == -1)
     {
-        log.method = NONE_RS;   
+        log.method = NONE_RS;
         return 1;
     }
     return 0;
@@ -575,13 +577,13 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) // 
 // std::cout << reqPath.length() << '\n' << data.location << '\n';
 // std::cout << data.uri << std::endl;
 // exit(0);
-    
+
 void getImportantData(Config &conf, playloadData &data)
 {
-    data.cgiExt.push_back(".py");      // tmp
-    data.cgiExt.push_back(".cgi");     // tmp
+    data.cgiExt.push_back(".py");               // tmp
+    data.cgiExt.push_back(".cgi");              // tmp
     data.cgiPath.push_back("/usr/bin/python3"); // tmp
-    data.cgiPath.push_back("/bin/lb"); // tmp
+    data.cgiPath.push_back("/bin/lb");          // tmp
     if (data.location.empty())
     {
         data.location = "/";
@@ -599,11 +601,9 @@ void getImportantData(Config &conf, playloadData &data)
     }
     for (size_t i = 0; i < conf.location.size(); i++)
     {
-
         if (conf.location[i].location_name == data.location)
         {
             // if (conf.location[i].conf.error_page.empty())
-                
             data.errorPages = conf.location[i].conf.error_page;
             data.methods = conf.location[i].conf.methods;
             data.index = conf.location[i].conf.index;
@@ -689,7 +689,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     (void)conf;
     std::string tmpPath;
     struct stat info;
-    
+
     // stat(data.realPath.c_str(), &info);// cgi
     std::stringstream ssPath(data.root + data.uri);
     std::vector<std::string> realNames;
@@ -714,7 +714,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
             continue;
         if (stat(data.cgiScriptFile.c_str(), &info) != -1)
         {
-            if (S_ISDIR(info.st_mode))    
+            if (S_ISDIR(info.st_mode))
                 continue;
             data.isCgi = true;
             return 0;
@@ -724,27 +724,35 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
 
             if (!data.cgiInfo.empty())
             {
-                
+
                 data.statusCode = "404";
                 data.statusName = "Not Found";
                 return 1;
             }
-           
+
             data.isCgi = true;
             return 0;
         }
     }
     data.uploadOn = 0;
     if (data.upload.empty())
+    {
         return 0;
+    }
     if (data.root[data.root.length() - 1] != '/' && data.upload[0] != '/')
         data.upload.insert(0, "/");
     std::string rootUploadDir = data.root + data.upload;
     std::string compare = data.realPath.substr(0, rootUploadDir.length());
-    // std::cout << rootUploadDir << std::endl;
+    // std::cout << data.realPath << std::endl;
     // std::cout << compare << std::endl;
+    // std::cout << rootUploadDir << std::endl;
+    if (compare[compare.length() - 1] != '/')
+        compare.push_back('/');
+    if (rootUploadDir[rootUploadDir.length() - 1] != '/')
+        rootUploadDir.push_back('/'); ////Fiiiiiiiiiiix
     if (compare == rootUploadDir)
         data.uploadOn = 1;
+    // else cout << "kidertiliha\n";
     return 0;
 }
 
@@ -788,11 +796,21 @@ int responseHandler(CgiHandler &cgiData, Server &obj, Record &log, Request &req,
     else if (req.method == "POST")
     {
         if (postHandler(log, data, req, conf))
+        {
+            if (access(req.bodyPath.c_str(), F_OK) != -1)
+                std::remove(req.bodyPath.c_str());
+            log.method = NONE_RS;
             return 1;
+        }
+        if (log.status == CLOSED_RS)
+        {
+            if (access(req.bodyPath.c_str(), F_OK) != -1)
+                std::remove(req.bodyPath.c_str());
+        }
     }
     else if (req.method == "DELETE")
     {
-        if (deleteHandler(log,data))
+        if (deleteHandler(log, data))
             return 1;
     }
     return 0;
@@ -805,7 +823,7 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
     res << "HTTP/1.0 " << cgiData.cgStatusCode << ' ' << cgiData.cgStatusName + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     std::map<std::string, std::string>::iterator iter;
-    for(iter = cgiData.cgHeaders.begin(); iter != cgiData.cgHeaders.end(); iter++)
+    for (iter = cgiData.cgHeaders.begin(); iter != cgiData.cgHeaders.end(); iter++)
         res << iter->first << ": " << iter->second << "\r\n";
     res << "\r\n";
     ret_resp = res.str();
@@ -834,7 +852,7 @@ void generateRetResponse(playloadData &data, std::string &ret_resp)
         res << "\r\n";
     }
     ret_resp = res.str();
-    return ;
+    return;
 }
 
 void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log)
@@ -847,14 +865,14 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     if (cgiData.cgiValid)
     {
         generateCgiResponse(cgiData, data, ret_resp);
-        return ;
+        return;
     }
 
     if (data.retValid)
     {
         generateRetResponse(data, ret_resp);
         data.retValid = 0;
-        return ;
+        return;
     }
     std::stringstream res;
     res << "HTTP/1.0 " << data.statusCode << ' ' << data.statusName + "\r\n";
@@ -864,13 +882,14 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     res << "\r\n";
     if (data.connection == "Keep-Alive")
         log.clientState = ALIVE;
-    if (log.method != POST_LIST_RS || log.status == ERROR_RS)
+    if ((log.method != POST_RS && log.method != POST_LIST_RS) || log.status == ERROR_RS)
+    {
         ret_resp = res.str();
+    }
 }
 
 std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
-
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;
@@ -888,7 +907,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
     }
     else if (log.status == ACTIVE_RS || log.status == CGI_ACTIVE)
     {
-        
+
         if (log.method == CGI_RDWR)
         {
             if (cgiProcess(log.cgiData, log, obj, data, req))
@@ -922,8 +941,15 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
             if (postBody(log, data))
             {
                 // may be something
+                log.method = NONE_RS;
                 log.status = ERROR_RS;
             }
+            if (log.status == ERROR_RS || log.status == CLOSED_RS)
+            {
+                if (access(req.bodyPath.c_str(), F_OK) != -1)
+                    std::remove(req.bodyPath.c_str());
+            }
+
             // remove bodyfile
         }
     }
@@ -932,8 +958,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
 
     if (pastStatus == NEW_RS
         // || (log.method == NONE_RS && log.status == ERROR_RS) /!\  TEST
-        || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS))
-        || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
+        || (pastMethod == POST_RS && log.method == NONE_RS) || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS)) || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
     {
         generateResponse(log.cgiData, data, ret_resp, log);
         if (log.status == ERROR_RS)
@@ -946,6 +971,5 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
     else
         ret_resp = log.buffer;
     log.buffer.clear();
-
     return (ret_resp);
 }

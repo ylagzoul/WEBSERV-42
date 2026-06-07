@@ -207,7 +207,8 @@ int main(/*int arc,char *arv[]*/)
         }
         for (size_t i = 0; i < obj.index_Client.size();)
         {
-
+            if (sList.checkIfNotNull())
+                sList.checkLimitSessions();
             pollfd &p = obj.fds[obj.index_Client[i]];
 
             if (p.fd == obj.server_fd && (p.revents & POLLIN))//CHECK ALL SERVER FDS
@@ -229,14 +230,14 @@ int main(/*int arc,char *arv[]*/)
                     continue;
                 }
             }
-            if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLERR))) 
-            {
-                std::cout << "i = " << i << std::endl;
-                std::cout << "close clneit about finsh time..............................................\n\n";
-                obj.close_client(p, i);
-                std::cout << time(NULL) - obj.data[i].time << std::endl;
-                continue;
-            }
+            // if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLERR))) 
+            // {
+            //     std::cout << "i = " << i << std::endl;
+            //     std::cout << "close clneit about finsh time..............................................\n\n";
+            //     obj.close_client(p, i);
+            //     std::cout << time(NULL) - obj.data[i].time << std::endl;
+            //     continue;
+            // }
             i++;
         }
         

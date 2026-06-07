@@ -46,6 +46,7 @@ class Request
 {
     public:
         Request();
+        size_t bodyLen;
         std::string method;
         std::string path;
         std::string httpVersion;
@@ -54,7 +55,6 @@ class Request
         std::string bodyFile;
         std::string fullLine;
         std::string bodyPath;
-        size_t      bodyLen;
         size_t      lenRead;
         int         bodyFd;
         int         status;
@@ -68,6 +68,7 @@ class Request
         Sessions    *session;
         std::map<std::string, std::string> cookies;
         void storeCookies(std::string value);
+        void generateRandomName(std::string value);
         void clean();
 
 };

@@ -7,7 +7,7 @@ Config::Config()
     server_name = "";
     root = "/home";
     autoIndex = 0; 
-    client_max_body_size = DEFAULTBODY;
+    client_max_body_size = DEFAULT_MAX_BODY_SIZE;
 
     methods["GET"] = false;
     methods["POST"] = false;
