@@ -1,21 +1,21 @@
 #include "CgiHandler.hpp"
 
-void closeCGI(Server &obj, std::string method)
-{
-    if (method == "POST")
-    {
-        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd);
-        obj.fds.erase(obj.fds.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
-        obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
-        obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
-        obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
-    }
-    close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
-    obj.fds.erase(obj.fds.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
-    obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
-    obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
-    obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
-}
+// void closeCGI(Server &obj, std::string method)
+// {
+//     if (method == "POST")
+//     {
+//         close(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd);
+//         obj.fds.erase(obj.fds.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
+//         obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
+//         obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
+//         obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[3]);
+//     }
+//     close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
+//     obj.fds.erase(obj.fds.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
+//     obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
+//     obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
+//     obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].idFdPipe[0]);
+// }
 
 std::string toStrC(int nb)
 {
@@ -49,150 +49,154 @@ std::string normalizeKey(std::string key)
 }
 
 
-int createPipes(Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
-{
-    (void)log;
-    int outputPipe[2];
-    if (pipe(outputPipe) == -1)
-        return (erorrCgi(cgiData));
+// int createPipes(Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
+// {
+//     (void)log;
+//     int outputPipe[2];
+//     if (pipe(outputPipe) == -1)
+//         return (erorrCgi(cgiData));
 
-    pollfd client_poll;
-    client_poll.fd = outputPipe[0];
-    client_poll.events = POLLIN;
-    client_poll.revents = 0;
-    obj.fds.push_back(client_poll);
-    obj.recs[obj.iClnt].idFdPipe.push_back(obj.fds.size() - 1);
-    obj.recs.push_back(Record());
-    obj.req.push_back(Request());
-    obj.data.push_back(Data());
+//     pollfd client_poll;
+//     client_poll.fd = outputPipe[0];
+//     client_poll.events = POLLIN;
+//     client_poll.revents = 0;
+//     obj.fds.push_back(client_poll);
+//     obj.recs[obj.iClnt].idFdPipe.push_back(obj.fds.size() - 1);
+//     obj.recs.push_back(Record());
+//     obj.req.push_back(Request());
+//     obj.data.push_back(Data());
 
-    obj.recs[obj.iClnt].idFdPipe.push_back(outputPipe[1]);
-    std::cout << "   : " << obj.recs[obj.iClnt].idFdPipe[0] << std::endl;
+//     obj.recs[obj.iClnt].idFdPipe.push_back(outputPipe[1]);
+//     std::cout << "   : " << obj.recs[obj.iClnt].idFdPipe[0] << std::endl;
 
-    if (method == "POST")
-    {
-        int inputPipe[2];
-        cgiData.bodyFd = open(bodyFile.c_str(), O_RDONLY, 0644);
-        if (cgiData.bodyFd < 0)
-            return (erorrCgi(cgiData));
-        if (pipe(inputPipe) == -1)
-            return (erorrCgi(cgiData));
+//     if (method == "POST")
+//     {
+//         int inputPipe[2];
+//         cgiData.bodyFd = open(bodyFile.c_str(), O_RDONLY, 0644);
+//         if (cgiData.bodyFd < 0)
+//             return (erorrCgi(cgiData));
+//         if (pipe(inputPipe) == -1)
+//             return (erorrCgi(cgiData));
 
-        obj.recs[obj.iClnt].idFdPipe.push_back(inputPipe[0]);
+//         obj.recs[obj.iClnt].idFdPipe.push_back(inputPipe[0]);
 
-        pollfd client_poll;
-        client_poll.fd = inputPipe[1];
-        client_poll.events = POLLOUT;
-        client_poll.revents = 0;
-        obj.fds.push_back(client_poll);
-        obj.recs[obj.iClnt].idFdPipe.push_back(obj.fds.size() - 1);
-        obj.recs.push_back(Record());
-        obj.req.push_back(Request());
-        obj.data.push_back(Data());
-    }
-    return (0);
-}
+//         pollfd client_poll;
+//         client_poll.fd = inputPipe[1];
+//         client_poll.events = POLLOUT;
+//         client_poll.revents = 0;
+//         obj.fds.push_back(client_poll);
+//         obj.recs[obj.iClnt].idFdPipe.push_back(obj.fds.size() - 1);
+//         obj.recs.push_back(Record());
+//         obj.req.push_back(Request());
+//         obj.data.push_back(Data());
+//     }
+//     return (0);
+// }
 
-int createCgi(Server &obj, CgiHandler &cgiData, std::string method)
-{
-    pid_t pid = fork();
+// int createCgi(Server &obj, CgiHandler &cgiData, std::string method)
+// {
+//     pid_t pid = fork();
 
-    if (pid == -1)
-        return (erorrCgi(cgiData));
-    if (pid == 0)
-    {
-        if (method == "POST")
-        {
-            if (dup2(obj.recs[obj.iClnt].idFdPipe[2], STDIN_FILENO) < 0)
-                return (erorrCgi(cgiData));
-            close(obj.recs[obj.iClnt].idFdPipe[2]);
-            close(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd);
-        }
+//     if (pid == -1)
+//         return (erorrCgi(cgiData));
+//     if (pid == 0)
+//     {
+//         if (method == "POST")
+//         {
+//             if (dup2(obj.recs[obj.iClnt].idFdPipe[2], STDIN_FILENO) < 0)
+//                 return (erorrCgi(cgiData));
+//             close(obj.recs[obj.iClnt].idFdPipe[2]);
+//             close(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd);
+//         }
 
-        if (dup2(obj.recs[obj.iClnt].idFdPipe[1], STDOUT_FILENO) < 0)
-            return (erorrCgi(cgiData));
-        close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
-        close(STDIN_FILENO);
-        close(obj.recs[obj.iClnt].idFdPipe[1]);
+//         if (dup2(obj.recs[obj.iClnt].idFdPipe[1], STDOUT_FILENO) < 0)
+//             return (erorrCgi(cgiData));
+//         close(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd);
+//         close(STDIN_FILENO);
+//         close(obj.recs[obj.iClnt].idFdPipe[1]);
 
-        execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
-        perror("execve");
-        exit(1);
-    }
+//         execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
+//         perror("execve");
+//         exit(1);
+//     }
 
-    close(obj.recs[obj.iClnt].idFdPipe[1]);
-    return (0);
-}
+//     close(obj.recs[obj.iClnt].idFdPipe[1]);
+//     return (0);
+// }
 
-int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
-{
+// int readFromCgi(Server &obj, CgiHandler &cgiData, std::string method)
+// {
 
-    if (method == "POST")
-    {
-        std::cout << "post read form cgi\n\n";
-        if (obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].revents & POLLOUT)
-        {
-            std::cout << "post writed form cgi if\n\n";
-            int bytes_r;
-            char buffer[SIZESR];
-            bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
-            if (bytes_r < 0)
-                return (erorrCgi(cgiData));
+//     if (method == "POST")
+//     {
+//         std::cout << "post read form cgi\n\n";
+//         if (obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].revents & POLLOUT)
+//         {
+//             std::cout << "post writed form cgi if\n\n";
+//             int bytes_r;
+//             char buffer[SIZESR];
+//             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
+//             if (bytes_r < 0)
+//                 return (erorrCgi(cgiData));
 
-            if (write(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd, buffer, bytes_r) < 0)
-                return (erorrCgi(cgiData));
-        }
-    }
-    if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & (POLLIN | POLLHUP))
-    {
+//             if (write(obj.fds[obj.recs[obj.iClnt].idFdPipe[3]].fd, buffer, bytes_r) < 0)
+//                 return (erorrCgi(cgiData));
+//         }
+//     }
+//     if (obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].revents & (POLLIN | POLLHUP))
+//     {
 
-        char buffer[SIZESR];
-        int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR - 1);
+//         char buffer[SIZESR];
+//         int bytes = read(obj.fds[obj.recs[obj.iClnt].idFdPipe[0]].fd, buffer, SIZESR - 1);
 
 
-        if (bytes < 0)
-            return (erorrCgi(cgiData));
-        else if (bytes == 0)
-        {
-            cgiData.dataReady = true;
-            cgiData.endRead = true;
-            closeCGI(obj, method);//7ala
-        }
-        else if (bytes > 0)
-        {
-            cgiData.canRead = true;
-            buffer[bytes] = '\0';
-            cgiData.cgBuff.append(buffer, bytes);
-        }
-    }
+//         if (bytes < 0)
+//             return (erorrCgi(cgiData));
+//         else if (bytes == 0)
+//         {
+//             cgiData.dataReady = true;
+//             cgiData.endRead = true;
+//             closeCGI(obj, method);//7ala
+//         }
+//         else if (bytes > 0)
+//         {
+//             cgiData.canRead = true;
+//             buffer[bytes] = '\0';
+//             cgiData.cgBuff.append(buffer, bytes);
+//         }
+//     }
 
-    return (0);
-}
+//     return (0);
+// }
 
 int runCgi(Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
+    (void)obj;
+    (void)log;
+    (void)cgiData;
+    (void)method;
+    (void)bodyFile;
+    // if (log.status == NEW_RS)
+    // {
+    //     log.isItCgi = true;
+    //     if (createPipes(log, obj, cgiData, method, bodyFile))
+    //         return (1);
+    //     log.status = CGI_ACTIVE;
+    //     log.method = CGI_RDWR;
+    //     if (createCgi(obj, cgiData, method))
+    //         return (1);
+    // }
+    // else
+    // {
+    //     if (readFromCgi(obj, cgiData, method))
+    //         return (1);
+    //     if (cgiData.canRead) /* CHEEEECK /!\*/
+    //     {
 
-    if (log.status == NEW_RS)
-    {
-        log.isItCgi = true;
-        if (createPipes(log, obj, cgiData, method, bodyFile))
-            return (1);
-        log.status = CGI_ACTIVE;
-        log.method = CGI_RDWR;
-        if (createCgi(obj, cgiData, method))
-            return (1);
-    }
-    else
-    {
-        if (readFromCgi(obj, cgiData, method))
-            return (1);
-        if (cgiData.canRead) /* CHEEEECK /!\*/
-        {
-
-            parseCgiResponse(cgiData);
-            cgiData.canRead = false;
-        }
-    }
+    //         parseCgiResponse(cgiData);
+    //         cgiData.canRead = false;
+    //     }
+    // }
     return 0;
 }
 

@@ -11,6 +11,8 @@
 # define MAXPORT 65535
 # define MAXIP 256
 
+
+
 # define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
 # define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
 # define CONF_FILE_PATH "/home/ylagzoul/Desktop/vv/config_file/file_config_file/config.nginx"
@@ -76,7 +78,7 @@ class Config {
 
         // get
         std::vector<std::string> get_listen_Ip(void);
-        std::vector<std::string> get_listen_Port(void);
+        // std::vector<std::string> get_listen_Port(void);
         std::string get_server_name(void);
         std::string get_root(void);
         bool get_methods(std::string str);
@@ -97,6 +99,7 @@ class Location {
 
 class Mserver {
     public:
+        int count;
         std::map<std::string, int> index_mserver;
         std::vector<Config> mserver;
         void config_file();

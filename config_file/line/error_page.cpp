@@ -1,5 +1,7 @@
 #include "../../server/server.hpp"
 
+
+
 void Config::ft_autoindex()
 {
     int size_s = str[1].size();

@@ -1,5 +1,7 @@
 #include "../../server/server.hpp"
 
+
+
 void Config::ft_methods()
 {
     methods["GET"] = false;

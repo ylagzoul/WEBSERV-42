@@ -6,7 +6,7 @@ Config::Config()
     // emptyFile = false;
     // server_name = "";
     root = "/home";
-    autoIndex = 0; 
+    autoIndex = 0;
     client_max_body_size = DEFAULT_MAX_BODY_SIZE;
 
     methods["GET"] = false;
@@ -48,7 +48,6 @@ void Config::ft_cgi_data()
     cgiPath.push_back(str[2]);
 }
 
-
 void Config::function()
 {
     if (str[0] == "listen" && blockName == "server")
@@ -64,7 +63,7 @@ void Config::function()
     else if (str[0] == "methods")
         ft_methods();
     else if (str[0] == "error_page")
-            ft_error_page();
+        ft_error_page();
     else if (str[0] == "index")
         ft_index();
     else if (str[0] == "autoindex")
@@ -84,12 +83,14 @@ void Config::function()
 
 void Mserver::config_file()
 {
-    // ser_num = 0;
-    try {
+    count = 0;
+    try
+    {
+
         std::ifstream file(CONF_FILE_PATH);
         if (!file)
             std::cout << "Error opening file\n";
-        
+
         std::string sstr;
         bool emptyFile = false;
         while (getline(file, sstr))
@@ -102,6 +103,7 @@ void Mserver::config_file()
                 continue;
             if ((cnf.str.size() == 1 && cnf.str[0] == "server") || (cnf.str.size() == 2 && cnf.str[0] == "server" && cnf.str[1] == "{"))
             {
+                count++;
                 if (cnf.str.size() == 1)
                 {
                     getline(file, sstr);
@@ -111,20 +113,21 @@ void Mserver::config_file()
                         throw std::runtime_error("error in opening curly brace in server");
                 }
                 cnf.blockName = "server";
-                while (getline(file, sstr))                                                                                                                                               
+                while (getline(file, sstr))
                 {
                     cnf.line = sstr;
                     cnf.splite();
-                    if (cnf.size == 0)//|| str[0][0] == '#'
+                    if (cnf.size == 0) //|| str[0][0] == '#'
                         continue;
                     else if (cnf.str[0] == "location")
                     {
+                        count++;
                         if (cnf.size != 3 || cnf.blockName == "location" || cnf.str[2] != "{")
                             throw std::runtime_error("location start error");
                         Location obj;
                         obj.conf = cnf;
                         obj.location_name = cnf.str[1];
-                        while(getline(file, sstr))
+                        while (getline(file, sstr))
                         {
                             obj.conf.line = sstr;
                             obj.conf.splite();
@@ -134,8 +137,8 @@ void Mserver::config_file()
                             {
                                 if (obj.conf.str.size() > 1)
                                     throw std::runtime_error("error in closing curly brace in location");
+                                count--;
                                 break;
-                                
                             }
                             obj.conf.function();
                         }
@@ -149,8 +152,9 @@ void Mserver::config_file()
                                 throw std::runtime_error("error in closing curly brace in server");
                             cnf.check_default();
                             this->mserver.push_back(cnf);
-                            this->index_mserver[cnf.server_name] = this->mserver.size();
-                            break ;
+                            this->index_mserver[cnf.server_name] = this->mserver.size()-1;
+                            count--;
+                            break;
                         }
                         cnf.function();
                     }
@@ -167,63 +171,13 @@ void Mserver::config_file()
             //         throw std::runtime_error("An error occurred after the server finished");
             // }
         }
-        if (emptyFile == false)
-            throw std::runtime_error("empty config file");
+        if (emptyFile == false || count != 0)
+            throw std::runtime_error("empty config file or {}");
     }
-    catch (const std::exception& e) 
+    catch (const std::exception &e)
     {
-        std::cout << e.what()  << std::endl;
+        std::cout << e.what() << std::endl;
         exit(1);
     }
+}
 
-    Mserver obj;
-    obj.config_file();
-    int i = obj.index_mserver["youssef"];
-
-    // std::cout << "index = " << obj.get_index() << std::endl;
-    // std::cout << "get_autoindex = " << obj.get_autoindex() << std::endl;
-    std::cout << "listen  = " << obj.mserver[i].get_listen_Ip()[0] << std::endl;
-    std::cout << "listen  = " << obj.mserver[i].get_listen_Port()[0] << std::endl;
-
-    // std::cout << "listen  = " << obj.mserver[i].get_listen_Ip()[1] << std::endl;
-    // std::cout << "listen  = " << obj.mserver[i].get_listen_Port()[1] << std::endl;
-
-    // std::cout << "listen  = " << obj.get_listen_Ip()[2] << std::endl;
-    // std::cout << "listen  = " << obj.get_listen_Port()[2] << std::endl;
-
-    std::cout << "ft_root  = " << obj.mserver[i].get_root() << std::endl;
-
-    std::cout << "ft_root  = " << obj.mserver[i].get_error_page(500) << std::endl;
-    std::cout << "ft_root  = " << obj.mserver[i].get_error_page(501) << std::endl;
-    std::cout << "index  = " << obj.mserver[i].get_index()[0] << std::endl;
-    // std::cout << "index  = " << obj.get_index()[1] << std::endl;
-    // std::cout << "index  = " << obj.get_index()[2] << std::endl;
-    // std::cout << "index  = " << obj.get_index()[3] << std::endl;
-    // std::cout << "ft_root  = " << obj.get_index() << std::endl;
-    // std::cout << "server_name  = " << obj.get_server_name() << std::endl;
-    // std::cout << "root  = " << obj.get_root() << std::endl;
-    std::cout << "methods  = " << obj.mserver[i].get_methods("GET") << std::endl;
-    std::cout << "methods  = " << obj.mserver[i].get_methods("POST") << std::endl;
-    std::cout << "location_methods  = " << obj.mserver[i].get_methods("GET") << std::endl;
-    std::cout << "location_methods  = " << obj.mserver[i].get_methods("POST") << std::endl;
-    
-} 
-
-
-
-
-// int main()
-// {
-    
-//     // std::cout << "error_page  = " << obj.get_error_page(404) << std::endl;
-//     // std::cout << "error_page  = " << obj.location[0].conf.get_error_page(404) << std::endl;
-//     // std::cout << "error_page  = " << obj.location[1].conf.get_error_page(404) << std::endl;
-//     // // std::cout << "error_page  = " << obj.location[2].conf.get_error_page(404) << std::endl;
-//     // std::cout << "location_methods  = " << obj.location[0].conf.get_methods_POST("POST") << std::endl;
-//     // std::cout << "location_methods  = " << obj.location[0].conf.get_methods("GET") << std::endl;
-//     // std::cout << "location_root = " << obj.location[0].conf.get_root() << std::endl;
-//     // std::cout << "location_root = " << obj.location[1].conf.get_root() << std::endl;
-//     // std::cout << "location_root = " << obj.location[2].conf.get_root() << std::endl;
-//     // std::cout << "index = " << obj.location[0].conf.get_index() << std::endl;
-//     // std::cout << "get_autoindex = " << obj.location[0].conf.get_autoindex() << std::endl;
-// }
