@@ -122,7 +122,6 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
         else
         {
             close_client(Web, p, i);
-
             return (false);
         }
     }
@@ -189,7 +188,6 @@ int main(/*int arc,char *arv[]*/)
         }
         for (Web.s = 0; Web.s < Web.server.size(); Web.s++)
         {
-
             for (size_t i = 0; i < Web.server[Web.s].index_Client.size();)
             {
                 if (sList.checkIfNotNull())
