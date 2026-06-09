@@ -6,13 +6,13 @@ void closeCGI(Webserv &Web, Server &obj, std::string method)
 {
     if (method == "POST")
     {
-        close(Web.fds[obj.recs[obj.iClnt].IndexPipe[3]].fd);
+        close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd);
         Web.fds.erase(Web.fds.begin() + obj.recs[obj.iClnt].IndexFdsPipe[1]);
         obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].IndexPipe[3]);
         obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].IndexPipe[3]);
         obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].IndexPipe[3]);
     }
-    close(Web.fds[obj.recs[obj.iClnt].IndexPipe[0]].fd);
+    close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
     Web.fds.erase(Web.fds.begin() + obj.recs[obj.iClnt].IndexFdsPipe[0]);
     obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
     obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
@@ -108,12 +108,12 @@ int createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method
             if (dup2(obj.recs[obj.iClnt].IndexPipe[2], STDIN_FILENO) < 0)
                 return (erorrCgi(cgiData));
             close(obj.recs[obj.iClnt].IndexPipe[2]);
-            close(Web.fds[obj.recs[obj.iClnt].IndexPipe[3]].fd);
+            close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd);
         }
 
         if (dup2(obj.recs[obj.iClnt].IndexPipe[1], STDOUT_FILENO) < 0)
             return (erorrCgi(cgiData));
-        close(Web.fds[obj.recs[obj.iClnt].IndexPipe[0]].fd);
+        close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
         close(STDIN_FILENO);
         close(obj.recs[obj.iClnt].IndexPipe[1]);
 
@@ -132,7 +132,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     if (method == "POST")
     {
         std::cout << "post read form cgi\n\n";
-        if (Web.fds[obj.recs[obj.iClnt].IndexPipe[3]].revents & POLLOUT)
+        if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].revents & POLLOUT)
         {
             std::cout << "post writed form cgi if\n\n";
             int bytes_r;
@@ -141,14 +141,14 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
             if (bytes_r < 0)
                 return (erorrCgi(cgiData));
 
-            if (write(Web.fds[obj.recs[obj.iClnt].IndexPipe[3]].fd, buffer, bytes_r) < 0)
+            if (write(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd, buffer, bytes_r) < 0)
                 return (erorrCgi(cgiData));
         }
     }
-    if (Web.fds[obj.recs[obj.iClnt].IndexPipe[0]].revents & (POLLIN | POLLHUP))
+    if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].revents & (POLLIN | POLLHUP))
     {
         char buffer[SIZESR];
-        int bytes = read(Web.fds[obj.recs[obj.iClnt].IndexPipe[0]].fd, buffer, SIZESR - 1);
+        int bytes = read(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd, buffer, SIZESR - 1);
 
         if (bytes < 0)
             return (erorrCgi(cgiData));
@@ -156,6 +156,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
         {
             cgiData.dataReady = true;
             cgiData.endRead = true;
+            std::cout << "close CGI     ..\n";
             closeCGI(Web, obj, method); // 7ala
         }
         else if (bytes > 0)

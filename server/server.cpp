@@ -49,7 +49,7 @@ Webserv::Webserv()
     for (size_t i = 0; i < config.size(); i++)
     {
         Server obj(fds, config[i].listen_Port[0]);
-        std::cout << "fds,config[i].listen_Port[0] = " << obj.server_fd << std::endl;
+        std::cout << " fds,config[i].listen_Port[0] = " << obj.server_fd << std::endl;
         server.push_back(obj);
     }
     std::cout << "server.size()" << server.size() << std::endl;
