@@ -39,37 +39,43 @@ class Webserv;
 class Server
 {
 
-    public:
-        Server(std::vector<pollfd> &fds, int port);
+public:
+    Server(std::vector<pollfd> &fds, int port);
 
-        int server_fd;
+    int server_fd;
 
-        size_t iClnt;
+    size_t iClnt;
 
-        size_t clientId;
-        // std::vector<pollfd> fds;
-        std::vector<int> index_Client;
-        sockaddr_in addr;
-        socklen_t len;
-        std::vector<Data> data;
-        std::deque<Record> recs;
-        std::vector<Request> req;
-        // Mserver conf;
+    size_t clientId;
+    // std::vector<pollfd> fds;
+    std::vector<int> index_Client;
+    sockaddr_in addr;
+    socklen_t len;
+    std::vector<Data> data;
+    std::deque<Record> recs;
+    std::vector<Request> req;
+    // config conf;
 
-        void acceptNewCleint(Webserv &Web, pollfd &p, size_t &i);
-        bool receiveRequest(Webserv &Web, pollfd &p, size_t &i, Config conf, SessionsList &sList);
-        bool sendRespond(Webserv &Web, Server &obj, size_t &i, Config conf, pollfd &p);
-        void close_client(Webserv &Web, pollfd &p, int i);
+    void acceptNewCleint(Webserv &Web, pollfd &p, size_t &i);
+    bool receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sList);
+    bool sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p);
+    void close_client(Webserv &Web, pollfd &p, int i);
 };
 
 class Webserv
 {
-    public:
-        Webserv();
-        size_t s;
-        std::vector<Server> server;
-        std::vector<pollfd> fds;
-        Mserver conf;
+public:
+    Webserv();
+    size_t s;
+    int indexC;
+    std::vector<Server> server;
+    std::vector<pollfd> fds;
+
+    // config file
+    int count;
+    std::vector<Config> config;
+    void config_file();
+
 };
 
 #endif

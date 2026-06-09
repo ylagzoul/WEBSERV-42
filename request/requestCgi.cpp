@@ -1,4 +1,9 @@
 #include "../response/CgiHandler.hpp"
+#include <sstream>
+#include <fcntl.h>
+#include <unistd.h>
+#include <iostream>
+# define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
 
 std::string tolowerStri(std::string str)
 {
@@ -134,7 +139,7 @@ void getBody(CgiHandler &cgiData)
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
         {
-            cout << "MOMO\n";
+            // cout << "MOMO\n";
             cgiData.cgStatusCode = 500;
             cgiData.cgStatusName = "Internal Server Error";
             return ;

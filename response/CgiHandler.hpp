@@ -3,6 +3,14 @@
 
 #include <string>
 #include <map>
+#include <vector>
+
+class Webserv;
+class Record;
+class Server;
+class Request;
+class playloadData;
+
 
 typedef enum e_client_state_cgi
 {
@@ -58,12 +66,12 @@ class CgiHandler
     size_t           count;
 };
 
-#include "../server/server.hpp"
+// #include "../server/server.hpp"
 
 
-int cgiHandler(Record &log, CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts);
+int cgiHandler(Webserv &Web, Record &log, CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts);
 
-int cgiProcess(CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req);
+int cgiProcess(Webserv &Web, CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req);
 int parseCgiResponse(CgiHandler &cgiData);
 
 #endif

@@ -1,6 +1,5 @@
 #include "../server/server.hpp"
 
-
 Config::Config()
 {
     // emptyFile = false;
@@ -81,7 +80,7 @@ void Config::function()
         throw std::runtime_error("erorr in element");
 }
 
-void Mserver::config_file()
+void Webserv::config_file()
 {
     count = 0;
     try
@@ -151,8 +150,7 @@ void Mserver::config_file()
                             if (cnf.str.size() > 1)
                                 throw std::runtime_error("error in closing curly brace in server");
                             cnf.check_default();
-                            this->mserver.push_back(cnf);
-                            this->index_mserver[cnf.server_name] = this->mserver.size()-1;
+                            this->config.push_back(cnf);
                             count--;
                             break;
                         }
@@ -180,4 +178,3 @@ void Mserver::config_file()
         exit(1);
     }
 }
-

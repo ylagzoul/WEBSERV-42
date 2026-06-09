@@ -1,6 +1,5 @@
 #ifndef RESPONSE_HPP
-# define RESPONSE_HPP
-
+#define RESPONSE_HPP
 
 #include <iostream>
 #include <stdlib.h>
@@ -20,41 +19,42 @@ class Config;
 class Record;
 class Request;
 class Server;
+class Webserv;
 
 class playloadData
 {
-    public:
-        std::string statusCode;
-        std::string statusName;
-        std::string connection;
-        std::string contentType;
-        std::string realPath;
-        std::string bodyStr;
-        std::string error;
-        std::string uri;
-        std::vector <std::string> index;
-        std::vector<std::string> cgiExt;
-        std::vector<std::string> cgiPath;
-        std::map<int, std::string> errorPages;
-        std::string location;
-        std::map<std::string, bool> methods;
-        std::string root;
-        std::string upload;
-        std::string cgiInfo;
-        std::string cgiScriptFile;
-        std::string cgiFile;
-        std::string cgiExecutePath;
-        std::string retPath;
-        int retCode;
-        size_t bodySize;
-        
-        int autoIndex;
-        bool isCgi;
-        bool retValid;
-        int listFd;
-        int uploadOn;
-        int cgiDataPos;
-        std::map <std::string, std::string> mime;
+public:
+    std::string statusCode;
+    std::string statusName;
+    std::string connection;
+    std::string contentType;
+    std::string realPath;
+    std::string bodyStr;
+    std::string error;
+    std::string uri;
+    std::vector<std::string> index;
+    std::vector<std::string> cgiExt;
+    std::vector<std::string> cgiPath;
+    std::map<int, std::string> errorPages;
+    std::string location;
+    std::map<std::string, bool> methods;
+    std::string root;
+    std::string upload;
+    std::string cgiInfo;
+    std::string cgiScriptFile;
+    std::string cgiFile;
+    std::string cgiExecutePath;
+    std::string retPath;
+    int retCode;
+    size_t bodySize;
+
+    int autoIndex;
+    bool isCgi;
+    bool retValid;
+    int listFd;
+    int uploadOn;
+    int cgiDataPos;
+    std::map<std::string, std::string> mime;
 };
 
 #include "CgiHandler.hpp"
@@ -63,6 +63,6 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 
 int getFile(Record &log, playloadData &data);
 
-std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req);
+std::string respond(Webserv &Web, Server &obj, playloadData &data, Record &log, Config &conf, Request &req);
 
 #endif

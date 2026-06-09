@@ -33,7 +33,7 @@ Server::Server(std::vector<pollfd> &fds, int port)
     server_poll.revents = 0;
 
     fds.push_back(server_poll);
-    index_Client.push_back(fds.size()-1);
+    index_Client.push_back(fds.size() - 1);
     data.push_back(Data());
     recs.push_back(Record());
     req.push_back(Request());
@@ -44,12 +44,12 @@ Server::Server(std::vector<pollfd> &fds, int port)
 
 Webserv::Webserv()
 {
-    conf.config_file();
+    config_file();
 
-    for (size_t i = 0; i < conf.mserver.size(); i++)
+    for (size_t i = 0; i < config.size(); i++)
     {
-        Server obj(fds, conf.mserver[i].listen_Port[0]);
-        std::cout << "fds,conf.mserver[i].listen_Port[0] = " << obj.server_fd << std::endl;
+        Server obj(fds, config[i].listen_Port[0]);
+        std::cout << "fds,config[i].listen_Port[0] = " << obj.server_fd << std::endl;
         server.push_back(obj);
     }
     std::cout << "server.size()" << server.size() << std::endl;
@@ -94,17 +94,16 @@ void Server::acceptNewCleint(Webserv &Web, pollfd &p, size_t &i)
     i++;
 }
 
-bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, Config conf, SessionsList &sList)
+bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sList)
 {
     char buffer[SIZESR] = {0};
     int bytes = recv(p.fd, buffer, SIZESR, 0);
-    
 
     if (bytes > 0)
     {
         clientId = i;
-        
-        readRequest(req, clientId, buffer, bytes, conf, sList);
+
+        readRequest(req, clientId, buffer, bytes, Web.config[Web.s], sList);
         if (req[clientId].clientState == CLIENT_ON)
             p.events |= POLLOUT;
         return (true);
@@ -129,11 +128,12 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, Config conf, Ses
     }
 }
 
-bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, Config conf, pollfd &p)
+bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
 {
     if (data[i].sendNext)
     {
-        data[i].response = respond(obj, recs[i].data, recs[i], conf, req[i]);
+        Web.indexC = i;
+        data[i].response = respond(Web, obj, recs[i].data, recs[i], Web.config[Web.s], req[i]);
         if (data[i].response.empty() && (recs[i].status == ACTIVE_RS || recs[i].status == CGI_ACTIVE))
             return (true);
     }
@@ -189,13 +189,13 @@ int main(/*int arc,char *arv[]*/)
         }
         for (Web.s = 0; Web.s < Web.server.size(); Web.s++)
         {
-            
+
             for (size_t i = 0; i < Web.server[Web.s].index_Client.size();)
             {
                 if (sList.checkIfNotNull())
-                sList.checkLimitSessions();
+                    sList.checkLimitSessions();
                 pollfd &p = Web.fds[Web.server[Web.s].index_Client[i]];
-                
+
                 if (p.fd == Web.server[Web.s].server_fd && (p.revents & POLLIN)) // CHECK ALL SERVER FDS
                 {
                     Web.server[Web.s].acceptNewCleint(Web, p, i);
@@ -203,14 +203,14 @@ int main(/*int arc,char *arv[]*/)
                 }
                 if (p.revents & (POLLIN))
                 {
-                    if (!Web.server[Web.s].receiveRequest(Web, p, i, Web.conf.mserver[Web.s], sList))
-                        continue;   
+                    if (!Web.server[Web.s].receiveRequest(Web, p, i, sList))
+                        continue;
                 }
                 if ((p.revents & POLLOUT))
                 {
 
                     Web.server[Web.s].iClnt = i;
-                    if (!Web.server[Web.s].sendRespond(Web, Web.server[Web.s], i, Web.conf.mserver[Web.s], p))
+                    if (!Web.server[Web.s].sendRespond(Web, Web.server[Web.s], i, p))
                         continue;
                 }
                 // if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLERR)))
@@ -227,5 +227,3 @@ int main(/*int arc,char *arv[]*/)
     }
     // close(obj.server_fd);
 }
-
-

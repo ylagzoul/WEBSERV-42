@@ -1,4 +1,6 @@
 #include "../server/server.hpp"
+
+
 int v = 0;
 void Request::clean() // add youssef
 {
@@ -756,7 +758,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
     return 0;
 }
 
-int responseHandler(CgiHandler &cgiData, Server &obj, Record &log, Request &req, Config &conf, playloadData &data)
+int responseHandler(Webserv &Web, CgiHandler &cgiData, Server &obj, Record &log, Request &req, Config &conf, playloadData &data)
 {
     if (req.headers["connection"] == "Keep-Alive")
         data.connection = "Keep-Alive";
@@ -781,7 +783,7 @@ int responseHandler(CgiHandler &cgiData, Server &obj, Record &log, Request &req,
         return 1;
     if (data.isCgi)
     {
-        if (cgiHandler(log, cgiData, obj, data, req, conf.listen_Port))
+        if (cgiHandler(Web, log, cgiData, obj, data, req, conf.listen_Port))
         {
             cgiData.cgiValid = false;
             return 1;
@@ -888,7 +890,7 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     }
 }
 
-std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
+std::string respond(Webserv &Web, Server &obj, playloadData &data, Record &log, Config &conf, Request &req)
 {
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -898,7 +900,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
         data.bodySize = 0;
         loadExtensions(data);
         data.connection = "Close";
-        if (responseHandler(log.cgiData, obj, log, req, conf, data))
+        if (responseHandler(Web, log.cgiData, obj, log, req, conf, data))
         {
             chooseErrorHandler(conf, data);
             data.contentType = data.mime["html"];
@@ -910,7 +912,7 @@ std::string respond(Server &obj, playloadData &data, Record &log, Config &conf, 
 
         if (log.method == CGI_RDWR)
         {
-            if (cgiProcess(log.cgiData, log, obj, data, req))
+            if (cgiProcess(Web, log.cgiData, log, obj, data, req))
             {
                 data.contentType = data.mime["html"];
                 chooseErrorHandler(conf, data);
