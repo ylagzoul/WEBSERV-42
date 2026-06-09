@@ -131,10 +131,9 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
 
     if (method == "POST")
     {
-        std::cout << "post read form cgi\n\n";
         if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].revents & POLLOUT)
         {
-            std::cout << "post writed form cgi if\n\n";
+            // std::cout << "post writed form cgi if\n\n";
             int bytes_r;
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
