@@ -27,7 +27,7 @@ void    SessionsList::createUnicId()
 void SessionsList::generateSession(Request &req)
 {
 
-    std::cout << "test test test " <<  std::endl;
+    // std::cout << "test test test " <<  std::endl;
     if (req.cookies.find("session_id") != req.cookies.end())
     {
         id = req.cookies["session_id"];
@@ -35,8 +35,8 @@ void SessionsList::generateSession(Request &req)
         {
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
-            req.headers["set-cookie"] = "session_id=" + id + ";path=/";
-            cout << "WAAA3\n";
+            req.headers["set-cookie"] = "session_id=" + id + " ;path=/";
+            // cout << "WAAA3\n";
         }
         else
         { // I will improve the code to evit the repetition
@@ -48,7 +48,7 @@ void SessionsList::generateSession(Request &req)
 
             req.session = &sessionLis[id];
             req.headers["set-cookie"] = "session_id=" + id + ";path=/";
-            cout << "BAAA3\n";
+            // cout << "BAAA3\n";
         }
     }
     else
@@ -94,9 +94,9 @@ void    SessionsList::checkLimitSessions()
         else
             ++it;
     }
-    cout << "FROM CHEKING : ";
+    // cout << "FROM CHEKING : ";
     this->printSesions();
-    cout << std::endl;
+    // cout << std::endl;
 }
 bool    SessionsList::checkIfNotNull()
 {

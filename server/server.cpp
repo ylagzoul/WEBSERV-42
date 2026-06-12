@@ -49,10 +49,9 @@ Webserv::Webserv()
     for (size_t i = 0; i < config.size(); i++)
     {
         Server obj(fds, config[i].listen_Port[0]);
-        std::cout << " fds,config[i].listen_Port[0] = " << obj.server_fd << std::endl;
         server.push_back(obj);
     }
-    std::cout << "server.size()" << server.size() << std::endl;
+    // std::cout << "server.size()" << server.size() << std::endl;
 }
 
 void Server::close_client(Webserv &Web, pollfd &p, int i)
@@ -180,7 +179,6 @@ int main(/*int arc,char *arv[]*/)
 
     while (true)
     {
-
         if (poll(Web.fds.data(), Web.fds.size(), -1) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
         {
             std::cout << "poll error\n";

@@ -301,6 +301,5 @@ int cgiHandler(Webserv &Web, Record &log, CgiHandler &cgiData, Server &obj, play
     getCgiEnv(headers, env, exFile, data, req, cgiData, listenPorts);
     if (cgiProcess(Web, cgiData, log, obj, data, req))
         return 1;
-
     return 0;
 }

@@ -21,7 +21,6 @@ public:
     std::string buffer;
     CgiHandler cgiData;
     bool isItCgi;
-    // ~Record(){std::cout << "dist\n\n";}
     std::vector<int> IndexPipe;
     std::vector<int> IndexFdsPipe;
     int cont;

@@ -1,11 +1,22 @@
 --------server---------
 
-
 valgrind with webserv : 2 requests!
 
 -----------------requests-----------------------------
+
+GRT / HTTP/1.1 501 directly
+
+:ADASD
+Content-length: 144444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444
+Content-length: 0
+----double Content-length;
+Content-length: 0
+Content-length: 1
+content-length: 5d
 
 ----------response----------
 to ask:
     if deleted the file was serving on the middle of the process in post does it should serv a response error or what?
 to handle:
+bonus ckies some to add 
+bonus cgs some to add

@@ -1,5 +1,5 @@
 server {
-    listen 0.0.0.1:8001;
+    listen 0.0.0.1:8005;
     listen 127.0.0.1;
     listen 65535;
     root /home/abouhki/Desktop/owebserv/server/;
@@ -24,19 +24,19 @@ server {
     location / {
         client_max_body_size 100G;
         methods DELETE GET POST;
-        root /home/abouhki/Desktop/owebserv/;
+        root /home/abouhki/Desktop/owebserv/server/;
         error_page 400 /errors/400.html;
         error_page 404 /errors/404.html;
         error_page 500 /errors/500.html;
         error_page 501 /errors/501.html;
         autoindex on;
-        cgi_data .py  python3;
+        cgi_data .py  pythaon3;
         upload_path server;
     }
     location /errors {
         client_max_body_size  100G;
         methods GET POST DELETE;
-        root /home/abouhki/Desktop/owebserv/errors;
+        root /;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;
