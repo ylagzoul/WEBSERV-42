@@ -57,6 +57,7 @@ void    Request::storeCookies(std::string value)
     std::string tmp;
     while (getline(iss, tmp, ';'))
     {
+        std::cout << "pppppppppppppppppppp\n";
         size_t equal = tmp.find('=');
         if (equal != std::string::npos)
         {
@@ -175,6 +176,7 @@ bool checkPath(std::string &path)
         return (true);
     while (getline(iss, splitedPath, '/'))
     {
+        cout << "ddddddddddddddddddd\n";
         if (!splitedPath.empty())
         {
             // cout << splitedPath << std::endl;

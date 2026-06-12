@@ -2,6 +2,10 @@
 
 Config::Config()
 {
+    delet_data["methods"] = false;
+    delet_data["error_page"] = false;
+    delet_data["index"] = false;
+    delet_data["cgiExt"] = false;
     // emptyFile = false;
     // server_name = "";
     root = "/home";
@@ -37,14 +41,22 @@ void Config::ft_cgi_data()
 {
     if (str.size() != 3 || str[1][0] != '.')
         throw std::runtime_error("ft_cgi_data");
-    if (cgiExt.size() > 1)
+
+    if (delet_data["cgiExt"] == true)
     {
-        cgiExt.erase(cgiExt.begin(), cgiExt.end());
-        cgiPath.erase(cgiPath.begin(), cgiPath.end());
+        cgiExt.clear();
+        cgiPath.clear();
     }
+
+    // if (cgiExt.size() > 1)
+    // {
+    //     cgiExt.erase(cgiExt.begin(), cgiExt.end());
+    //     cgiPath.erase(cgiPath.begin(), cgiPath.end());
+    // }
     str[2].erase(str[2].size() - 1);
     cgiExt.push_back(str[1]);
     cgiPath.push_back(str[2]);
+    delet_data["cgiExt"] = false;
 }
 
 void Config::function()
@@ -78,6 +90,15 @@ void Config::function()
         ft_cgi_data();
     else
         throw std::runtime_error("erorr in element");
+}
+
+void ft_function(Location &obj)
+{
+    obj.conf.delet_data["methods"] = true;
+    obj.conf.delet_data["error_page"] = true;
+    obj.conf.delet_data["index"] = true;
+    obj.conf.delet_data["cgiExt"] = true;
+
 }
 
 void Webserv::config_file()
@@ -125,6 +146,7 @@ void Webserv::config_file()
                             throw std::runtime_error("location start error");
                         Location obj;
                         obj.conf = cnf;
+                        ft_function(obj);
                         obj.location_name = cnf.str[1];
                         while (getline(file, sstr))
                         {
@@ -140,6 +162,7 @@ void Webserv::config_file()
                                 break;
                             }
                             obj.conf.function();
+                            // obj.conf.delet_data = false;
                         }
                         cnf.location.push_back(obj);
                     }

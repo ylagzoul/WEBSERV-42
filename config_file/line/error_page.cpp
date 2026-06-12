@@ -1,7 +1,5 @@
 #include "../../server/server.hpp"
 
-
-
 void Config::ft_autoindex()
 {
     int size_s = str[1].size();
@@ -19,6 +17,11 @@ void Config::ft_index()
 {
     if (index.size() > 1)
         index.erase(index.begin(), index.end());
+
+    if (delet_data["index"] == true)
+    {
+        index.clear();
+    }
     size_t i = 1;
     while (i < str.size())
     {
@@ -27,6 +30,7 @@ void Config::ft_index()
         index.push_back(str[i]);
         i++;
     }
+    delet_data["index"] = false;
 }
 
 void Config::ft_client_max_body_size()
@@ -57,6 +61,7 @@ void Config::ft_upload_path()
     int size_s = str[1].size();
     if (size != 2 || str[1][size_s - 1] != ';')
         throw std::runtime_error("upload_path");
+
     str[1].erase(size_s - 1);
     uploadPath = str[1];
 }
@@ -66,7 +71,12 @@ void Config::ft_error_page()
     char c;
     int size_s = str[2].size();
     if (size != 3 || str[2][size_s - 1] != ';')
-        throw std::runtime_error("error in pa");
+        throw std::runtime_error("error in pa"); //
+
+    if (delet_data["error_page"] == true)
+    {
+        error_page.clear();
+    }
 
     for (size_t i = 0; i < str[1].size(); i++)
     {
@@ -76,6 +86,7 @@ void Config::ft_error_page()
     }
     str[2].erase(size_s - 1);
     error_page[std::atoi(str[1].c_str())] = str[2];
+    delet_data["error_page"] = false;
 }
 
 void Config::ft_return()

@@ -3,224 +3,32 @@ server {
     server_name youssef;
     root /home/ylagzoul/Desktop/vv/server/;
     methods GET;
-    error_page 400 /errors/400.html;
+    error_page 401 /errors/401.html;
     error_page 403 /errors/403.html;
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
     error_page 404 /;
-    cgi_data .cfi fkdfr.txt;
-    autoindex on;
+        cgi_data .py /usr/bin/python33;
+        cgi_data .py /usr/bin/python55;
+        cgi_data .py /usr/bin/python99;
 
-    location /goinfre {
-        methods POST GET;
-        root /home/ylagzoul/goinfre;
-        index index.html gogo.jpg;
-        error_page 400 /errors/400.html;
-        error_page 403 /errors/403.html;
-        error_page 404 /errors/404.html;
-        autoindex on;
-    }
+    autoindex on;
 
     location / {
         methods GET POST DELETE;
         root /home/ylagzoul/Desktop/vv/;
-        error_page 400 /errors/400.html;
-        error_page 500 /errors/500.html;
+        error_page 405 /errors/405.html;
+        error_page 501 /errors/501.html;
+        error_page 502 /errors/502.html;
         upload_path server;
-        cgi_data .py /usr/bin/python3;
+        cgi_data .py /usr/bin/python3333;
+        cgi_data .py /usr/bin/python555;
+        cgi_data .py /usr/bin/python555;
+        cgi_data .py /usr/bin/python555;
+        cgi_data .py /usr/bin/python888;
+        cgi_data .py /usr/bin/python888;
         autoindex on;
     }
 
 
 }
-
-server {
-    listen 127.69.110.1:3055;
-    server_name youssef;
-    root /home/ylagzoul/Desktop/vv/server/;
-    methods GET;
-    error_page 400 /errors/400.html;
-    error_page 403 /errors/403.html;
-    error_page 404 /errors/404.html;
-    error_page 500 /errors/500.html;
-    error_page 404 /;
-    cgi_data .cfi fkdfr.txt;
-    autoindex on;
-
-    location /goinfre {
-        methods POST GET;
-        root /home/ylagzoul/goinfre;
-        index index.html gogo.jpg;
-        error_page 400 /errors/400.html;
-        error_page 403 /errors/403.html;
-        error_page 404 /errors/404.html;
-        autoindex on;
-    }
-
-    location / {
-        methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/vv/;
-        error_page 400 /errors/400.html;
-        error_page 500 /errors/500.html;
-        upload_path server;
-        cgi_data .py /usr/bin/python3;
-        autoindex on;
-    }
-
-
-}
-
-server 
-{  
-    listen 127.12.0.1:3054;
-    server_name lagzouli;
-    root /home/ylagzoul/Desktop/vv/server/;
-    methods GET;
-    error_page 400 /errors/400.html;
-    error_page 403 /errors/403.html;
-    error_page 404 /errors/404.html;
-    error_page 500 /errors/500.html;
-    error_page 404 /;
-    cgi_data .cfi fkdfr.txt;
-    autoindex on;
-
-    location /goinfre {
-        methods POST GET;
-        root /home/ylagzoul/goinfre;
-        index index.html gogo.jpg;
-        error_page 400 /errors/400.html;
-        error_page 403 /errors/403.html;
-        error_page 404 /errors/404.html;
-        autoindex on;
-    }
-
-    location / {
-        methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/vv/;
-        error_page 400 /errors/400.html;
-        error_page 500 /errors/500.html;
-        upload_path server;
-        cgi_data .py /usr/bin/python3;
-        autoindex on;
-    }
-
-
-
-
-}
-
-
-server 
-{  
-    listen 127.12.0.1:3053;
-    server_name lagzouli;
-    root /home/ylagzoul/Desktop/vv/server/;
-    methods GET;
-    error_page 400 /errors/400.html;
-    error_page 403 /errors/403.html;
-    error_page 404 /errors/404.html;
-    error_page 500 /errors/500.html;
-    error_page 404 /;
-    cgi_data .cfi fkdfr.txt;
-    autoindex on;
-
-    location /goinfre {
-        methods POST GET;
-        root /home/ylagzoul/goinfre;
-        index index.html gogo.jpg;
-        error_page 400 /errors/400.html;
-        error_page 403 /errors/403.html;
-        error_page 404 /errors/404.html;
-        autoindex on;
-    }
-
-    location / {
-        methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/vv/;
-        error_page 400 /errors/400.html;
-        error_page 500 /errors/500.html;
-        upload_path server;
-        cgi_data .py /usr/bin/python3;
-        autoindex on;
-    }
-
-
-
-
-}
-
-
-server {
-    listen 127.69.100.1:3052;
-    server_name youssef;
-    root /home/ylagzoul/Desktop/vv/server/;
-    methods GET;
-    error_page 400 /errors/400.html;
-    error_page 403 /errors/403.html;
-    error_page 404 /errors/404.html;
-    error_page 500 /errors/500.html;
-    error_page 404 /;
-    cgi_data .cfi fkdfr.txt;
-    autoindex on;
-
-    location /goinfre {
-        methods POST GET;
-        root /home/ylagzoul/goinfre;
-        index index.html gogo.jpg;
-        error_page 400 /errors/400.html;
-        error_page 403 /errors/403.html;
-        error_page 404 /errors/404.html;
-        autoindex on;
-    }
-
-    location / {
-        methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/vv/;
-        error_page 400 /errors/400.html;
-        error_page 500 /errors/500.html;
-        upload_path server;
-        cgi_data .py /usr/bin/python3;
-        autoindex on;
-    }
-
-
-}
-
-
-server {
-    listen 127.69.100.1:3051;
-    server_name youssef;
-    root /home/ylagzoul/Desktop/vv/server/;
-    methods GET;
-    error_page 400 /errors/400.html;
-    error_page 403 /errors/403.html;
-    error_page 404 /errors/404.html;
-    error_page 500 /errors/500.html;
-    error_page 404 /;
-    cgi_data .cfi fkdfr.txt;
-    autoindex on;
-
-    location /goinfre {
-        methods POST GET;
-        root /home/ylagzoul/goinfre;
-        index index.html gogo.jpg;
-        error_page 400 /errors/400.html;
-        error_page 403 /errors/403.html;
-        error_page 404 /errors/404.html;
-        autoindex on;
-    }
-
-    location / {
-        methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/vv/;
-        error_page 400 /errors/400.html;
-        error_page 500 /errors/500.html;
-        upload_path server;
-        cgi_data .py /usr/bin/python3;
-        autoindex on;
-    }
-
-
-}
-
-

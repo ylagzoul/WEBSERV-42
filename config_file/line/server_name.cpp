@@ -1,30 +1,36 @@
 #include "../../server/server.hpp"
 
-
-
 void Config::ft_methods()
 {
+    if (delet_data["methods"] == true)
+    {
+        methods.clear();
+    }
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELETE"] = false;
     int size_s = str[size - 1].size();
     str[size - 1].erase(size_s - 1);
-    int i  = 1;
+    int i = 1;
     while (i < size)
     {
-        if (str[i] == "GET" && methods["GET"] == false) {
+        if (str[i] == "GET" && methods["GET"] == false)
+        {
             methods["GET"] = true;
         }
-        else if (str[i] == "POST" && methods["POST"] == false) {
+        else if (str[i] == "POST" && methods["POST"] == false)
+        {
             methods["POST"] = true;
         }
-        else if (str[i] == "DELETE" && methods["DELETE"] == false) {
+        else if (str[i] == "DELETE" && methods["DELETE"] == false)
+        {
             methods["DELETE"] = true;
         }
         else
             throw std::runtime_error("invalid method");
         i++;
     }
+    delet_data["methods"] = false;
 }
 
 void Config::ft_root()
@@ -53,8 +59,7 @@ void Config::ft_server_name()
         a = 2;
     }
 
-    if (size != 2 || str[1][lenth - 1] != ';' || ft_str_char(".123456789-",str[1][0])
-        || str[1][lenth - 2] == '.' || lenth > 253)
+    if (size != 2 || str[1][lenth - 1] != ';' || ft_str_char(".123456789-", str[1][0]) || str[1][lenth - 2] == '.' || lenth > 253)
         throw std::runtime_error("error server_name");
 
     for (int i = a; i < lenth - 1; i++)
@@ -62,7 +67,7 @@ void Config::ft_server_name()
         c = str[1][i];
         if (!std::isalnum(c) && c != '-' && c != '.')
             throw std::runtime_error("error name");
-        else if (i < lenth -1 && ft_str_char(".-", c) && ft_str_char(".-",str[1][i+1]))
+        else if (i < lenth - 1 && ft_str_char(".-", c) && ft_str_char(".-", str[1][i + 1]))
             throw std::runtime_error("error name1");
     }
     str[1].erase(str[1].begin() + lenth - 1);
