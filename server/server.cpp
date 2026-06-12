@@ -11,7 +11,7 @@ Data::Data()
     recvNum = 0;
 }
 
-Server::Server(std::vector<pollfd> &fds, int port)
+Server::Server(std::vector<pollfd> &fds, int port, const std::string &IP)
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     int opt = 1;
@@ -20,7 +20,7 @@ Server::Server(std::vector<pollfd> &fds, int port)
     len = sizeof(addr);
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_addr.s_addr = inet_addr(IP.c_str());
 
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
         exit(1);
@@ -48,9 +48,14 @@ Webserv::Webserv()
 
     for (size_t i = 0; i < config.size(); i++)
     {
-        Server obj(fds, config[i].listen_Port[0]);
-        std::cout << " fds,config[i].listen_Port[0] = " << obj.server_fd << std::endl;
+        Server obj(fds, config[i].listen_Port[0], config[i].listen_Ip[0]);
         server.push_back(obj);
+        server[i].serverPort.push_back(obj);
+        for (size_t t = 1; t < config[i].listen_Port.size(); t++)
+        {
+            Server objPort(fds, config[i].listen_Port[t], config[i].listen_Ip[t]);
+            server[i].serverPort.push_back(objPort);
+        }
     }
     std::cout << "server.size()" << server.size() << std::endl;
 }
@@ -180,7 +185,6 @@ int main(/*int arc,char *arv[]*/)
 
     while (true)
     {
-
         if (poll(Web.fds.data(), Web.fds.size(), -1) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
         {
             std::cout << "poll error\n";
@@ -188,38 +192,41 @@ int main(/*int arc,char *arv[]*/)
         }
         for (Web.s = 0; Web.s < Web.server.size(); Web.s++)
         {
-            for (size_t i = 0; i < Web.server[Web.s].index_Client.size();)
+            for (size_t t = 0; t < Web.server[Web.s].serverPort.size(); t++)
             {
-                if (sList.checkIfNotNull())
-                    sList.checkLimitSessions();
-                pollfd &p = Web.fds[Web.server[Web.s].index_Client[i]];
+                for (size_t i = 0; i < Web.server[Web.s].serverPort[t].index_Client.size();)
+                {
+                    if (sList.checkIfNotNull())
+                        sList.checkLimitSessions();
+                    pollfd &p = Web.fds[Web.server[Web.s].serverPort[t].index_Client[i]];
 
-                if (p.fd == Web.server[Web.s].server_fd && (p.revents & POLLIN)) // CHECK ALL SERVER FDS
-                {
-                    Web.server[Web.s].acceptNewCleint(Web, p, i);
-                    continue;
-                }
-                if (p.revents & (POLLIN))
-                {
-                    if (!Web.server[Web.s].receiveRequest(Web, p, i, sList))
+                    if (p.fd == Web.server[Web.s].serverPort[t].server_fd && (p.revents & POLLIN)) // CHECK ALL SERVER FDS
+                    {
+                        Web.server[Web.s].serverPort[t].acceptNewCleint(Web, p, i);
                         continue;
-                }
-                if ((p.revents & POLLOUT))
-                {
+                    }
+                    if (p.revents & (POLLIN))
+                    {
+                        if (!Web.server[Web.s].serverPort[t].receiveRequest(Web, p, i, sList))
+                            continue;
+                    }
+                    if ((p.revents & POLLOUT))
+                    {
 
-                    Web.server[Web.s].iClnt = i;
-                    if (!Web.server[Web.s].sendRespond(Web, Web.server[Web.s], i, p))
-                        continue;
+                        Web.server[Web.s].serverPort[t].iClnt = i;
+                        if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
+                            continue;
+                    }
+                    // if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLERR)))
+                    // {
+                    //     std::cout << "i = " << i << std::endl;
+                    //     std::cout << "close clneit about finsh time..............................................\n\n";
+                    //     obj.close_client(p, i);
+                    //     std::cout << time(NULL) - obj.data[i].time << std::endl;
+                    //     continue;
+                    // }
+                    i++;
                 }
-                // if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLERR)))
-                // {
-                //     std::cout << "i = " << i << std::endl;
-                //     std::cout << "close clneit about finsh time..............................................\n\n";
-                //     obj.close_client(p, i);
-                //     std::cout << time(NULL) - obj.data[i].time << std::endl;
-                //     continue;
-                // }
-                i++;
             }
         }
     }

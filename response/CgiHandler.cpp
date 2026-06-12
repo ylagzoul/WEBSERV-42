@@ -128,21 +128,21 @@ int createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method
 
 int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method)
 {
-
+    static size_t n;
     if (method == "POST")
     {
-        std::cout << "post read form cgi\n\n";
         if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].revents & POLLOUT)
         {
-            std::cout << "post writed form cgi if\n\n";
+            // std::cout << "post writed form cgi if\n\n";
             int bytes_r;
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
             if (bytes_r < 0)
                 return (erorrCgi(cgiData));
-
-            if (write(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd, buffer, bytes_r) < 0)
+            int k = 0;
+            if ((k = write(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd, buffer, bytes_r)) < 0)
                 return (erorrCgi(cgiData));
+            n += k; 
         }
     }
     if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].revents & (POLLIN | POLLHUP))

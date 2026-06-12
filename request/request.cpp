@@ -2,15 +2,18 @@
 
 Request::Request() : bodyLen(0), lenRead(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
 
-bool checkDigits(std::string str)
+bool checkDigits(Request &req, std::string str)
 {
-    for (size_t i = 0; i < str.length(); i++)
+    std::stringstream iss(str);
+    size_t value;
+    iss >> value;
+
+    if (str.at(0) != '-' && !iss.fail() && iss.eof())
     {
-        int nb = str.at(i);
-        if (!isdigit(nb))
-            return (false);
+        req.contentLength = value;
+        return (true);
     }
-    return (true);
+    return (false);
 }
 
 bool isHoldSpace(const std::string& str)
@@ -57,6 +60,7 @@ void    Request::storeCookies(std::string value)
     std::string tmp;
     while (getline(iss, tmp, ';'))
     {
+        std::cout << "pppppppppppppppppppp\n";
         size_t equal = tmp.find('=');
         if (equal != std::string::npos)
         {
@@ -155,7 +159,7 @@ bool checkPrecentEnc(std::string &pathSlice)
 
 bool checkMethod(std::string &method)
 {
-    if (!method.compare("POST") && !method.compare("GET") && !method.compare("DELETE"))
+    if (method != "POST" && method != "GET" && method != "DELETE")
         return (false);
     else
         return (true);
@@ -175,9 +179,9 @@ bool checkPath(std::string &path)
         return (true);
     while (getline(iss, splitedPath, '/'))
     {
+        cout << "ddddddddddddddddddd\n";
         if (!splitedPath.empty())
         {
-            // cout << splitedPath << std::endl;
             if(!isPrintable(splitedPath))
                 return (false);
             if (!checkPrecentEnc(splitedPath))
@@ -274,7 +278,7 @@ void getHeaders(Request &req)
             req.bodyType = CHUNKED;
         else if (req.headers.find("content-length") != req.headers.end())
         {
-            req.contentLength = std::strtol(req.headers["content-length"].c_str(), NULL, 10); // long number fix atoi; 
+            req.contentLength = std::strtol(req.headers["content-length"].c_str(), NULL, 10);
             req.bodyType = FIXED;
         }
         else if (req.method != "GET" && req.method != "DELETE")
@@ -298,7 +302,7 @@ void getHeaders(Request &req)
         }
         value = trim(value);
         req.headers[tolowerStr(key)] = value;
-        if (req.method == "POST" && req.headers.find("content-length") != req.headers.end() && !checkDigits(req.headers["content-length"]))
+        if (req.headers.find("content-length") != req.headers.end() && !checkDigits(req, req.headers["content-length"]))
         {
             req.status = 400;
             req.finFlag = true;
@@ -508,8 +512,8 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     // cout << "[ " << userId << " ]" <<  std::endl;
 
 
-    // if (req[userId].getEndHeaders)
-    //     generateCookies(req[userId], sList);
+    if (req[userId].getEndHeaders)
+        generateCookies(req[userId], sList);
     
     return;
 }

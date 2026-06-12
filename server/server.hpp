@@ -1,5 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
+
+#include <arpa/inet.h>
 #include <iostream>
 #include <iostream>
 #include <cstring>
@@ -35,31 +37,32 @@ public:
     bool recvNext;
     time_t time;
 };
+
 class Webserv;
+
 class Server
 {
 
-public:
-    Server(std::vector<pollfd> &fds, int port);
+    public:
+        Server(std::vector<pollfd> &fds, int port, const std::string &IP);
+        std::vector<Server> serverPort;
 
-    int server_fd;
+        int server_fd;
 
-    size_t iClnt;
+        size_t iClnt;
 
-    size_t clientId;
-    // std::vector<pollfd> fds;
-    std::vector<int> index_Client;
-    sockaddr_in addr;
-    socklen_t len;
-    std::vector<Data> data;
-    std::deque<Record> recs;
-    std::vector<Request> req;
-    // config conf;
+        size_t clientId;
+        std::vector<int> index_Client;
+        sockaddr_in addr;
+        socklen_t len;
+        std::vector<Data> data;
+        std::deque<Record> recs;
+        std::vector<Request> req;
 
-    void acceptNewCleint(Webserv &Web, pollfd &p, size_t &i);
-    bool receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sList);
-    bool sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p);
-    void close_client(Webserv &Web, pollfd &p, int i);
+        void acceptNewCleint(Webserv &Web, pollfd &p, size_t &i);
+        bool receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sList);
+        bool sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p);
+        void close_client(Webserv &Web, pollfd &p, int i);
 };
 
 class Webserv

@@ -7,7 +7,7 @@ using namespace std;
 
 int main()
 {
-    int fd = open("/home/abouhki/goinfre/dfile.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    int fd = open("/home/ylagzoul/goinfre/dfile.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd==-1)
         cout << "kayn chi error a wld 3ammi\n";
     int i = 0;
