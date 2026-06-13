@@ -579,13 +579,14 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) // 
 // std::cout << reqPath.length() << '\n' << data.location << '\n';
 // std::cout << data.uri << std::endl;
 // exit(0);
-
+// ''  
 void getImportantData(Config &conf, playloadData &data)
 {
     data.cgiExt.push_back(".py");               // tmp
     data.cgiExt.push_back(".cgi");              // tmp
     data.cgiPath.push_back("/usr/bin/python3"); // tmp
     data.cgiPath.push_back("/bin/lb");          // tmp
+
     if (data.location.empty())
     {
         data.location = "/";
@@ -857,7 +858,7 @@ void generateRetResponse(playloadData &data, std::string &ret_resp)
     return;
 }
 
-void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log)
+void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req)
 {
     // if (log.method == POST_LIST_RS)
     //     data = data;
@@ -881,6 +882,8 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Type: " << data.contentType << "\r\n";
     res << "Content-Length: " << data.bodySize << "\r\n";
+    if (req.headers.count("set-cookie"))
+        res << "Set-Cookie: " << req.headers["set-cookie"] << "\r\n";
     res << "\r\n";
     if (data.connection == "Keep-Alive")
         log.clientState = ALIVE;
@@ -962,7 +965,7 @@ std::string respond(Webserv &Web, Server &obj, playloadData &data, Record &log, 
         // || (log.method == NONE_RS && log.status == ERROR_RS) /!\  TEST
         || (pastMethod == POST_RS && log.method == NONE_RS) || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS)) || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
     {
-        generateResponse(log.cgiData, data, ret_resp, log);
+        generateResponse(log.cgiData, data, ret_resp, log, req);
         if (log.status == ERROR_RS)
             ret_resp += data.bodyStr;
         else

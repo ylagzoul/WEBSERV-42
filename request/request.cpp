@@ -179,7 +179,7 @@ bool checkPath(std::string &path)
         return (true);
     while (getline(iss, splitedPath, '/'))
     {
-        cout << "ddddddddddddddddddd\n";
+        // cout << "ddddddddddddddddddd\n";
         if (!splitedPath.empty())
         {
             if(!isPrintable(splitedPath))

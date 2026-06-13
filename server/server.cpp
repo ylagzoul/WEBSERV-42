@@ -57,7 +57,7 @@ Webserv::Webserv()
             server[i].serverPort.push_back(objPort);
         }
     }
-    std::cout << "server.size()" << server.size() << std::endl;
+    // std::cout << "server.size()" << server.size() << std::endl;
 }
 
 void Server::close_client(Webserv &Web, pollfd &p, int i)

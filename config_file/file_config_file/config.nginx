@@ -1,5 +1,5 @@
 server {
-    listen 127.69.100.1:3050;
+    
     server_name youssef;
     root /home/ylagzoul/Desktop/vv/server/;
     methods GET;

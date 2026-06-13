@@ -59,7 +59,7 @@ public:
 
 #include "CgiHandler.hpp"
 
-void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log);
+void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req);
 
 int getFile(Record &log, playloadData &data);
 
