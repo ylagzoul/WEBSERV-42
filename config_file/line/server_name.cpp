@@ -36,7 +36,7 @@ void Config::ft_methods()
 void Config::ft_root()
 {
     int size_s = str[1].size();
-    if (size != 2 || str[1][size_s - 1] != ';')
+    if (size != 2 || str[1][0] != '/' || str[1][size_s - 1] != ';')
         throw std::runtime_error("eroor in ./");
     str[1].erase(str[1].begin() + size_s - 1);
     root = str[1];

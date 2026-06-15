@@ -142,7 +142,7 @@ void Webserv::config_file()
                     else if (cnf.str[0] == "location")
                     {
                         count++;
-                        if (cnf.size != 3 || cnf.blockName == "location" || cnf.str[2] != "{")
+                        if (cnf.size != 3 || cnf.blockName == "location" || cnf.str[1][0] != '/' || cnf.str[2] != "{")
                             throw std::runtime_error("location start error");
                         Location obj;
                         obj.conf = cnf;

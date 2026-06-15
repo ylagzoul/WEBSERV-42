@@ -59,7 +59,7 @@ void Config::ft_client_max_body_size()
 void Config::ft_upload_path()
 {
     int size_s = str[1].size();
-    if (size != 2 || str[1][size_s - 1] != ';')
+    if (size != 2 || str[1][0] != '/' || str[1][size_s - 1] != ';')
         throw std::runtime_error("upload_path");
 
     str[1].erase(size_s - 1);
