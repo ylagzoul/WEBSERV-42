@@ -118,7 +118,6 @@ int createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method
         close(obj.recs[obj.iClnt].IndexPipe[1]);
 
         execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
-        perror("execve");
         exit(1);
     }
 

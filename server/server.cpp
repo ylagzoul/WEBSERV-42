@@ -23,9 +23,17 @@ Server::Server(std::vector<pollfd> &fds, int port, const std::string &IP)
     addr.sin_addr.s_addr = inet_addr(IP.c_str());
 
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
+    {
+        close(server_fd);
+        std::cout << "fail bind\n";
         exit(1);
+    }
     if (listen(server_fd, 10) < 0)
+    {
+        close(server_fd);
+        std::cout << "fail listen\n";
         exit(1);
+    }
 
     pollfd server_poll;
     server_poll.fd = server_fd;

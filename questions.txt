@@ -27,3 +27,11 @@ SCRIPT_NAME=/server/test.py
 SERVER_PORT=3050
 SERVER_PROTOCOL=HTTP/1.0
 STDIN
+
+
+
+
+
+ss -atp | grep webserv
+
+zombie process
