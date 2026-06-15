@@ -68,7 +68,6 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     obj.recs[obj.iClnt].IndexPipe.push_back(obj.recs.size() - 1);
 
     obj.recs[obj.iClnt].IndexPipe.push_back(outputPipe[1]);
-    std::cout << "   : " << obj.recs[obj.iClnt].IndexPipe[0] << std::endl;
 
     if (method == "POST")
     {
@@ -118,6 +117,7 @@ int createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method
         close(obj.recs[obj.iClnt].IndexPipe[1]);
 
         execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
+        perror("error");
         exit(1);
     }
 
@@ -132,7 +132,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     {
         if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].revents & POLLOUT)
         {
-            // std::cout << "post writed form cgi if\n\n";
+
             int bytes_r;
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
@@ -155,7 +155,6 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
         {
             cgiData.dataReady = true;
             cgiData.endRead = true;
-            std::cout << "close CGI     ..\n";
             closeCGI(Web, obj, method); // 7ala
         }
         else if (bytes > 0)
@@ -190,6 +189,10 @@ int runCgi(Webserv &Web, Record &log, Server &obj, CgiHandler &cgiData, std::str
 
             parseCgiResponse(cgiData);
             cgiData.canRead = false;
+            // if (cgiData.cgStatusCode == 500)
+            // {
+            //     closeCGI(Web, obj, method);
+            // }
         }
     }
     return 0;
@@ -241,7 +244,6 @@ void getCgiEnv(std::vector<std::string> &headers, std::vector<char *> &env, std:
     exFile.push_back((char *)data.cgiExecutePath.c_str());
     exFile.push_back(NULL);
     cgiData.executeablePath = &exFile[0];
-    // std::cout << "-------------->" << *cgiData.executeablePath << std::endl;
 
     cgiData.path = data.cgiScriptFile;
 
@@ -281,7 +283,6 @@ int cgiProcess(Webserv &Web, CgiHandler &cgiData, Record &log, Server &obj, play
     }
     if (cgiData.dataReady == true || log.status == ERROR_RS)
     {
-        std::cerr << "to true\n";
         if (cgiResponseHandler(log, cgiData, data))
             return 1;
         else
@@ -300,6 +301,5 @@ int cgiHandler(Webserv &Web, Record &log, CgiHandler &cgiData, Server &obj, play
     getCgiEnv(headers, env, exFile, data, req, cgiData, listenPorts);
     if (cgiProcess(Web, cgiData, log, obj, data, req))
         return 1;
-
     return 0;
 }

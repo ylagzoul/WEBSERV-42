@@ -199,7 +199,6 @@ int parseCgiResponse(CgiHandler &cgiData)
             break;
         }
     }
-
     cgiData.cgBuff.clear();
     return 0;
 }
