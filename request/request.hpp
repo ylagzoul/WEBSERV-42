@@ -56,6 +56,7 @@ class Request
         std::string fullLine;
         std::string bodyPath;
         size_t      lenRead;
+        int countConLen;
         int         bodyFd;
         int         status;
         bool        getEndHeaders;

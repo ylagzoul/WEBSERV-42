@@ -1,13 +1,15 @@
 #include "../server/server.hpp"
 
-Request::Request() : bodyLen(0), lenRead(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
+Request::Request() : bodyLen(0), lenRead(0), countConLen(1), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
 
 bool checkDigits(Request &req, std::string str)
 {
     std::stringstream iss(str);
     size_t value;
     iss >> value;
-
+    if (req.countConLen == 2)
+        return (false);
+    req.countConLen++;
     if (str.at(0) != '-' && !iss.fail() && iss.eof())
     {
         req.contentLength = value;
@@ -276,7 +278,7 @@ void getHeaders(Request &req)
             req.bodyType = CHUNKED;
         else if (req.headers.find("content-length") != req.headers.end())
         {
-            req.contentLength = std::strtol(req.headers["content-length"].c_str(), NULL, 10);
+            // req.contentLength = std::strtol(req.headers["content-length"].c_str(), NULL, 10);
             req.bodyType = FIXED;
         }
         else if (req.method != "GET" && req.method != "DELETE")
@@ -300,7 +302,8 @@ void getHeaders(Request &req)
         }
         value = trim(value);
         req.headers[tolowerStr(key)] = value;
-        if (req.headers.find("content-length") != req.headers.end() && !checkDigits(req, req.headers["content-length"]))
+        cout << req.countConLen << std::endl;
+        if (!checkDigits(req, req.headers["content-length"]))
         {
             req.status = 400;
             req.finFlag = true;
@@ -318,75 +321,9 @@ void getHeaders(Request &req)
     return;
 }
 
-// void getChunkedBody(Request &req)
-// {
-//     (void)fd;
-//     std::vector<int> nb;
-//     if (req.fdFile == -1)
-//     {
-//         req.fdFile = open("output.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
-//         if (req.fdFile == -1)
-//             throw std::runtime_error("Error file");
-//     }
-//     while (true)
-//     {
-//         if (std::strtol(req.fullLine.c_str(), NULL, 16) == 0 && req.fullLine.length() == 1)
-//             req.fullLine.append("\n");
-//         size_t pos = req.fullLine.find("\n");
-//         if (pos == std::string::npos)
-//         {
-//             break ;
-//         }
-//         std::string sizeStr = req.fullLine.substr(0, pos);
-//         size_t finalRead = req.fullLine.find("0\n\n");
-//         // cout << finalRead << "=>" << req.fullLine << std::endl;
-//         req.fullLine.erase(0, pos + 1);
-
-//         int chunkSize = std::strtol(sizeStr.c_str(), NULL, 16);
-//         nb.push_back(chunkSize);
-//         if (chunkSize == 0)
-//         {
-//             if (finalRead == std::string::npos)
-//             {
-//                 req.status = 400;
-//                 close(req.fdFile);
-//                 throw std::runtime_error("Bad request");
-//             }
-//             req.fullLine.erase(0, 1);
-//             req.getEndFile = true;
-//             close(req.fdFile);
-//             return ;
-//         }
-//         size_t pos2 = req.fullLine.find("\n");
-//         std::string subStr = req.fullLine.substr(0, pos2);
-//         if (subStr.length() < (size_t)chunkSize)
-//         {
-//             req.status = 400;
-//             close(req.fdFile);
-//             throw std::runtime_error("Bad request");
-//         }
-//         std::string data = req.fullLine.substr(0, chunkSize);
-//         write(req.fdFile, data.c_str(), data.size());
-//         req.fullLine.erase(0, pos2 + 1);
-//         if (chunkSize != 0)
-//             readRequest(req, fd);
-//     }
-//     // I Have new logic is made Here ;
-//     int i = 0;
-//     while (i < nb.size())
-//     {
-//         if (nb[i] == 0)
-//             break;
-//         i++;
-//     }
-//     if ( i != nb.size() )
-//         readRequest(req, fd);
-// }
 
 void getFixedBody(Request &req, Config con)
 {
-    (void)con;
-    // static size_t bodyLen;
     req.lenRead += req.fullLine.length();
     if (req.bodyFd == -1)
     {
@@ -402,9 +339,8 @@ void getFixedBody(Request &req, Config con)
             return ;
         }
     }
-    // cout << req.bodyLen << " | " << req.fullLine.length() << " =>" << req.fullLine ;
     req.bodyLen += req.fullLine.length();
-    if (req.bodyLen > 1000000000000) // after handel
+    if (req.bodyLen > con.client_max_body_size)
     {
         req.status = 400;
         req.getEndFile = true;
