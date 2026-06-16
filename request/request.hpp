@@ -30,14 +30,6 @@ typedef enum e_client_state
 
 } t_client_state;
 
-typedef enum e_req_state
-{
-    DEFAULT_ST = 10,
-    ONE_ST,
-    SECOND_ST,
-
-} t_req_state;
-
 class Config;
 class SessionsList;
 // class Sessions;
@@ -65,7 +57,6 @@ class Request
         int         bodyType;
         size_t          contentLength;
         t_client_state  clientState;
-        t_req_state     reqState;
         Sessions    *session;
         std::map<std::string, std::string> cookies;
         void storeCookies(std::string value);

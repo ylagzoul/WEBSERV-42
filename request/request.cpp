@@ -1,20 +1,24 @@
 #include "../server/server.hpp"
 
-Request::Request() : bodyLen(0), lenRead(0), countConLen(1), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF), reqState(DEFAULT_ST) {};
+Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF) {};
 
 bool checkDigits(Request &req, std::string str)
 {
     std::stringstream iss(str);
     size_t value;
     iss >> value;
-    if (req.countConLen == 2)
-        return (false);
-    req.countConLen++;
-    if (str.at(0) != '-' && !iss.fail() && iss.eof())
+    
+    if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
     {
+        req.countConLen++;
         req.contentLength = value;
-        return (true);
+        if (req.countConLen == 2)
+            return (false);
+        else
+            return (true);
     }
+    if (req.method == "GET")
+        return (true);
     return (false);
 }
 
@@ -303,8 +307,9 @@ void getHeaders(Request &req)
         value = trim(value);
         req.headers[tolowerStr(key)] = value;
         cout << req.countConLen << std::endl;
-        if (!checkDigits(req, req.headers["content-length"]))
+        if (!req.headers["content-length"].empty() &&  !checkDigits(req, req.headers["content-length"]))
         {
+            cout << "ADD\n";
             req.status = 400;
             req.finFlag = true;
             return;
@@ -365,29 +370,18 @@ void getFixedBody(Request &req, Config con)
 
 void    generateCookies(Request &req, SessionsList &sList)
 {
-    // if (req.session)
-    //     cout << "last Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
-    // if (!req.headers["set-cookie"].empty())
-    //     cout << "Last Header: " <<  req.headers["set-cookie"] << std::endl;
+
     sList.generateSession(req);
-    // if (req.session)
-    //     cout << "New Geneating: " << req.session->userName << " -- " << req.session->lastLog << std::endl;
-    // if (!req.headers["set-cookie"].empty())
-    //     cout << "New Header: " <<  req.headers["set-cookie"] << std::endl;
-    // sList.printSesions();
-    // cout << "Final Debug\n";
+
 }
 
 void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con, SessionsList &sList)
 {
     size_t pos;
     std::string tes;
-    (void)sList;
     req[userId].fullLine.append(buffer, len);
-    // req[userId].bodyPath = BODY_FILE_PATH + std::string("client") + toStr(userId + 1);
     while (1)
     {
-        // cout << "--->" << req[userId].fullLine.length() << std::endl;
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
         if (req[userId].method.empty()) // if no /r/n break 
@@ -400,25 +394,17 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         {
             pos = req[userId].fullLine.find("\r\n");
             tes = req[userId].fullLine;
-            req[userId].reqState = ONE_ST;
         }
-        // size_t pos = req[userId].fullLine.find("\r\n\r\n");
-        // if (pos == std::string::npos)
-        // {
-        //     break;
-        // }
+
+        // if (req[userId].getEndHeaders == false)
+        //     getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
-        if (req[userId].getEndHeaders == false)
-            getHeaders(req[userId]);
-        else
-            req[userId].reqState = SECOND_ST;
+
         if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
-            // cout << "-> " << tes << "--> " << tes.length() <<  std::endl;
-            // cout << "(" << req[userId].getEndFile << ")\n";
             if ((req[userId].getEndFile) || (req[userId].status == 500) || (req[userId].status == 400))
                 req[userId].clientState = CLIENT_ON;
             if (pos != std::string::npos && tes.length() > 2)
@@ -430,22 +416,16 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             }
             req[userId].lenRead = 0;    
             break ;
-        }    
-        // else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
-        //     getChunkedBody(req);
-        if ((req[userId].getEndFile) /*|| (req[userId].method != "POST" && !req[userId].method.empty())*/)
+        }
+
+        if ((req[userId].getEndFile))  /*|| (req[userId].method != "POST" && !req[userId].method.empty())*/
             req[userId].finFlag = true;
         if (req[userId].finFlag)
         {
-            req[userId].reqState = SECOND_ST;
             req[userId].clientState = CLIENT_ON;
             break;
         }
     }
-    // cout << req[userId].getEndHeaders << std::endl;
-    // cout << "[ " << userId << " ]" <<  std::endl;
-
-
     if (req[userId].getEndHeaders)
         generateCookies(req[userId], sList);
     
