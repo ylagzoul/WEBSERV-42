@@ -42,6 +42,9 @@ class CgiHandler
     size_t bodyLen;
     bool dataReady;
     bool cgiValid;
+    std::vector<char *> exFile;
+    std::vector<char *> tmpEnv;
+    std::vector<std::string> headers;
     
     // --------------attributes for parsing-------------- //
     int fd;
@@ -69,9 +72,9 @@ class CgiHandler
 // #include "../server/server.hpp"
 
 
-int cgiHandler(Webserv &Web, Record &log, CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts);
+int cgiHandler(Webserv &Web, Record &log, Server &obj, Request &req, std::vector<int> &listenPorts);
 
-int cgiProcess(Webserv &Web, CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req);
+int cgiProcess(Webserv &Web, Record &log, Server &obj, Request &req);
 int parseCgiResponse(CgiHandler &cgiData);
 
 #endif

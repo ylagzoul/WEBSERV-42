@@ -145,7 +145,7 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
     if (data[i].sendNext)
     {
         Web.indexC = i;
-        data[i].response = respond(Web, obj, recs[i].data, recs[i], Web.config[Web.s], req[i]);
+        data[i].response = respond(Web, obj, recs[i], Web.config[Web.s], req[i]);
         if (data[i].response.empty() && (recs[i].status == ACTIVE_RS || recs[i].status == CGI_ACTIVE))
             return (true);
     }

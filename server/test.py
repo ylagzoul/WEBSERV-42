@@ -8,17 +8,17 @@ print("Content-Type: text/html; charset=utf-8\r")
 print("status: 400\r")
 print("\r")  # End of headers
 
-print("<!DOCTYPE html>")
-print("<html>")
-print("<head><title>CGI Test</title></head>")
-print("<body>")
-print("<h1>✅ CGI is working!</h1>")
+print("<!DOCTYPE html>\r")
+print("<html>\r")
+print("<head><title>CGI Test</title></head>\r")
+print("<body>\r")
+print("<h1>✅ CGI is working!</h1>\r")
 
-print("<h2>Environment</h2>")
-print("<pre>")
+print("<h2>Environment</h2>\r")
+print("<pre>\r")
 for k, v in sorted(os.environ.items()):
-    print(f"{k}={v}")
-print("</pre>")
+    print(f"{k}={v}\r")
+print("</pre>\r")
 
 # print("<h2>STDIN</h2>")
 # data = sys.stdin.read()

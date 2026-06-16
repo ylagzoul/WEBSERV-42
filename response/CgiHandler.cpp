@@ -50,7 +50,7 @@ std::string normalizeKey(std::string key)
     return key;
 }
 
-int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
+int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request &req)
 {
     int outputPipe[2];
     if (pipe(outputPipe) == -1)
@@ -69,10 +69,10 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
 
     obj.recs[obj.iClnt].IndexPipe.push_back(outputPipe[1]);
 
-    if (method == "POST")
+    if (req.method == "POST")
     {
         int inputPipe[2];
-        cgiData.bodyFd = open(bodyFile.c_str(), O_RDONLY, 0644);
+        cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY, 0644);
         if (cgiData.bodyFd < 0)
             return (erorrCgi(cgiData));
         if (pipe(inputPipe) == -1)
@@ -94,7 +94,15 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     return (0);
 }
 
-int createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method)
+std::string switchData(std::string path)
+{
+    if (path[path.length() - 1] == '/')
+        path.resize(path.length() - 1);
+    size_t l = path.find_last_of('/');
+    return (path.substr(0, l));
+}
+
+int createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method, playloadData &data)
 {
     pid_t pid = fork();
 
@@ -115,7 +123,8 @@ int createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method
         close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
         close(STDIN_FILENO);
         close(obj.recs[obj.iClnt].IndexPipe[1]);
-
+        if (chdir(switchData(data.realPath).c_str()) == -1)
+            exit(1);
         execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
         perror("error");
         exit(1);
@@ -155,6 +164,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
         {
             cgiData.dataReady = true;
             cgiData.endRead = true;
+            std::cout << "cgi Done\n";
             closeCGI(Web, obj, method); // 7ala
         }
         else if (bytes > 0)
@@ -168,27 +178,27 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     return (0);
 }
 
-int runCgi(Webserv &Web, Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
+int runCgi(Webserv &Web, Record &log, Server &obj, Request &req)
 {
     if (log.status == NEW_RS)
     {
         log.isItCgi = true;
-        if (createPipes(Web, obj, cgiData, method, bodyFile))
+        if (createPipes(Web, obj, log.cgiData, req))
             return (1);
         log.status = CGI_ACTIVE;
         log.method = CGI_RDWR;
-        if (createCgi(Web, obj, cgiData, method))
+        if (createCgi(Web, obj, log.cgiData, req.method, log.data))
             return (1);
     }
     else
     {
-        if (readFromCgi(Web, obj, cgiData, method))
+        if (readFromCgi(Web, obj, log.cgiData, req.method))
             return (1);
-        if (cgiData.canRead) /* CHEEEECK /!\*/
+        if (log.cgiData.canRead) /* CHEEEECK /!\*/
         {
 
-            parseCgiResponse(cgiData);
-            cgiData.canRead = false;
+            parseCgiResponse(log.cgiData);
+            log.cgiData.canRead = false;
             // if (cgiData.cgStatusCode == 500)
             // {
             //     closeCGI(Web, obj, method);
@@ -198,7 +208,7 @@ int runCgi(Webserv &Web, Record &log, Server &obj, CgiHandler &cgiData, std::str
     return 0;
 }
 
-void getCgiEnv(std::vector<std::string> &headers, std::vector<char *> &env, std::vector<char *> &exFile, playloadData &data, Request &req, CgiHandler &cgiData, std::vector<int> &listenPorts) // put them on the class so you'll have refer
+void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData, std::vector<int> &listenPorts) // put them on the class so you'll have refer
 {
     std::string pathInfo = "PATH_INFO=";
     std::string query = "QUERY_STRING=";
@@ -215,41 +225,42 @@ void getCgiEnv(std::vector<std::string> &headers, std::vector<char *> &env, std:
     else
         pathInfo += data.cgiInfo;
     // headers.push_back("AUTH")!!
-    headers.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    headers.push_back(pathInfo);
-    headers.push_back(query);
-    headers.push_back("REQUEST_METHOD=" + req.method);
-    headers.push_back("REDIRECT_STATUS=200");
-    headers.push_back("SCRIPT_NAME=" + data.cgiFile);
-    headers.push_back("SCRIPT_FILENAME=" + data.cgiScriptFile);
-    headers.push_back("SERVER_PORT=" + port); // you should get the working server port
-    headers.push_back("SERVER_PROTOCOL=HTTP/1.0");
+    cgiData.headers.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    cgiData.headers.push_back(pathInfo);
+    cgiData.headers.push_back(query);
+    cgiData.headers.push_back("REQUEST_METHOD=" + req.method);
+    cgiData.headers.push_back("REDIRECT_STATUS=200");
+    cgiData.headers.push_back("SCRIPT_NAME=" + data.cgiFile);
+    cgiData.headers.push_back("SCRIPT_FILENAME=" + data.cgiScriptFile);
+    cgiData.headers.push_back("SERVER_PORT=" + port); // you should get the working server port
+    cgiData.headers.push_back("SERVER_PROTOCOL=HTTP/1.0");
 
     std::map<std::string, std::string>::iterator iter;
     for (iter = req.headers.begin(); iter != req.headers.end(); iter++)
     {
         if (iter->first == "content-lenght")
-            headers.push_back("CONTENT_LENGTH=" + iter->second);
+            cgiData.headers.push_back("CONTENT_LENGTH=" + iter->second);
         else if (iter->second == "content-type")
-            headers.push_back("CONTENT_TYPE=" + iter->second);
+            cgiData.headers.push_back("CONTENT_TYPE=" + iter->second);
         else
-            headers.push_back("HTTP_" + normalizeKey(iter->first) + "=" + iter->second);
+            cgiData.headers.push_back("HTTP_" + normalizeKey(iter->first) + "=" + iter->second);
     }
     //                      check                     //
-    for (size_t i = 0; i < headers.size(); i++)
-        env.push_back((char *)headers[i].c_str());
-    env.push_back(NULL);
-    cgiData.env = &env[0];
+    for (size_t i = 0; i < cgiData.headers.size(); i++)
+        cgiData.tmpEnv.push_back((char *)cgiData.headers[i].c_str());
+    cgiData.tmpEnv.push_back(NULL);
+    cgiData.env = &cgiData.tmpEnv[0];
 
-    exFile.push_back((char *)data.cgiExecutePath.c_str());
-    exFile.push_back(NULL);
-    cgiData.executeablePath = &exFile[0];
+    cgiData.exFile.push_back((char *)data.cgiExecutePath.c_str());
+    cgiData.exFile.push_back(NULL);
+    cgiData.executeablePath = &cgiData.exFile[0];
+    // std::cout << "-------------->" << *cgiData.executeablePath << std::endl;
 
     cgiData.path = data.cgiScriptFile;
 
     // int i = -1;
     // while (cgiData.env[++i])
-    //     std::cout << env[i] << std::endl;
+    //     std::cout << cgiData.tmpEnv[i] << std::endl;
 }
 
 int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
@@ -270,36 +281,36 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
         return 1;
     }
     log.status = CLOSED_RS;
-    if (getFile(log, data))
+    if (getFile(log))
         return 1;
     return 0;
 }
-int cgiProcess(Webserv &Web, CgiHandler &cgiData, Record &log, Server &obj, playloadData &data, Request &req)
+int cgiProcess(Webserv &Web, Record &log, Server &obj, Request &req)
 {
-    if (runCgi(Web, log, obj, cgiData, req.method, req.bodyPath))
+    if (runCgi(Web, log, obj, req))
     {
         std::cout << "ERROR_RS\n";
         log.status = ERROR_RS;
     }
-    if (cgiData.dataReady == true || log.status == ERROR_RS)
+    if (log.cgiData.dataReady == true || log.status == ERROR_RS)
     {
-        if (cgiResponseHandler(log, cgiData, data))
+        if (cgiResponseHandler(log, log.cgiData, log.data))
             return 1;
         else
-            cgiData.cgiValid = true;
+            log.cgiData.cgiValid = true;
     }
     return 0;
 }
 
-int cgiHandler(Webserv &Web, Record &log, CgiHandler &cgiData, Server &obj, playloadData &data, Request &req, std::vector<int> &listenPorts)
+int cgiHandler(Webserv &Web, Record &log, Server &obj, Request &req, std::vector<int> &listenPorts)
 {
     std::vector<char *> exFile;
     std::vector<char *> env;
     std::vector<std::string> headers;
     if (log.status == NEW_RS)
-        cgiData.dataReady = false;
-    getCgiEnv(headers, env, exFile, data, req, cgiData, listenPorts);
-    if (cgiProcess(Web, cgiData, log, obj, data, req))
+        log.cgiData.dataReady = false;
+    getCgiEnv(log.data, req, log.cgiData, listenPorts);
+    if (cgiProcess(Web, log, obj, req))
         return 1;
     return 0;
 }
