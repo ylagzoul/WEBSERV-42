@@ -26,7 +26,6 @@ Server::Server(std::vector<pollfd> &fds, int port, const std::string &IP)
         exit(1);
     if (listen(server_fd, 10) < 0)
         exit(1);
-
     pollfd server_poll;
     server_poll.fd = server_fd;
     server_poll.events = POLLIN;
@@ -137,7 +136,7 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
     if (data[i].sendNext)
     {
         Web.indexC = i;
-        data[i].response = respond(Web, obj, recs[i].data, recs[i], Web.config[Web.s], req[i]);
+        data[i].response = respond(Web, obj, recs[i], Web.config[Web.s], req[i]);
         if (data[i].response.empty() && (recs[i].status == ACTIVE_RS || recs[i].status == CGI_ACTIVE))
             return (true);
     }

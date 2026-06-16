@@ -1,6 +1,6 @@
 server {
     listen 127.0.0.1:3050;
-    root /home/abouhki/Desktop/owebserv/server/;
+    root ./;
     methods GET;
     error_page 400 /errors/400.html;
     error_page 403 /errors/403.html;
@@ -8,10 +8,11 @@ server {
     error_page 500 /errors/500.html;
     autoindex on;
 
-    location /goinfre {
+    location / {
+        client_max_body_size  100G;
         methods POST GET;
-        upload_path /;
-        root /home/abouhki/goinfre;
+        upload_path /goinfre;
+        root /home/abouhki/Desktop/owebserv;
         index index.html gogo.jpg;
         error_page 400 /errors/400.html;
         error_page 403 /errors/403.html;
@@ -19,26 +20,15 @@ server {
         autoindex on;
     }
 
-    location / {
-        client_max_body_size 100G;
-        methods DELETE GET POST;
-        root /home/abouhki/Desktop/owebserv/server/;
-        error_page 400 /errors/400.html;
-        error_page 404 /errors/404.html;
-        error_page 500 /errors/500.html;
-        error_page 501 /errors/501.html;
-        autoindex on;
-        cgi_data .py  pythaon3;
-        upload_path server;
-    }
     location /errors {
         client_max_body_size  100G;
         methods GET POST DELETE;
         root /;
+        upload_path /;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;
-        cgi_data .py  /usr/bin/python3; 
-        return 410 file.txt;
+        cgi_data .py /usr/bin/python3;
+        return 302 /errors;
     }
 }

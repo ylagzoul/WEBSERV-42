@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <unistd.h>
+#include <fcntl.h>
 #include <map>
 #include <cstdlib>
 
@@ -19,8 +21,8 @@
 // # define BODY_FILE_PATH "/home/mradouan/goinfre/"
 // # define CONF_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/config_file/file_config_file/moha.nginx"
 
-# define LIST_FILE_PATH "/home/abouhki/goinfre"
-# define BODY_FILE_PATH "/home/abouhki/goinfre"
+# define LIST_FILE_PATH "/home/abouhki/goinfre/"
+# define BODY_FILE_PATH "/home/abouhki/goinfre/"
 # define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/boha.nginx"
 
 class Location;

@@ -60,7 +60,7 @@ void    Request::storeCookies(std::string value)
     std::string tmp;
     while (getline(iss, tmp, ';'))
     {
-        std::cout << "pppppppppppppppppppp\n";
+        // std::cout << "pppppppppppppppppppp\n";
         size_t equal = tmp.find('=');
         if (equal != std::string::npos)
         {
@@ -406,7 +406,7 @@ void getFixedBody(Request &req, Config con)
     }
     // cout << req.bodyLen << " | " << req.fullLine.length() << " =>" << req.fullLine ;
     req.bodyLen += req.fullLine.length();
-    if (req.bodyLen > 1000000000000) // after handel
+    if (req.bodyLen > DEFAULT_MAX_BODY_SIZE) // after handel
     {
         req.status = 400;
         req.getEndFile = true;
@@ -449,7 +449,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     size_t pos;
     std::string tes;
     (void)sList;
-
 
     req[userId].fullLine.append(buffer, len);
     while (1)

@@ -89,7 +89,7 @@ void    SessionsList::checkLimitSessions()
         if ( now - it->second.lastLog > 30 )
         {
             sessionLis.erase(it++);
-            cout << "DKHELT\n";
+            // cout << "DKHELT\n";
         }
         else
             ++it;

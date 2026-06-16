@@ -3,7 +3,6 @@
 import sys
 
 # Read body from stdin
-data = sys.stdin.read()
 
 # CGI response headers
 print("Content-Type: text/html")

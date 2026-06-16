@@ -1,10 +1,6 @@
 #include "../response/CgiHandler.hpp"
-#include <sstream>
-#include <fcntl.h>
-#include <unistd.h>
-#include <iostream>
-# define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
-
+#include "../config_file/config_file.hpp"
+int k ;
 std::string tolowerStri(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
@@ -128,7 +124,6 @@ void getHeadersCgi(CgiHandler &cgiData)
     return;
 }
 
-
 void getBody(CgiHandler &cgiData)
 {
     cgiData.lenRead += cgiData.fullLine.length();
@@ -139,14 +134,13 @@ void getBody(CgiHandler &cgiData)
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
         {
-            // cout << "MOMO\n";
             cgiData.cgStatusCode = 500;
             cgiData.cgStatusName = "Internal Server Error";
             return ;
         }
     }
     cgiData.bodyLen += cgiData.fullLine.length();
-    if (cgiData.bodyLen > 10000000) // after handel 
+    if (cgiData.bodyLen > 1024 * 100000) // after handel 
     {
         cgiData.cgStatusCode = 502;
         cgiData.getEndFile = true;
@@ -186,7 +180,7 @@ int parseCgiResponse(CgiHandler &cgiData)
         {
             if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
                 cgiData.clientState = CLIENT_CGI_ON;
-            cgiData.lenRead = 0;    
+            cgiData.lenRead = 0;
             break ;
         }    
         if (cgiData.getEndFile)

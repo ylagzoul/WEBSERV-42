@@ -1,6 +1,8 @@
 --------server---------
 
 valgrind with webserv : 2 requests!
+-------config----------
+
 
 -----------------requests-----------------------------
 
@@ -13,10 +15,25 @@ Content-length: 0
 Content-length: 0
 Content-length: 1
 content-length: 5d
+to large header or URI
 
 ----------response----------
 to ask:
-    if deleted the file was serving on the middle of the process in post does it should serv a response error or what?
+    what to do if a method not the list but a redirect is on?
+    Keep-Alive with cgi and redirect
+    set cookies with cgi
 to handle:
-bonus ckies some to add 
-bonus cgs some to add
+    cgi querry and some / ? with chdir
+    bonus ckies some to add
+    bonus cgs some to add
+
+-------cgi-------
+
+status should be parsed --- if it was diff that 200 what to do? --> 200 to 599
+waitPid should
+return after dup is failed
+execve: Permission denied
+close CGI     ..
+to true
+
+handle timeout of cgi

@@ -61,8 +61,8 @@ public:
 
 void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req);
 
-int getFile(Record &log, playloadData &data);
+int getFile(Record &log);
 
-std::string respond(Webserv &Web, Server &obj, playloadData &data, Record &log, Config &conf, Request &req);
+std::string respond(Webserv &Web, Server &obj, Record &log, Config &conf, Request &req);
 
 #endif
