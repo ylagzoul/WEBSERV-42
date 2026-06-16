@@ -10,11 +10,7 @@ bool checkDigits(Request &req, std::string str)
     
     if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
     {
-        req.countConLen++;
         req.contentLength = value;
-        if (req.countConLen == 2)
-            return (false);
-        else
             return (true);
     }
     if (req.method == "GET")
@@ -79,6 +75,19 @@ void    Request::storeCookies(std::string value)
         }
     }
 }
+
+void    returnedBadError(Request &req)
+{
+    req.status = 400;
+    req.finFlag = true;
+}
+
+void    returnedInternalError(Request &req)
+{
+    req.status = 500;
+    req.finFlag = true;
+}
+
 std::string tolowerStr(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
@@ -219,34 +228,18 @@ void fillCheck(Request &req, std::string reqLine)
     std::vector<std::string> array;
 
     if (count_space(reqLine) > 2)
-    {
-        req.status = 400;
-        req.finFlag = true;
-        return;
-    }
+        return (returnedBadError(req));
     while (splitReq >> slice)
         array.push_back(slice);
     if (array.size() != 3)
-    {
-        req.status = 400;
-        req.finFlag = true;
-        return;
-    }
+        return (returnedBadError(req));
     if (array[2] != "HTTP/1.1" && array[2] != "HTTP/1.0")
-    {
-        req.status = 400;
-        req.finFlag = true;
-        return;
-    }
+        return (returnedBadError(req));
     req.method = array[0];
     req.path = array[1];
     req.httpVersion = array[2];
     if (!checkPath(req.path) || !checkMethod(req.method))
-    {
-        req.status = 400;
-        req.finFlag = true;
-        return ;
-    }
+        return (returnedBadError(req));
 }
 
 void getRequestLine(Request &req)
@@ -257,8 +250,6 @@ void getRequestLine(Request &req)
     fillCheck(req, req.fullLine.substr(0, pos));
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
-    // cout << "size : " << req.fullLine.size() << " content = "<< req.fullLine << std::endl;
-    // cout << req.path << std::endl;
 }
 
 void getHeaders(Request &req)
@@ -269,6 +260,7 @@ void getHeaders(Request &req)
     std::string line = req.fullLine.substr(0, endLine);
     if (line.empty())
     {
+
         req.getEndHeaders = true;
         req.lenRead += req.fullLine.substr(0, endLine + 2).length();
         req.fullLine.erase(0, endLine + 2);
@@ -281,46 +273,27 @@ void getHeaders(Request &req)
         if (it != req.headers.end() && it->second == "chunked")
             req.bodyType = CHUNKED;
         else if (req.headers.find("content-length") != req.headers.end())
-        {
-            // req.contentLength = std::strtol(req.headers["content-length"].c_str(), NULL, 10);
             req.bodyType = FIXED;
-        }
         else if (req.method != "GET" && req.method != "DELETE")
-        {
-            req.status = 400;
-            req.finFlag = true;
-            return ;
-        }
+            return (returnedBadError(req));
         return ;
     }
     size_t colon = line.find(':');
     if (colon != std::string::npos)
     {
-        std::string key = line.substr(0, colon);
+        std::string key = tolowerStr(line.substr(0, colon));
         std::string value = line.substr(colon + 1);
         if (!isPrintable(key) || !isHoldSpace(key))
-        {
-            req.status = 400;
-            req.finFlag = true;
-            return;
-        }
+            return (returnedBadError(req));
         value = trim(value);
-        req.headers[tolowerStr(key)] = value;
-        cout << req.countConLen << std::endl;
-        if (!req.headers["content-length"].empty() &&  !checkDigits(req, req.headers["content-length"]))
-        {
-            cout << "ADD\n";
-            req.status = 400;
-            req.finFlag = true;
-            return;
-        }
+        if (req.headers.find(key) != req.headers.end() && key == "content-length")
+            return (returnedBadError(req));
+        req.headers[key] = value;
+        if (req.headers.find("content-length") != req.headers.end() && !checkDigits(req, req.headers["content-length"]))
+            return (returnedBadError(req));
     }
     else
-    {
-        req.status = 400;
-        req.finFlag = true;
-        return;
-    }
+        return (returnedBadError(req));
     req.lenRead += req.fullLine.substr(0, endLine + 2).length();
     req.fullLine.erase(0, endLine + 2);
     return;
@@ -335,27 +308,24 @@ void getFixedBody(Request &req, Config con)
         req.bodyLen = 0;
         req.generateRandomName(BODY_FILE_PATH + std::string("client"));
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
-
         if (req.bodyFd == -1)
         {
-            std::cerr << "Error opening file\n";
-            req.status = 500;
             req.getEndFile = true;
-            return ;
+            return (returnedInternalError(req));
         }
     }
     req.bodyLen += req.fullLine.length();
     if (req.bodyLen > con.client_max_body_size)
     {
-        req.status = 400;
         req.getEndFile = true;
-        return ;
+        return (returnedBadError(req));
     }
     if (req.bodyLen < req.contentLength)
     {
         if (req.bodyLen != 0)
         {
-            write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length());
+            if (write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length()) == -1)
+                return (returnedInternalError(req));
             req.fullLine.clear();
         }
         return;
@@ -363,7 +333,8 @@ void getFixedBody(Request &req, Config con)
     int sizePa = (req.contentLength + req.fullLine.length()) - req.bodyLen;
     std::string d = req.fullLine.substr(0, sizePa);
 
-    write(req.bodyFd, d.c_str(), sizePa);
+    if (write(req.bodyFd, d.c_str(), sizePa) == -1)
+        return (returnedInternalError(req));
     close(req.bodyFd);
     req.getEndFile = true;
 }
@@ -396,8 +367,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             tes = req[userId].fullLine;
         }
 
-        // if (req[userId].getEndHeaders == false)
-        //     getHeaders(req[userId]);
         if (req[userId].getEndHeaders == false)
             getHeaders(req[userId]);
 
