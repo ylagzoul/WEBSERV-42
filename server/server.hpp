@@ -18,6 +18,9 @@
 #include "state.h"
 #include "Record.hpp"
 
+#define MAX_LEN_HEADER_FEILD 16 * 1024
+#define MAX_LEN_PATH 8 * 1024
+
 #define DEFAULT_MAX_BODY_SIZE 1000000
 #define SIZESR 8192
 

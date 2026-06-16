@@ -62,7 +62,6 @@ void    Request::storeCookies(std::string value)
     std::string tmp;
     while (getline(iss, tmp, ';'))
     {
-        std::cout << "pppppppppppppppppppp\n";
         size_t equal = tmp.find('=');
         if (equal != std::string::npos)
         {
@@ -153,7 +152,6 @@ bool checkPrecentEnc(std::string &pathSlice)
     {
         if (copyPath.at(i) == '%')
         {
-            // std::cout << "Found % at index: " << i << std::endl;
             if(!copyPath[i + 1] || !copyPath[i + 2])
                 return (false);
             if (!isHex((char)copyPath.at(i+1)) || !isHex((char)copyPath.at(i+2)))
@@ -174,10 +172,7 @@ bool checkPrecentEnc(std::string &pathSlice)
 
 bool checkMethod(std::string &method)
 {
-    if (method != "POST" && method != "GET" && method != "DELETE")
-        return (false);
-    else
-        return (true);
+    return (!(method != "POST" && method != "GET" && method != "DELETE"));
 }
 
 bool checkPath(std::string &path)
@@ -194,7 +189,6 @@ bool checkPath(std::string &path)
         return (true);
     while (getline(iss, splitedPath, '/'))
     {
-        // cout << "ddddddddddddddddddd\n";
         if (!splitedPath.empty())
         {
             if(!isPrintable(splitedPath))
@@ -232,7 +226,7 @@ void fillCheck(Request &req, std::string reqLine)
     if (count_space(reqLine) > 2)
         return (returnedBadError(req));
     while (splitReq >> slice)
-        array.push_back(slice);
+        array.push_back(slice); 
     if (array.size() != 3)
         return (returnedBadError(req));
     if (array[2] != "HTTP/1.1" && array[2] != "HTTP/1.0")
@@ -240,7 +234,7 @@ void fillCheck(Request &req, std::string reqLine)
     req.method = array[0];
     req.path = array[1];
     req.httpVersion = array[2];
-    if (!checkPath(req.path) || !checkMethod(req.method))
+    if (!checkPath(req.path) || !checkMethod(req.method) || req.path.length() >= MAX_LEN_PATH)
         return (returnedBadError(req));
 }
 
@@ -262,7 +256,6 @@ void getHeaders(Request &req)
     std::string line = req.fullLine.substr(0, endLine);
     if (line.empty())
     {
-
         req.getEndHeaders = true;
         req.lenRead += req.fullLine.substr(0, endLine + 2).length();
         req.fullLine.erase(0, endLine + 2);
@@ -272,9 +265,7 @@ void getHeaders(Request &req)
             req.host = req.headers["host"];
         if (req.headers.find("set-cookie") != req.headers.end())
             req.storeCookies(req.headers["set-cookie"]);
-        if (it != req.headers.end() && it->second == "chunked")
-            req.bodyType = CHUNKED;
-        else if (req.headers.find("content-length") != req.headers.end())
+        if (req.headers.find("content-length") != req.headers.end())
             req.bodyType = FIXED;
         else if (req.method != "GET" && req.method != "DELETE")
             return (returnedBadError(req));
@@ -298,6 +289,8 @@ void getHeaders(Request &req)
         return (returnedBadError(req));
     req.lenRead += req.fullLine.substr(0, endLine + 2).length();
     req.fullLine.erase(0, endLine + 2);
+    if (req.lenRead >= MAX_LEN_HEADER_FEILD)
+        return (returnedBadError(req));
     return;
 }
 
@@ -383,10 +376,10 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
                 tes.erase(0, pos + 2);
             if (req[userId].method == "GET" || req[userId].method == "DELETE")
             {
-                if ((req[userId].method != "POST" && pos != std::string::npos && tes.length() == 2) )
+                if ((req[userId].method != "POST" && pos != std::string::npos && tes.length() == 2))
                     req[userId].clientState = CLIENT_ON;
             }
-            req[userId].lenRead = 0;    
+            req[userId].lenRead = 0;
             break ;
         }
 

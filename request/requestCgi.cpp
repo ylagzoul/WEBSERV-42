@@ -1,9 +1,11 @@
 #include "../response/CgiHandler.hpp"
+#include "../config_file/config_file.hpp"
+#include "../server/server.hpp"
+
 #include <sstream>
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
-# define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
 
 std::string tolowerStri(std::string str)
 {
@@ -125,6 +127,13 @@ void getHeadersCgi(CgiHandler &cgiData)
     }
     cgiData.lenRead += cgiData.fullLine.substr(0, endLine + 2).length();
     cgiData.fullLine.erase(0, endLine + 2);
+    if (cgiData.lenRead >= MAX_LEN_HEADER_FEILD)
+    {
+            cgiData.cgStatusCode = 502;
+            cgiData.cgStatusName = "Bad Gateway";
+            cgiData.finFlag = true;
+            return ;
+    }
     return;
 }
 
