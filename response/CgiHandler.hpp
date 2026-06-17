@@ -33,9 +33,9 @@ class CgiHandler
 {
     public:
     CgiHandler();
-    char *const *executeablePath;
+    char **executeablePath;
     std::string path;
-    char *const *env;
+    char **env;
     int canRead;
     
     // -------------------------------------------------- //

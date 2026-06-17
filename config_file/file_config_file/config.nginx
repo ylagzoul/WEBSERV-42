@@ -29,6 +29,10 @@ server {
         cgi_data .py /usr/bin/python888;
         autoindex on;
     }
+    location
+    {
+        
+    }
 
 
 }

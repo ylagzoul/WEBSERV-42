@@ -1240,5 +1240,5 @@ print("<pre>")
 # print(data if data else "(empty)")
 print("</pre>")
 
-# print("</body>")
-# print("</html>")
+print("</body>")
+print("</html>")
