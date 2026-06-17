@@ -68,12 +68,16 @@ bool isLfCrCgi(const std::string &str)
     return (true);
 }
 
-void    parseLine(std::string str, CgiHandler &cgiData)
+bool    parseLine(std::string str, CgiHandler &cgiData)
 {
     std::stringstream iss(str);
     iss >> cgiData.cgStatusCode >> cgiData.cgStatusName;
     if (!cgiData.cgStatusName.empty() && cgiData.cgStatusName.at(0) == ' ')
         cgiData.cgStatusName.erase(0, 1);
+    if (cgiData.cgStatusCode >= 200 && cgiData.cgStatusCode <= 599)
+        return (true);
+    else
+        return (false);
 }
 
 void getHeadersCgi(CgiHandler &cgiData)
@@ -95,7 +99,16 @@ void getHeadersCgi(CgiHandler &cgiData)
             return;
         }
         if (cgiData.cgHeaders.find("status") != cgiData.cgHeaders.end())
-            parseLine(cgiData.cgHeaders["status"], cgiData);
+        {
+            if (parseLine(cgiData.cgHeaders["status"], cgiData) == false)
+            {
+                cgiData.cgStatusCode = 502;
+                cgiData.cgStatusName = "Bad Gateway";
+                cgiData.finFlag = true;
+                return;
+            }
+
+        }
         return;
     }
     size_t colon = line.find(':');
@@ -158,7 +171,8 @@ void getBody(CgiHandler &cgiData)
     {
         if (cgiData.bodyLen != 0)
         {
-            write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length());
+            if (write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length()) == -1)
+                return (returnedInternalError(cgiData));
             cgiData.fullLine.clear();
         }
         if (cgiData.dataReady == true)

@@ -19,6 +19,14 @@ void closeCGI(Webserv &Web, Server &obj, std::string method)
     obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
 }
 
+
+void    returnedInternalError(CgiHandler &cgi)
+{
+    cgi.cgStatusCode = 500;
+    cgi.cgStatusName = "Internal Server Error";
+    cgi.finFlag = true;
+}
+
 std::string toStrC(int nb)
 {
     std::stringstream ss;
