@@ -1,9 +1,12 @@
 #include "CgiHandler.hpp"
 #include "../server/server.hpp"
 #include "Response.hpp"
+#include <sys/wait.h>
 
 void closeCGI(Webserv &Web, Server &obj, std::string method)
 {
+    int status;
+
     if (method == "POST")
     {
         close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd);
@@ -17,6 +20,8 @@ void closeCGI(Webserv &Web, Server &obj, std::string method)
     obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
     obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
     obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
+    kill(obj.pid, SIGKILL);
+    waitpid(obj.pid, &status, WNOHANG);
 }
 
 std::string toStrC(int nb)
@@ -55,6 +60,7 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     int outputPipe[2];
     if (pipe(outputPipe) == -1)
         return (erorrCgi(cgiData));
+    
 
     pollfd client_poll;
     client_poll.fd = outputPipe[0];
@@ -71,13 +77,14 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
 
     if (method == "POST")
     {
+    
         int inputPipe[2];
         cgiData.bodyFd = open(bodyFile.c_str(), O_RDONLY, 0644);
+        std::cout << "good ]]]]]]]]]]]]]]\n";
         if (cgiData.bodyFd < 0)
             return (erorrCgi(cgiData));
         if (pipe(inputPipe) == -1)
             return (erorrCgi(cgiData));
-
         obj.recs[obj.iClnt].IndexPipe.push_back(inputPipe[0]);
 
         pollfd client_poll;
@@ -94,35 +101,39 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     return (0);
 }
 
-int createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method)
+void createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method)
 {
-    pid_t pid = fork();
-
-    if (pid == -1)
-        return (erorrCgi(cgiData));
-    if (pid == 0)
+    obj.pid = fork();
+    if (obj.pid == -1)
+        erorrCgi(cgiData);
+    if (obj.pid == 0)
     {
         if (method == "POST")
         {
             if (dup2(obj.recs[obj.iClnt].IndexPipe[2], STDIN_FILENO) < 0)
-                return (erorrCgi(cgiData));
+            {
+                cgiData.cgStatusCode = 500;
+                exit(1);
+            }
             close(obj.recs[obj.iClnt].IndexPipe[2]);
-            close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd);
+            close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[3]].fd);
         }
 
         if (dup2(obj.recs[obj.iClnt].IndexPipe[1], STDOUT_FILENO) < 0)
-            return (erorrCgi(cgiData));
+        {
+            cgiData.cgStatusCode = 500;
+            exit(1);
+        }
         close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
-        close(STDIN_FILENO);
         close(obj.recs[obj.iClnt].IndexPipe[1]);
 
         execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
         perror("error");
         exit(1);
     }
-
     close(obj.recs[obj.iClnt].IndexPipe[1]);
-    return (0);
+    // if (method == "POST")
+    //     close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[3]].fd);
 }
 
 int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method)
@@ -141,7 +152,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
             int k = 0;
             if ((k = write(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd, buffer, bytes_r)) < 0)
                 return (erorrCgi(cgiData));
-            n += k; 
+            n += k;
         }
     }
     if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].revents & (POLLIN | POLLHUP))
@@ -167,21 +178,23 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
 
     return (0);
 }
-
+static int o = 0;
 int runCgi(Webserv &Web, Record &log, Server &obj, CgiHandler &cgiData, std::string method, std::string bodyFile)
 {
+    o++;
     if (log.status == NEW_RS)
     {
         log.isItCgi = true;
+        
         if (createPipes(Web, obj, cgiData, method, bodyFile))
             return (1);
         log.status = CGI_ACTIVE;
         log.method = CGI_RDWR;
-        if (createCgi(Web, obj, cgiData, method))
-            return (1);
+        createCgi(Web, obj, cgiData, method);
     }
     else
     {
+
         if (readFromCgi(Web, obj, cgiData, method))
             return (1);
         if (cgiData.canRead) /* CHEEEECK /!\*/
@@ -195,6 +208,7 @@ int runCgi(Webserv &Web, Record &log, Server &obj, CgiHandler &cgiData, std::str
             // }
         }
     }
+    // std::cout << obj.pid << std::endl;
     return 0;
 }
 
@@ -278,7 +292,7 @@ int cgiProcess(Webserv &Web, CgiHandler &cgiData, Record &log, Server &obj, play
 {
     if (runCgi(Web, log, obj, cgiData, req.method, req.bodyPath))
     {
-        std::cout << "ERROR_RS\n";
+        std::cout << o << " ERROR_RS.......\n";
         log.status = ERROR_RS;
     }
     if (cgiData.dataReady == true || log.status == ERROR_RS)

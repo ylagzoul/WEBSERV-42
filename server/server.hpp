@@ -50,6 +50,7 @@ class Server
         int server_fd;
 
         size_t iClnt;
+        pid_t pid;
 
         size_t clientId;
         std::vector<int> index_Client;
