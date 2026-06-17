@@ -45,12 +45,6 @@ int readyChecks(Request &req, playloadData &data)
         data.statusName = "Not Implemented";
         return 1;
     }
-    else if (!data.methods[req.method])
-    {
-        data.statusCode = "405";
-        data.statusName = "Method Not Allowed";
-        return 1;
-    }
     data.statusCode = "200";
     data.statusName = "OK";
     return 0;
@@ -578,11 +572,11 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) // 
 
 void getImportantData(Config &conf, playloadData &data)
 {
-    data.cgiExt.push_back(".py");               // tmp
-    data.cgiExt.push_back(".cgi");              // tmp
-    data.cgiPath.push_back("/usr/bin/python3"); // tmp
-    data.cgiPath.push_back("/bin/lb");          // tmp
-
+    // data.cgiExt.push_back(".py");               // tmp
+    // data.cgiExt.push_back(".cgi");              // tmp
+    // data.cgiPath.push_back("/usr/bin/python3"); // tmp
+    // data.cgiPath.push_back("/bin/lb");          // tmp
+    
     if (data.location.empty())
     {
         data.location = "/";
@@ -594,8 +588,8 @@ void getImportantData(Config &conf, playloadData &data)
         data.errorPages = conf.error_page;
         data.retPath = conf.retPath;
         data.retCode = conf.retCode;
-        // data.cgiExt = conf.cgiExt;
-        // data.cgiPath = conf.cgiPath;
+        data.cgiExt = conf.cgiExt;
+        data.cgiPath = conf.cgiPath;
         return;
     }
     for (size_t i = 0; i < conf.location.size(); i++)
@@ -611,8 +605,8 @@ void getImportantData(Config &conf, playloadData &data)
             data.autoIndex = conf.location[i].conf.autoIndex;
             data.retPath = conf.location[i].conf.retPath;
             data.retCode = conf.location[i].conf.retCode;
-            // data.cgiExt = conf.location[i].conf.cgiExt;
-            // data.cgiPath = conf.location[i].conf.cgiPath;
+            data.cgiExt = conf.location[i].conf.cgiExt;
+            data.cgiPath = conf.location[i].conf.cgiPath;
             break;
         }
     }
@@ -747,14 +741,20 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
 
 int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config &conf)
 {
-    if (req.headers["connection"] == "Keep-Alive")
-        log.data.connection = "Keep-Alive";
+    if (req.headers["connection"] == "Keep-Alive" || req.headers["connection"] == "keep-alive")
+        log.data.connection = "keep-alive";
     findLongestMatch(log.data, conf, cleanPath(req.path));
-    getImportantData(conf, log.data);
-    log.data.retValid = 0;
-    log.data.isCgi = false;
     if (readyChecks(req, log.data))
         return 1;
+    getImportantData(conf, log.data);
+    if (!log.data.methods[req.method])
+    {
+        log.data.statusCode = "405";
+        log.data.statusName = "Method Not Allowed";
+        return 1;
+    }
+    log.data.retValid = 0;
+    log.data.isCgi = false;
     if (!log.data.retPath.empty())
     {
         if (log.data.retCode != 301 && log.data.retCode != 302)
@@ -845,7 +845,7 @@ void generateRetResponse(playloadData &data, std::string &ret_resp, Request &req
 
 void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req)
 {
-    if (data.connection == "Keep-Alive")
+    if (data.connection == "keep-alive")
         log.clientState = ALIVE;
     if (cgiData.cgiValid)
     {
@@ -855,6 +855,7 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     if (data.retValid)
     {
         generateRetResponse(data, ret_resp, req);
+        log.status = CLOSED_RS;
         data.retValid = 0;
         return;
     }

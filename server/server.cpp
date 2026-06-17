@@ -124,12 +124,10 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
     else if (bytes == 0)
     {
         close_client(Web, p, i);
-
         return (false);
     }
     else
     {
-
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return (true);
         else

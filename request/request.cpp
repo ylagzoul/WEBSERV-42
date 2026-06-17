@@ -345,7 +345,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
 {
     size_t pos;
     std::string tes;
-
     req[userId].fullLine.append(buffer, len);
     while (1)
     {
