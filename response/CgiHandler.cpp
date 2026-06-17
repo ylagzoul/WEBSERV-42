@@ -24,6 +24,14 @@ void closeCGI(Webserv &Web, Server &obj, std::string method)
     waitpid(obj.pid, &status, WNOHANG);
 }
 
+
+void    returnedInternalError(CgiHandler &cgi)
+{
+    cgi.cgStatusCode = 500;
+    cgi.cgStatusName = "Internal Server Error";
+    cgi.finFlag = true;
+}
+
 std::string toStrC(int nb)
 {
     std::stringstream ss;

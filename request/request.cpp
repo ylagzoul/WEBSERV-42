@@ -11,10 +11,8 @@ bool checkDigits(Request &req, std::string str)
     if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
     {
         req.contentLength = value;
-            return (true);
-    }
-    if (req.method == "GET")
         return (true);
+    }
     return (false);
 }
 
@@ -234,7 +232,13 @@ void fillCheck(Request &req, std::string reqLine)
     req.method = array[0];
     req.path = array[1];
     req.httpVersion = array[2];
-    if (!checkPath(req.path) || !checkMethod(req.method) || req.path.length() >= MAX_LEN_PATH)
+    if (!checkMethod(req.method))
+    {
+        req.status = 501;
+        req.finFlag = true;
+        return ;
+    }
+    if (!checkPath(req.path) || req.path.length() >= MAX_LEN_PATH)
         return (returnedBadError(req));
 }
 
@@ -353,7 +357,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getRequestLine(req[userId]);
         if (req[userId].method.empty()) // if no /r/n break 
         {
-            if (req[userId].status == 400)
+            if (req[userId].status == 400 || req[userId].status == 501)
                 req[userId].clientState = CLIENT_ON ;
             break ;
         }
@@ -370,7 +374,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
-            if ((req[userId].getEndFile) || (req[userId].status == 500) || (req[userId].status == 400))
+            if ((req[userId].getEndFile) || (req[userId].status == 500) || (req[userId].status == 400) || (req[userId].status == 501))
                 req[userId].clientState = CLIENT_ON;
             if (pos != std::string::npos && tes.length() > 2)
                 tes.erase(0, pos + 2);

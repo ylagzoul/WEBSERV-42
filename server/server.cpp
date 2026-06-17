@@ -18,7 +18,7 @@ Server::Server(std::vector<pollfd> &fds, int port, const std::string &IP)
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         std::cerr << "error in setsockopt\n";
     len = sizeof(addr);
-    addr.sin_family = AF_INET;
+    addr.sin_family = AF_INET;  
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = inet_addr(IP.c_str());
 

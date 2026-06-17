@@ -76,5 +76,6 @@ int cgiHandler(Webserv &Web, Record &log, Server &obj, Request &req, std::vector
 
 int cgiProcess(Webserv &Web, Record &log, Server &obj, Request &req);
 int parseCgiResponse(CgiHandler &cgiData);
+void    returnedInternalError(CgiHandler &cgiData);
 
 #endif
