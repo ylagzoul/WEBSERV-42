@@ -1,6 +1,9 @@
 #include "../server/server.hpp"
 
-Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF) {};
+Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF)
+{
+    getMove = 0;
+};
 
 bool checkDigits(Request &req, std::string str)
 {
@@ -250,13 +253,19 @@ void getRequestLine(Request &req)
     fillCheck(req, req.fullLine.substr(0, pos));
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
+    req.getMove = 1;
 }
 
 void getHeaders(Request &req)
 {
     size_t endLine = req.fullLine.find("\r\n");
     if (endLine == std::string::npos)
-        return;
+    {
+        cout << "MOMO\n";
+        if (req.getMove == 2)
+            req.getMove = 3;
+        return ;
+    }
     std::string line = req.fullLine.substr(0, endLine);
     if (line.empty())
     {
@@ -280,7 +289,7 @@ void getHeaders(Request &req)
     {
         std::string key = tolowerStr(line.substr(0, colon));
         std::string value = line.substr(colon + 1);
-        if (!isPrintable(key) || !isHoldSpace(key))
+        if (!isPrintable(key) || !isHoldSpace(key) || key.empty())
             return (returnedBadError(req));
         value = trim(value);
         if (req.headers.find(key) != req.headers.end() && key == "content-length")
@@ -292,10 +301,12 @@ void getHeaders(Request &req)
     else
         return (returnedBadError(req));
     req.lenRead += req.fullLine.substr(0, endLine + 2).length();
+    // req.countLenHead += req.fullLine.substr(0, endLine + 2).length();    
     req.fullLine.erase(0, endLine + 2);
+    // cout << "O => " << req.countLenHead << std::endl;
     if (req.lenRead >= MAX_LEN_HEADER_FEILD)
         return (returnedBadError(req));
-    return;
+    return ;
 }
 
 
@@ -350,7 +361,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     size_t pos;
     std::string tes;
 
-    req[userId].fullLine.append(buffer, len);
+    req[userId].fullLine.append(buffer, len); // CHECK THE DATA RECV
     while (1)
     {
         if (req[userId].method.empty())
@@ -367,9 +378,14 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             tes = req[userId].fullLine;
         }
 
-        if (req[userId].getEndHeaders == false)
+        if (req[userId].getEndHeaders == false) // FIX the /r/n
+        {
             getHeaders(req[userId]);
-
+            cout << req[userId].getMove << std::endl;
+            if (req[userId].getMove == 3)
+                break ;
+        }
+        req[userId].getMove = 2;
         if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
@@ -386,7 +402,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             req[userId].lenRead = 0;
             break ;
         }
-
+        
         if ((req[userId].getEndFile))  /*|| (req[userId].method != "POST" && !req[userId].method.empty())*/
             req[userId].finFlag = true;
         if (req[userId].finFlag)
@@ -397,6 +413,5 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     }
     if (req[userId].getEndHeaders)
         generateCookies(req[userId], sList);
-    
     return;
 }

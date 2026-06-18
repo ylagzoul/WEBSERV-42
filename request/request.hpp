@@ -50,7 +50,7 @@ class Request
         std::string fullLine;
         std::string bodyPath;
         size_t      lenRead;
-        int countConLen;
+        int         countConLen;
         int         bodyFd;
         int         status;
         bool        getEndHeaders;
@@ -58,6 +58,8 @@ class Request
         bool        getEndFile;
         int         bodyType;
         size_t          contentLength;
+        int getMove;
+        // size_t          countLenHead;
         t_client_state  clientState;
         Sessions    *session;
         std::map<std::string, std::string> cookies;
