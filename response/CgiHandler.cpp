@@ -130,6 +130,7 @@ void createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string metho
         {
             cgiData.cgStatusCode = 500;
             exit(1);
+
         }
         close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
         close(obj.recs[obj.iClnt].IndexPipe[1]);

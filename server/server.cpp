@@ -100,7 +100,7 @@ void Server::acceptNewCleint(Webserv &Web, pollfd &p, size_t &i)
     }
     else if (client_fd < 0)
     {
-        std::cout << "close in accept\n"; // is it the right behavior ???
+        std::cout << "close in accept  ..   ......\n"; // is it the right behavior ???
         close_client(Web, p, i);
         return;
     }
@@ -123,6 +123,7 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
     }
     else if (bytes == 0)
     {
+
         close_client(Web, p, i);
 
         return (false);
@@ -134,6 +135,7 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
             return (true);
         else
         {
+
             close_client(Web, p, i);
             return (false);
         }
@@ -162,6 +164,7 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
             return (true);
         else
         {
+
             close_client(Web, p, i);
             return (false);
         }
@@ -172,6 +175,7 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
 
         if (recs[i].clientState == DISCONNECTED)
         {
+            
             close_client(Web, p, i);
             return (false);
         }
@@ -187,10 +191,8 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
 
 int main(/*int arc,char *arv[]*/)
 {
-
     Webserv Web;
     SessionsList sList;
-
     while (true)
     {
         if (poll(Web.fds.data(), Web.fds.size(), -1) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
@@ -202,12 +204,11 @@ int main(/*int arc,char *arv[]*/)
         {
             for (size_t t = 0; t < Web.server[Web.s].serverPort.size(); t++)
             {
-                for (size_t i = 0; i < Web.server[Web.s].serverPort[t].index_Client.size();)
+                for (size_t i = 0; i < Web.server[Web.s].serverPort[t].index_Client.size(); )
                 {
                     if (sList.checkIfNotNull())
                         sList.checkLimitSessions();
                     pollfd &p = Web.fds[Web.server[Web.s].serverPort[t].index_Client[i]];
-
                     if (p.fd == Web.server[Web.s].serverPort[t].server_fd && (p.revents & POLLIN)) // CHECK ALL SERVER FDS
                     {
                         Web.server[Web.s].serverPort[t].acceptNewCleint(Web, p, i);
@@ -216,20 +217,19 @@ int main(/*int arc,char *arv[]*/)
                     if (p.revents & (POLLIN))
                     {
                         if (!Web.server[Web.s].serverPort[t].receiveRequest(Web, p, i, sList))
-                            continue;
+                            continue ;
                     }
                     if ((p.revents & POLLOUT))
                     {
-
                         Web.server[Web.s].serverPort[t].iClnt = i;
                         if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
-                            continue;
+                            continue ;
                     }
-                    // if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLERR)))
+                    // if ((i != 0 && time(NULL) - obj.data[i].time > 1000) /* || (p.revents & (POLLERR))*/)
                     // {
                     //     std::cout << "i = " << i << std::endl;
                     //     std::cout << "close clneit about finsh time..............................................\n\n";
-                    //     obj.close_client(p, i);
+                    //     // obj.close_client(p, i);
                     //     std::cout << time(NULL) - obj.data[i].time << std::endl;
                     //     continue;
                     // }
@@ -238,5 +238,12 @@ int main(/*int arc,char *arv[]*/)
             }
         }
     }
-    // close(obj.server_fd);
+    for (Web.s = 0; Web.s < Web.server.size(); Web.s++)
+    {
+        for (size_t t = 0; t < Web.server[Web.s].serverPort.size(); t++)
+        {
+            std::cout << "close server     ...\n";
+            close(Web.fds[Web.server[Web.s].serverPort[t].index_Client[0]].fd);
+        }
+    }
 }
