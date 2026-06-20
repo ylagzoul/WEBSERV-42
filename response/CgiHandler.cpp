@@ -74,6 +74,12 @@ void    returnedInternalError(CgiHandler &cgi)
     cgi.cgStatusName = "Internal Server Error";
     cgi.finFlag = true;
 }
+void    returnedBadError(CgiHandler &cgi)
+{
+    cgi.cgStatusCode = 502;
+    cgi.cgStatusName = "Bad Gateway";
+    cgi.finFlag = true;
+}
 
 std::string toStrC(int nb)
 {
@@ -93,6 +99,8 @@ CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), cgStatusName("
     dataReady = false;
     cgiValid = false;
     canRead = false;
+    getMove = 0;
+    countLenHead = 0;
 };
 
 std::string normalizeKey(std::string key)

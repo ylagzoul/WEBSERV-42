@@ -1,20 +1,38 @@
 server {
-    listen 127.0.0.1:8001;
-    root /home/mradouan/Desktop;
-    index ;
-    methods GET POST;
+    listen 127.0.0.1:3050;
+    root /home/mradouan/Desktop/WEBSERV-42;
+    methods GET;
     error_page 400 /errors/400.html;
     error_page 403 /errors/403.html;
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
     autoindex on;
 
-location / {
-    methods GET POST DELETE;
+    location / {
+        client_max_body_size 100G;
+        methods POST GET;
+        upload_path /goinfre;
         root /home/mradouan/Desktop/WEBSERV-42;
+        index index.html gogo.jpg;
+        error_page 400 /errors/400.html;
+        error_page 403 /errors/403.html;
+        error_page 404 /errors/404.html;
+        cgi_data .py /usr/bin/python3;
+        autoindex on;
+    }
+
+    location /errors {
+        client_max_body_size 100G;
+        methods GET POST DELETE;
+        root /;
+        upload_path /;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;
-}
-
+        return 302 /errors;
+    }
+    location /google {
+        root /;
+        return 302 /google;   
+    }
 }

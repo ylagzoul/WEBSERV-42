@@ -55,10 +55,12 @@ class CgiHandler
     std::string         bodyPath;
     size_t              lenRead;
     int                 bodyFd;
+    int                 getMove;
     bool                getEndHeaders;
     bool                finFlag;
     bool                getEndFile;
     size_t              contentLength;
+    int                 countLenHead;
     t_client_state_cgi  clientState;
     t_req_state_cgi     reqState;
     int bodyType;
@@ -73,5 +75,7 @@ int cgiHandler(Webserv &Web, Record &log, Server &obj, Request req, std::vector<
 int cgiProcess(Webserv &Web, Record &log, Server &obj, Request req);
 int parseCgiResponse(CgiHandler &cgiData);
 void    returnedInternalError(CgiHandler &cgiData);
+void    returnedBadError(CgiHandler &cgi);
+
 
 #endif

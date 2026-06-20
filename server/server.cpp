@@ -110,14 +110,13 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
 {
     char buffer[SIZESR] = {0};
     int bytes = recv(p.fd, buffer, SIZESR, 0);
-
     if (bytes > 0)
     {
         clientId = i;
-
-        // std::cout << "dkhelt\n";
+        // cout << "ENTERED\n";
         readRequest(req, clientId, buffer, bytes, Web.config[Web.s], sList);
-        // std::cout << "khrejt\n";
+        // cout << "EXITED\n";
+
         if (req[clientId].clientState == CLIENT_ON)
             p.events |= POLLOUT;
         return (true);

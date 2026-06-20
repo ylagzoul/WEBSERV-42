@@ -3,6 +3,9 @@ import sys
 # while True:
 #     a = 'a'
 print("Content-Type: text/html; charset=utf-8\r")
+# print("Content-Length: 5000\r")
+
+# print("status: 400\r")
 print("\r")  # End of headers
 
 print("<!DOCTYPE html>")
