@@ -658,7 +658,9 @@ int checkCgi(playloadData &data, std::string realNames, std::string &reqPath)
     for (size_t i = 0; i < data.cgiExt.size(); i++)
     {
         size_t k = data.realPath.rfind(data.cgiExt[i]);
-        if (k != std::string::npos && (k + data.cgiExt[i].size() == data.realPath.size() || data.realPath[k + data.cgiExt[i].size()] == '?'))
+        if (k != std::string::npos 
+            && (k + data.cgiExt[i].size() == data.realPath.size()
+            || data.realPath[k + data.cgiExt[i].size()] == '?'))
         {
             data.cgiInfo = data.realPath.substr(k + data.cgiExt[i].size());
             data.cgiScriptFile = data.realPath.substr(0, k + data.cgiExt[i].size());
@@ -762,6 +764,7 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
     }
     if (resolvePath(log.data, conf, req.path))
         return 1;
+    
     if (log.data.isCgi)
     {
         if (cgiHandler(Web, log, obj, req, conf.listen_Port))

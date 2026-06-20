@@ -223,11 +223,10 @@ int main(/*int arc,char *arv[]*/)
                         }
                         if ((p.revents & POLLOUT))
                         {
-                            
-                        Web.server[Web.s].serverPort[t].iClnt = i;
-                        if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
-                            continue ;
-                    }
+                            Web.server[Web.s].serverPort[t].iClnt = i;
+                            if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
+                                continue ;
+                        }
                     // if ((i != 0 && time(NULL) - obj.data[i].time > 1000) /* || (p.revents & (POLLERR))*/)
                     // {
                         //     std::cout << "i = " << i << std::endl;

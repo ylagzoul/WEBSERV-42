@@ -21,25 +21,23 @@ chunk header
 to ask:
     Keep-Alive with cgi and redirect//
     set cookies with cgi
-    cgi_data .py /usr/bin/python3;    cgi_data .py /usr/bin/python;
+    cgi_data .py /usr/bin/python3;    cgi_data .py /usr/bin/python3;
     bonus ckies some to add
     bonus cgs some to add
 
 to handle:
-    cgi querry and some / ? with chdir
-
+    status CHECKING CGI
 -------cgi-------
 AUTH_TYPE
 ask about pathinfo /
 ---
 ConTent-Length: @@@1158 parse it --> bad gateway
 
-error sent by and close after clients
+error sent by and close clients
 --
 
-try and catch and delete leaks
+try and catch check!
 
 waitPid
-return after dup is failed
 handle timeout of cgi -- madani script
 many pages pn cgi failes
