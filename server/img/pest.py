@@ -10,4 +10,3 @@ sys.stdout.buffer.write(b"\r\n")
 
 with open(image_path, "rb") as f:
     sys.stdout.buffer.write(f.read())
-

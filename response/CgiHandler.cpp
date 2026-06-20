@@ -6,7 +6,6 @@ int cvb;
 
 void createExecResources(CgiHandler &cgiData, playloadData &data)
 {
-    cvb++;
     cgiData.env = NULL;
     cgiData.env = new char*[cgiData.headers.size() + 1];
     for (size_t i = 0; i < cgiData.headers.size() + 1; i++)
@@ -111,7 +110,6 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request req)
     int outputPipe[2];
     if (pipe(outputPipe) == -1)
         return (erorrCgi(cgiData));
-    
 
     pollfd client_poll;
     client_poll.fd = outputPipe[0];
@@ -160,6 +158,7 @@ std::string switchData(std::string path)
 
 void createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method, playloadData &data)
 {
+    (void) data;
     obj.pid = fork();
     if (obj.pid == -1)
         erorrCgi(cgiData);
@@ -183,13 +182,12 @@ void createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string metho
         }
         close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
         close(obj.recs[obj.iClnt].IndexPipe[1]);
-        if (chdir(switchData(data.realPath).c_str()) == -1)
+        if (chdir(switchData(data.cgiScriptFile).c_str()) == -1)
             throw std::exception();
         execve(cgiData.cgiArgs[0], cgiData.cgiArgs, cgiData.env);
         releaseExecResources(cgiData);
         perror("error");
         throw std::exception();
-        
     }
     close(obj.recs[obj.iClnt].IndexPipe[1]);
     // if (method == "POST")
@@ -248,7 +246,6 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
         log.status = CGI_ACTIVE;
         log.method = CGI_RDWR;
         createCgi(Web, obj, log.cgiData, req.method, log.data);
-
         releaseExecResources(log.cgiData);
     }
     else
@@ -374,6 +371,8 @@ int cgiHandler(Webserv &Web, Record &log, Server &obj, Request req, std::vector<
     if (log.status == NEW_RS)
         log.cgiData.dataReady = false;
     getCgiEnv(log.data, req, log.cgiData, listenPorts);
+    // if (log.status == NEW_RS)
+    //     std::cout << "1\n";
     if (cgiProcess(Web, log, obj, req))
         return 1;
     return 0;
