@@ -3,6 +3,7 @@
 Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF)
 {
     getMove = 0;
+    countLenHead = 0;
 };
 
 bool checkDigits(Request &req, std::string str)
@@ -14,6 +15,8 @@ bool checkDigits(Request &req, std::string str)
     if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
     {
         req.contentLength = value;
+        if (value == 0)
+            return (false);
         return (true);
     }
     return (false);
@@ -241,7 +244,7 @@ void fillCheck(Request &req, std::string reqLine)
         req.finFlag = true;
         return ;
     }
-    if (!checkPath(req.path) || req.path.length() >= MAX_LEN_PATH)
+    if ( req.path.length() >= MAX_LEN_PATH || !checkPath(req.path))
         return (returnedBadError(req));
 }
 
@@ -301,10 +304,10 @@ void getHeaders(Request &req)
     else
         return (returnedBadError(req));
     req.lenRead += req.fullLine.substr(0, endLine + 2).length();
-    // req.countLenHead += req.fullLine.substr(0, endLine + 2).length();    
+    req.countLenHead += req.fullLine.substr(0, endLine + 2).length();    
     req.fullLine.erase(0, endLine + 2);
-    // cout << "O => " << req.countLenHead << std::endl;
-    if (req.lenRead >= MAX_LEN_HEADER_FEILD)
+    cout << "O => " << req.countLenHead << std::endl;
+    if (req.countLenHead >= MAX_LEN_HEADER_FEILD)
         return (returnedBadError(req));
     return ;
 }
@@ -362,6 +365,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     std::string tes;
 
     req[userId].fullLine.append(buffer, len); // CHECK THE DATA RECV
+    cout << "<---  " << req[userId].fullLine << "  --->\n";
     while (1)
     {
         if (req[userId].method.empty())

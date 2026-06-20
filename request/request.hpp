@@ -56,6 +56,7 @@ class Request
         bool        getEndHeaders;
         bool        finFlag;
         bool        getEndFile;
+        int         countLenHead;
         int         bodyType;
         size_t          contentLength;
         int getMove;
