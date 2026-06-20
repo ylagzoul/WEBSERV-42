@@ -1,6 +1,6 @@
 server {
     listen 127.0.0.1:8001;
-    root /home/m/Desktop;
+    root /home/mradouan/Desktop;
     index ;
     methods GET POST;
     error_page 400 /errors/400.html;
@@ -11,7 +11,7 @@ server {
 
 location / {
     methods GET POST DELETE;
-        root /home/m/Desktop/WEBSERV-42;
+        root /home/mradouan/Desktop/WEBSERV-42;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
         autoindex on;

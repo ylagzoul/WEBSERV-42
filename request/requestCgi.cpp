@@ -19,6 +19,22 @@ bool isHoldSpaceCgi(const std::string& str)
     return (true);
 }
 
+bool checkDigits(CgiHandler &cgi, std::string str)
+{
+    std::stringstream iss(str);
+    size_t value;
+    iss >> value;
+    
+    if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
+    {
+        cgi.contentLength = value;
+        if (value == 0)
+            return (false);
+        return (true);
+    }
+    return (false);
+}
+
 std::string getRandomName(CgiHandler &cgi)
 {
     std::stringstream ss;
@@ -84,7 +100,11 @@ void getHeadersCgi(CgiHandler &cgiData)
 {
     size_t endLine = cgiData.fullLine.find("\r\n");
     if (endLine == std::string::npos)
+    {
+        if (cgiData.getMove == 2)
+            cgiData.getMove = 3;
         return;
+    }
     std::string line = cgiData.fullLine.substr(0, endLine);
     if (line.empty())
     {
@@ -92,22 +112,11 @@ void getHeadersCgi(CgiHandler &cgiData)
         cgiData.lenRead += cgiData.fullLine.substr(0, endLine + 2).length();
         cgiData.fullLine.erase(0, endLine + 2);
         if (cgiData.cgHeaders.find("content-type") == cgiData.cgHeaders.end())
-        {
-            cgiData.cgStatusCode = 502;
-            cgiData.cgStatusName = "Bad Gateway";
-            cgiData.finFlag = true;
-            return;
-        }
+            return(returnedBadError(cgiData));
         if (cgiData.cgHeaders.find("status") != cgiData.cgHeaders.end())
         {
             if (parseLine(cgiData.cgHeaders["status"], cgiData) == false)
-            {
-                cgiData.cgStatusCode = 502;
-                cgiData.cgStatusName = "Bad Gateway";
-                cgiData.finFlag = true;
-                return;
-            }
-
+                return(returnedBadError(cgiData));
         }
         return;
     }
@@ -116,32 +125,22 @@ void getHeadersCgi(CgiHandler &cgiData)
     {
         std::string key = line.substr(0, colon);
         std::string value = line.substr(colon + 1);
-        if (!isPrintableC(key) || !isHoldSpaceCgi(key))
-        {
-            cgiData.cgStatusCode = 502;
-            cgiData.cgStatusName = "Bad Gateway";
-            cgiData.finFlag = true;
-            return ;
-        }
+        if (!isPrintableC(key) || !isHoldSpaceCgi(key) || key.empty())
+            return(returnedBadError(cgiData));
         value = trimCgi(value);
+        if (cgiData.cgHeaders.find(key) != cgiData.cgHeaders.end() && key == "content-length")
+            return(returnedBadError(cgiData));
         cgiData.cgHeaders[tolowerStri(key)] = value;
+        if (cgiData.cgHeaders.find("content-length") != cgiData.cgHeaders.end() && !checkDigits(cgiData, cgiData.cgHeaders["content-length"]))
+            return(returnedBadError(cgiData));
     }
     else
-    {
-        cgiData.cgStatusCode = 502;
-        cgiData.cgStatusName = "Bad Gateway";
-        cgiData.finFlag = true;
-        return ;
-    }
+        return(returnedBadError(cgiData));
     cgiData.lenRead += cgiData.fullLine.substr(0, endLine + 2).length();
+    cgiData.countLenHead += cgiData.fullLine.substr(0, endLine + 2).length();
     cgiData.fullLine.erase(0, endLine + 2);
-    if (cgiData.lenRead >= MAX_LEN_HEADER_FEILD)
-    {
-            cgiData.cgStatusCode = 502;
-            cgiData.cgStatusName = "Bad Gateway";
-            cgiData.finFlag = true;
-            return ;
-    }
+    if (cgiData.countLenHead >= MAX_LEN_HEADER_FEILD)
+        return(returnedBadError(cgiData));
     return;
 }
 
@@ -154,14 +153,10 @@ void getBody(CgiHandler &cgiData)
         cgiData.bodyLen = 0;
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
-        {
-            cgiData.cgStatusCode = 500;
-            cgiData.cgStatusName = "Internal Server Error";
-            return ;
-        }
+            return(returnedInternalError(cgiData));
     }
     cgiData.bodyLen += cgiData.fullLine.length();
-    if (cgiData.bodyLen > 1024 * 100000) // after handel 
+    if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE) // after handel 
     {
         cgiData.cgStatusCode = 502;
         cgiData.getEndFile = true;
@@ -192,15 +187,23 @@ int parseCgiResponse(CgiHandler &cgiData)
         if (pos == std::string::npos && cgiData.getEndHeaders == false)
             break ;
         tes = cgiData.fullLine;
-        if (cgiData.getEndHeaders == false)
+        // if (cgiData.getEndHeaders == false)
+        //     getHeadersCgi(cgiData);
+        if (cgiData.getEndHeaders == false) // FIX the /r/n
+        {
             getHeadersCgi(cgiData);
-        else
-            cgiData.reqState = SECOND_CGI_ST;
+            if (cgiData.cgStatusCode == 500 || cgiData.cgStatusCode == 501 || cgiData.cgStatusCode == 502)
+                cgiData.clientState = CLIENT_CGI_ON ;
+            cout << cgiData.getMove << std::endl;
+            if (cgiData.getMove == 3)
+                break ;
+        }
+        cgiData.getMove = 2;
         if (cgiData.getEndHeaders && cgiData.getEndFile == false)
             getBody(cgiData);
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {
-            if ((cgiData.cgStatusCode == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
+            if ((cgiData.cgStatusCode == 500 || cgiData.cgStatusCode == 501 || cgiData.cgStatusCode == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
                 cgiData.clientState = CLIENT_CGI_ON;
             cgiData.lenRead = 0;
             break ;
@@ -210,7 +213,6 @@ int parseCgiResponse(CgiHandler &cgiData)
 
         if (cgiData.finFlag)
         {
-            // cgiData.reqState = SECOND_CGI_ST;
             cgiData.clientState = CLIENT_CGI_ON;
             break;
         }

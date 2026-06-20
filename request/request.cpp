@@ -264,7 +264,7 @@ void getHeaders(Request &req)
     size_t endLine = req.fullLine.find("\r\n");
     if (endLine == std::string::npos)
     {
-        cout << "MOMO\n";
+        // cout << "MOMO\n";
         if (req.getMove == 2)
             req.getMove = 3;
         return ;
@@ -306,7 +306,7 @@ void getHeaders(Request &req)
     req.lenRead += req.fullLine.substr(0, endLine + 2).length();
     req.countLenHead += req.fullLine.substr(0, endLine + 2).length();    
     req.fullLine.erase(0, endLine + 2);
-    cout << "O => " << req.countLenHead << std::endl;
+    // cout << "O => " << req.countLenHead << std::endl;
     if (req.countLenHead >= MAX_LEN_HEADER_FEILD)
         return (returnedBadError(req));
     return ;
@@ -364,15 +364,15 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     size_t pos;
     std::string tes;
 
-    req[userId].fullLine.append(buffer, len); // CHECK THE DATA RECV
-    cout << "<---  " << req[userId].fullLine << "  --->\n";
+    req[userId].fullLine.append(buffer, len);
+    // cout << "<---  " << req[userId].fullLine << "  --->\n";
     while (1)
     {
         if (req[userId].method.empty())
             getRequestLine(req[userId]);
-        if (req[userId].method.empty()) // if no /r/n break 
+        if (req[userId].method.empty())
         {
-            if (req[userId].status == 400 || req[userId].status == 501)
+            if (req[userId].status == 500 || req[userId].status == 400 || req[userId].status == 501 )
                 req[userId].clientState = CLIENT_ON ;
             break ;
         }
@@ -382,10 +382,12 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             tes = req[userId].fullLine;
         }
 
-        if (req[userId].getEndHeaders == false) // FIX the /r/n
+        if (req[userId].getEndHeaders == false)
         {
             getHeaders(req[userId]);
-            cout << req[userId].getMove << std::endl;
+            if (req[userId].status == 500 || req[userId].status == 400 || req[userId].status == 501)
+                req[userId].clientState = CLIENT_ON ;
+            // cout << req[userId].getMove << std::endl;
             if (req[userId].getMove == 3)
                 break ;
         }
