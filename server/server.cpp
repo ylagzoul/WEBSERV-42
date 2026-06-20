@@ -46,6 +46,7 @@ Server::Server(std::vector<pollfd> &fds, int port, const std::string &IP)
     recs.push_back(Record());
     req.push_back(Request());
     data[data.size() - 1].time = time(NULL);
+    fcntl(server_fd, F_SETFL, O_NONBLOCK);
 
     clientId = 0;
 }
@@ -96,12 +97,13 @@ void Server::acceptNewCleint(Webserv &Web, pollfd &p, size_t &i)
         recs.push_back(Record());
         data.push_back(Data());
         data[data.size() - 1].time = time(NULL);
+        fcntl(client_fd, F_SETFL, O_NONBLOCK);
     }
     else if (client_fd < 0)
     {
         std::cout << "error in accept\n";
         close_client(Web, p, i);
-        return;
+        return ;
     }
     i++;
 }
@@ -163,7 +165,6 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
             return (true);
         else
         {
-
             close_client(Web, p, i);
             return (false);
         }
@@ -197,7 +198,7 @@ int main(/*int arc,char *arv[]*/)
     {
         while (true)
         {
-            if (poll(Web.fds.data(), Web.fds.size(), -1) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
+            if (poll(&Web.fds[0], Web.fds.size(), -1) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
             {
                 std::cout << "poll error\n";
                 continue;
@@ -225,10 +226,10 @@ int main(/*int arc,char *arv[]*/)
                         if ((p.revents & POLLOUT))
                         {
                             
-                        Web.server[Web.s].serverPort[t].iClnt = i;
-                        if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
-                            continue ;
-                    }
+                            Web.server[Web.s].serverPort[t].iClnt = i;
+                            if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
+                                continue ;
+                        }
                     // if ((i != 0 && time(NULL) - obj.data[i].time > 1000) /* || (p.revents & (POLLERR))*/)
                     // {
                         //     std::cout << "i = " << i << std::endl;
