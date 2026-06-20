@@ -124,6 +124,7 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
     }
     else if (bytes == 0)
     {
+
         close_client(Web, p, i);
         return (false);
     }
@@ -133,6 +134,7 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
             return (true);
         else
         {
+
             close_client(Web, p, i);
             return (false);
         }
@@ -173,6 +175,7 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
 
         if (recs[i].clientState == DISCONNECTED)
         {
+            
             close_client(Web, p, i);
             return (false);
         }
@@ -188,7 +191,6 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
 
 int main(/*int arc,char *arv[]*/)
 {
-
     Webserv Web;
     SessionsList sList;
     try
@@ -225,9 +227,9 @@ int main(/*int arc,char *arv[]*/)
                             
                         Web.server[Web.s].serverPort[t].iClnt = i;
                         if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
-                            continue;
+                            continue ;
                     }
-                    // if (/*(i != 0 && time(NULL) - obj.data[i].time > 1000) || */(p.revents & (POLLERR)))
+                    // if ((i != 0 && time(NULL) - obj.data[i].time > 1000) /* || (p.revents & (POLLERR))*/)
                     // {
                         //     std::cout << "i = " << i << std::endl;
                         //     std::cout << "close clneit about finsh time..............................................\n\n";
@@ -247,4 +249,12 @@ int main(/*int arc,char *arv[]*/)
     }
 
     // close(obj.server_fd);
+    for (Web.s = 0; Web.s < Web.server.size(); Web.s++)
+    {
+        for (size_t t = 0; t < Web.server[Web.s].serverPort.size(); t++)
+        {
+            std::cout << "close server     ...\n";
+            close(Web.fds[Web.server[Web.s].serverPort[t].index_Client[0]].fd);
+        }
+    }
 }

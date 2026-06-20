@@ -21,17 +21,8 @@ server {
         error_page 501 /errors/501.html;
         error_page 502 /errors/502.html;
         upload_path /server;
-        cgi_data .py /usr/bin/python3333;
-        cgi_data .py /usr/bin/python555;
-        cgi_data .py /usr/bin/python555;
-        cgi_data .py /usr/bin/python555;
-        cgi_data .py /usr/bin/python888;
-        cgi_data .py /usr/bin/python888;
+        cgi_data .py /usr/bin/python3;
         autoindex on;
-    }
-    location
-    {
-        
     }
 
 
