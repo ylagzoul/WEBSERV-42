@@ -12,6 +12,7 @@
 
 #define MAXPORT 65535
 #define MAXIP 256
+#define RDWR_SIZE 8192
 
 // #define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
 // #define BODY_FILE_PATH "/home/ylagzoul/goinfre/"

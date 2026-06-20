@@ -9,7 +9,7 @@ server {
     autoindex on;
 
     location / {
-        client_max_body_size  100G;
+        client_max_body_size 100G;
         methods POST GET;
         upload_path /goinfre;
         root /home/abouhki/Desktop/owebserv;
@@ -21,8 +21,8 @@ server {
         autoindex on;
     }
 
-    location /errors/fl {
-        client_max_body_size  100G;
+    location /errors {
+        client_max_body_size 100G;
         methods GET POST DELETE;
         root /;
         upload_path /;
@@ -35,5 +35,4 @@ server {
         root /;
         return 302 /google;   
     }
-
 }

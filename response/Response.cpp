@@ -1,6 +1,7 @@
 #include "../server/server.hpp"
 
 int v = 0;
+
 void Request::clean() // add youssef
 {
     if (access(bodyPath.c_str(), F_OK) != -1)
@@ -30,7 +31,7 @@ int readyChecks(Request &req, playloadData &data)
     if (req.status == 400)
     {
         data.statusCode = "400";
-        data.statusName = "Bad Request"; // on map
+        data.statusName = "Bad Request";
         return 1;
     }
     else if (req.status == 500)
@@ -153,11 +154,10 @@ std::string getRandomName(Config &conf)
 
 int postBody(Record &log)
 {
-    const int size = 8192;
-    char buff[size];
+    // const int size = 8192;
+    char buff[RDWR_SIZE];
     int bytes = read(log.fileFd, buff, sizeof(buff));
     buff[bytes] = '\0';
-    int k = 0;
     if (bytes == -1)
     {
         log.data.statusCode = "500";
@@ -167,7 +167,7 @@ int postBody(Record &log)
         return 1;
     }
     // std::cout << buff << std::endl;
-    if ((write(log.fd, buff, bytes)) == -1 || k < 0)
+    if ((write(log.fd, buff, bytes)) == -1)
     {
         log.data.statusCode = "500";
         log.data.statusName = "Internal Server Error";
@@ -175,7 +175,7 @@ int postBody(Record &log)
         // close(log.fileFd);
         return 1;
     }
-    if (bytes < size)
+    if (bytes < RDWR_SIZE)
     {
         log.status = CLOSED_RS;
         log.method = NONE_RS;
@@ -193,7 +193,6 @@ int postBody(Record &log)
 int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
 {
     struct stat info;
-    // std::cout << req.headers["content-length"] << std::endl;
     if (!data.uploadOn)
     {
         data.statusCode = "403";
@@ -205,7 +204,6 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
         if (S_ISDIR(info.st_mode))
         {
             log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
-            // std::cout << req.bodyPath << std::endl;
             if (log.fileFd == -1)
             {
                 data.statusCode = "500";
@@ -227,7 +225,6 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
         }
         else
         {
-            // std::cout << "yoyoy\n\n\n";
             data.statusCode = "403";
             data.statusName = "Forbidden";
             return 1;
@@ -245,7 +242,6 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
         log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
         if (log.fileFd == -1)
         {
-            // std::cout << req.bodyPath<<std::endl;
             data.statusCode = "500";
             data.statusName = "Internal Server Error";
             return 1;
@@ -261,10 +257,10 @@ int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
 
 int getFile(Record &log)
 {
-    const int size = 8192; // macro
-    char buffer[size];
+    // const int size = 8192;
+    char buffer[RDWR_SIZE];
     int bytes = 0;
-    bytes = read(log.fd, buffer, size);
+    bytes = read(log.fd, buffer, sizeof(buffer));
     if (bytes == -1)
     {
         log.data.statusCode = "500";
@@ -276,7 +272,7 @@ int getFile(Record &log)
     }
 
     log.buffer.append(buffer, bytes);
-    if (bytes < size)
+    if (bytes < RDWR_SIZE)
     {
         log.status = CLOSED_RS;
         // close(log.fd);
@@ -351,11 +347,10 @@ int postFilesList(Record &log)
         {
             // close(log.fileFd);
             // closedir(log.dir);
-            // std::cout << "yoyo\n";
             log.method = NONE_RS;
             return 1;
         }
-        if (tmpBuff.length() > 8192)
+        if (tmpBuff.length() > RDWR_SIZE)
         {
             log.status = ACTIVE_RS;
             log.method = POST_LIST_RS;
@@ -399,7 +394,6 @@ int autoIndex(Record &log, playloadData &data, Config &conf)
     log.dir = opendir(data.realPath.c_str());
     if (!log.dir)
     {
-        // close(log.fileFd);
         std::remove(log.fileName.c_str());
         return 1;
     }
@@ -622,7 +616,9 @@ int checkErrorFile(playloadData &data, Config &conf)
     if (page.empty())
     {
         if (conf.error_page[code].empty())
+        {
             return 1;
+        }
         else
             page = conf.error_page[code];
     }
@@ -639,7 +635,7 @@ int checkErrorFile(playloadData &data, Config &conf)
     int fd = open(file.c_str(), O_RDONLY);
     if (fd == -1)
         return 1;
-    char buff[8192]; // use more
+    char buff[RDWR_SIZE]; // use more
     int bytes = 0;
     while ((bytes = read(fd, buff, sizeof(buff) - 1)) > 0)
         data.bodyStr.append(buff, bytes);
@@ -659,7 +655,6 @@ void chooseErrorHandler(Config &conf, playloadData &data)
 
 int checkCgi(playloadData &data, std::string realNames, std::string &reqPath)
 {
-    // std::cout << data.realPath << std::endl;
     for (size_t i = 0; i < data.cgiExt.size(); i++)
     {
         size_t k = data.realPath.rfind(data.cgiExt[i]);
@@ -676,7 +671,7 @@ int checkCgi(playloadData &data, std::string realNames, std::string &reqPath)
     return 0;
 }
 
-int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
+int resolvePath(playloadData &data, Config &conf, std::string &reqPath)
 {
     (void)conf;
     struct stat info;
@@ -707,20 +702,20 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath) // path
         {
             if (S_ISDIR(info.st_mode))
                 continue;
-            data.isCgi = true;
-            return 0;
+            // data.isCgi = true;
+            // return 0;
         }
-        else
-        {
-            if (!data.cgiInfo.empty())// check ask oussama
-            {
-                data.statusCode = "404";
-                data.statusName = "Not Found";
-                return 1;
-            }
-            data.isCgi = true;
-            return 0;
-        }
+        // else
+        // {
+        //     if (!data.cgiInfo.empty())// check ask oussama
+        //     {
+        //         data.statusCode = "404";
+        //         data.statusName = "Not Found";
+        //         return 1;
+        //     }
+        // }
+        data.isCgi = true;
+        return 0;
     }
     if (!index)
         data.realPath = "/";
@@ -747,24 +742,23 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
     if (readyChecks(req, log.data))
         return 1;
     getImportantData(conf, log.data);
+    log.data.retValid = false;
+    log.data.isCgi = false;
+    if (!log.data.retPath.empty())
+    {
+        if (req.method == "POST")
+        {
+            if (access(req.bodyPath.c_str(), F_OK) != -1)
+                std::remove(req.bodyPath.c_str());
+        }
+        log.data.retValid = true;
+        return 0;
+    }
     if (!log.data.methods[req.method])
     {
         log.data.statusCode = "405";
         log.data.statusName = "Method Not Allowed";
         return 1;
-    }
-    log.data.retValid = 0;
-    log.data.isCgi = false;
-    if (!log.data.retPath.empty())
-    {
-        if (log.data.retCode != 301 && log.data.retCode != 302)
-        {
-            log.data.statusCode = "501";    //you can remove
-            log.data.statusName = "Not Implemented";    //you can remove
-            return 1;
-        }
-        log.data.retValid = true;
-        return 0;
     }
     if (resolvePath(log.data, conf, req.path))
         return 1;
@@ -812,8 +806,17 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
     res << "HTTP/1.0 " << cgiData.cgStatusCode << ' ' << cgiData.cgStatusName + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     std::map<std::string, std::string>::iterator iter;
+    int ok = 0;
     for (iter = cgiData.cgHeaders.begin(); iter != cgiData.cgHeaders.end(); iter++)
+    {
         res << iter->first << ": " << iter->second << "\r\n";
+        if (tolowerStr(iter->first) == "content-length")
+            ok = 1;
+    }
+    if (!ok)
+    {
+        res << "Content-Length: " << data.bodySize << "\r\n";
+    }
     if (req.headers.count("set-cookie"))
         res << "Set-Cookie: " << req.headers["set-cookie"] << "\r\n";
     res << "\r\n";
@@ -885,6 +888,7 @@ std::string respond(Webserv &Web, Server &obj, Record &log, Config &conf, Reques
         log.data.connection = "Close";
         if (responseHandler(Web, obj, log, req, conf))
         {
+            // std::cout << log.data.statusCode << std::endl;
             chooseErrorHandler(conf, log.data);
             log.data.contentType = log.data.mime["html"];
             log.status = ERROR_RS;
@@ -940,7 +944,9 @@ std::string respond(Webserv &Web, Server &obj, Record &log, Config &conf, Reques
 
     if (pastStatus == NEW_RS
         // || (log.method == NONE_RS && log.status == ERROR_RS) /!\  TEST
-        || (pastMethod == POST_RS && log.method == NONE_RS) || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS)) || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
+        || (pastMethod == POST_RS && log.method == NONE_RS)
+        || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS))
+        || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
     {
         generateResponse(log.cgiData, log.data, ret_resp, log, req);
         if (log.status == ERROR_RS)

@@ -1,7 +1,51 @@
 #include "CgiHandler.hpp"
 #include "../server/server.hpp"
 #include "Response.hpp"
-#include <sys/wait.h>
+
+int cvb;
+
+void createExecResources(CgiHandler &cgiData, playloadData &data)
+{
+    cvb++;
+    cgiData.env = NULL;
+    cgiData.env = new char*[cgiData.headers.size() + 1];
+    for (size_t i = 0; i < cgiData.headers.size() + 1; i++)
+        cgiData.env[i] = NULL;
+    for (size_t i = 0; i < cgiData.headers.size(); i++)
+    {
+        cgiData.env[i] = new char[cgiData.headers[i].length() + 1];
+        std::strcpy(cgiData.env[i], cgiData.headers[i].c_str());
+    }
+    cgiData.cgiArgs = NULL;
+    cgiData.cgiArgs = new char*[3];
+    cgiData.cgiArgs[0] = NULL;
+    cgiData.cgiArgs[1] = NULL;
+    cgiData.cgiArgs[2] = NULL;
+    cgiData.cgiArgs[0] = new char[data.cgiExecutePath.length() + 1];
+    // if (cvb > 50)
+    //     throw std::bad_alloc();
+    cgiData.cgiArgs[1] = new char[data.cgiScriptFile.length() + 1];
+    std::strcpy(cgiData.cgiArgs[0], data.cgiExecutePath.c_str());
+    std::strcpy(cgiData.cgiArgs[1], data.cgiScriptFile.c_str());
+}
+
+void releaseExecResources(CgiHandler &cgiData)
+{
+    if (cgiData.env)
+    {
+        for (size_t i = 0; i < cgiData.headers.size(); i++)
+            delete[] cgiData.env[i];
+        delete[] cgiData.env;
+        cgiData.env = NULL; //know
+    }
+    if (cgiData.cgiArgs)
+    {
+        delete[] cgiData.cgiArgs[0];
+        delete[] cgiData.cgiArgs[1];
+        delete[] cgiData.cgiArgs;
+        cgiData.cgiArgs = NULL; //know
+    }
+}
 
 void closeCGI(Webserv &Web, Server &obj, std::string method)
 {
@@ -23,7 +67,6 @@ void closeCGI(Webserv &Web, Server &obj, std::string method)
     kill(obj.pid, SIGKILL);
     waitpid(obj.pid, &status, WNOHANG);
 }
-
 
 void    returnedInternalError(CgiHandler &cgi)
 {
@@ -63,7 +106,7 @@ std::string normalizeKey(std::string key)
     return key;
 }
 
-int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request &req)
+int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request req)
 {
     int outputPipe[2];
     if (pipe(outputPipe) == -1)
@@ -85,7 +128,6 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request &req)
 
     if (req.method == "POST")
     {
-    
         int inputPipe[2];
         cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY, 0644);
         if (cgiData.bodyFd < 0)
@@ -128,7 +170,7 @@ void createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string metho
             if (dup2(obj.recs[obj.iClnt].IndexPipe[2], STDIN_FILENO) < 0)
             {
                 cgiData.cgStatusCode = 500;
-                exit(1);
+                throw std::exception();
             }
             close(obj.recs[obj.iClnt].IndexPipe[2]);
             close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[3]].fd);
@@ -137,15 +179,17 @@ void createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string metho
         if (dup2(obj.recs[obj.iClnt].IndexPipe[1], STDOUT_FILENO) < 0)
         {
             cgiData.cgStatusCode = 500;
-            exit(1);
+            throw std::exception();
         }
         close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
         close(obj.recs[obj.iClnt].IndexPipe[1]);
         if (chdir(switchData(data.realPath).c_str()) == -1)
-            exit(1);
-        execve(cgiData.path.c_str(), cgiData.executeablePath, cgiData.env);
+            throw std::exception();
+        execve(cgiData.cgiArgs[0], cgiData.cgiArgs, cgiData.env);
+        releaseExecResources(cgiData);
         perror("error");
-        exit(1);
+        throw std::exception();
+        
     }
     close(obj.recs[obj.iClnt].IndexPipe[1]);
     // if (method == "POST")
@@ -159,7 +203,6 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     {
         if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].revents & POLLOUT)
         {
-
             int bytes_r;
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
@@ -195,7 +238,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     return (0);
 }
 
-int runCgi(Webserv &Web, Record &log, Server &obj, Request &req)
+int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
 {
     if (log.status == NEW_RS)
     {
@@ -205,6 +248,8 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request &req)
         log.status = CGI_ACTIVE;
         log.method = CGI_RDWR;
         createCgi(Web, obj, log.cgiData, req.method, log.data);
+
+        releaseExecResources(log.cgiData);
     }
     else
     {
@@ -225,7 +270,7 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request &req)
     return 0;
 }
 
-void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData, std::vector<int> &listenPorts) // put them on the class so you'll have refer
+void getCgiEnv(playloadData &data, Request req, CgiHandler &cgiData, std::vector<int> &listenPorts) // put them on the class so you'll have refer
 {
     std::string pathInfo = "PATH_INFO=";
     std::string query = "QUERY_STRING=";
@@ -262,27 +307,27 @@ void getCgiEnv(playloadData &data, Request &req, CgiHandler &cgiData, std::vecto
         else
             cgiData.headers.push_back("HTTP_" + normalizeKey(iter->first) + "=" + iter->second);
     }
-    //                      check                     //
-    for (size_t i = 0; i < cgiData.headers.size(); i++)
-        cgiData.tmpEnv.push_back((char *)cgiData.headers[i].c_str());
-    cgiData.tmpEnv.push_back(NULL);
-    cgiData.env = &cgiData.tmpEnv[0];
 
-    cgiData.exFile.push_back((char *)data.cgiExecutePath.c_str());
-    cgiData.exFile.push_back(NULL);
-    cgiData.executeablePath = &cgiData.exFile[0];
-    // std::cout << "-------------->" << *cgiData.executeablePath << std::endl;
-
-    cgiData.path = data.cgiScriptFile;
+    try
+    {
+        createExecResources(cgiData, data);
+    }
+    catch (std::exception &e)
+    {
+        releaseExecResources(cgiData);
+        throw std::bad_alloc();
+    }
 
     // int i = -1;
     // while (cgiData.env[++i])
-    //     std::cout << cgiData.tmpEnv[i] << std::endl;
+    //     std::cout << cgiData.env[i] << std::endl;
+    // std::cout << cgiData.cgiArgs[0] << std::endl;
+    // std::cout << cgiData.cgiArgs[1] << std::endl;
 }
 
 int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 {
-    if (cgiData.cgStatusCode != 200)
+    if (cgiData.cgStatusCode == 500 || cgiData.cgStatusCode == 502)
     {
         std::stringstream ss;
         ss << cgiData.cgStatusCode;
@@ -291,18 +336,21 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
         return 1;
     }
     log.fd = open(cgiData.cgBodyFileName.c_str(), O_RDONLY);
-    if (log.fd == -1)
+    struct stat info;
+    if (log.fd == -1 || stat(cgiData.cgBodyFileName.c_str(), &info) == -1 )
     {
         data.statusCode = "500";
         data.statusName = "Internal Server Error";
         return 1;
     }
+    data.bodySize = info.st_size;
     log.status = CLOSED_RS;
     if (getFile(log))
         return 1;
     return 0;
 }
-int cgiProcess(Webserv &Web, Record &log, Server &obj, Request &req)
+
+int cgiProcess(Webserv &Web, Record &log, Server &obj, Request req)
 {
     if (runCgi(Web, log, obj, req))
     {
@@ -318,7 +366,7 @@ int cgiProcess(Webserv &Web, Record &log, Server &obj, Request &req)
     return 0;
 }
 
-int cgiHandler(Webserv &Web, Record &log, Server &obj, Request &req, std::vector<int> &listenPorts)
+int cgiHandler(Webserv &Web, Record &log, Server &obj, Request req, std::vector<int> &listenPorts)
 {
     std::vector<char *> exFile;
     std::vector<char *> env;

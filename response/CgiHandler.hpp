@@ -33,8 +33,7 @@ class CgiHandler
 {
     public:
     CgiHandler();
-    char **executeablePath;
-    std::string path;
+    char **cgiArgs;
     char **env;
     int canRead;
     
@@ -42,8 +41,6 @@ class CgiHandler
     size_t bodyLen;
     bool dataReady;
     bool cgiValid;
-    std::vector<char *> exFile;
-    std::vector<char *> tmpEnv;
     std::vector<std::string> headers;
     
     // --------------attributes for parsing-------------- //
@@ -72,9 +69,8 @@ class CgiHandler
 // #include "../server/server.hpp"
 
 
-int cgiHandler(Webserv &Web, Record &log, Server &obj, Request &req, std::vector<int> &listenPorts);
-
-int cgiProcess(Webserv &Web, Record &log, Server &obj, Request &req);
+int cgiHandler(Webserv &Web, Record &log, Server &obj, Request req, std::vector<int> &listenPorts);
+int cgiProcess(Webserv &Web, Record &log, Server &obj, Request req);
 int parseCgiResponse(CgiHandler &cgiData);
 void    returnedInternalError(CgiHandler &cgiData);
 

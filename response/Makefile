@@ -15,7 +15,7 @@ OBJFL = $(SRCFL:.cpp=.o)
 NAME = mini_res
 CPP = c++
 RM = rm -rf
-FLAGS = -Wall -Wextra -Werror #-fsanitize=address -g3
+FLAGS = -Wall -Wextra -Werror -fsanitize=address -g3
 
 all: $(NAME)
 
