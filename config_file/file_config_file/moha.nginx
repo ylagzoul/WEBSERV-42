@@ -17,4 +17,5 @@ location / {
         autoindex on;
 }
 
+
 }
