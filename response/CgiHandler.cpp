@@ -4,6 +4,8 @@
 
 int cvb;
 
+static int o;
+
 void createExecResources(CgiHandler &cgiData, playloadData &data)
 {
     cvb++;
@@ -64,8 +66,8 @@ void closeCGI(Webserv &Web, Server &obj, std::string method)
     obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
     obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
     obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
-    kill(obj.pid, SIGKILL);
     waitpid(obj.pid, &status, WNOHANG);
+    kill(obj.pid, SIGKILL);
 }
 
 void    returnedInternalError(CgiHandler &cgi)
@@ -123,6 +125,7 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request req)
     obj.req.push_back(Request());
     obj.data.push_back(Data());
     obj.recs[obj.iClnt].IndexPipe.push_back(obj.recs.size() - 1);
+    fcntl(outputPipe[0], F_SETFL, O_NONBLOCK);
 
     obj.recs[obj.iClnt].IndexPipe.push_back(outputPipe[1]);
 
@@ -146,6 +149,8 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request req)
         obj.req.push_back(Request());
         obj.data.push_back(Data());
         obj.recs[obj.iClnt].IndexPipe.push_back(obj.recs.size() - 1);
+        fcntl(inputPipe[1], F_SETFL, O_NONBLOCK);
+
     }
     return (0);
 }
@@ -198,6 +203,7 @@ void createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string metho
 
 int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string method)
 {
+   
     static size_t n;
     if (method == "POST")
     {
@@ -216,6 +222,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     }
     if (Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].revents & (POLLIN | POLLHUP))
     {
+
         char buffer[SIZESR];
         int bytes = read(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd, buffer, SIZESR - 1);
 
@@ -225,6 +232,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
         {
             cgiData.dataReady = true;
             cgiData.endRead = true;
+            close(cgiData.fd);
             closeCGI(Web, obj, method); // 7ala
         }
         else if (bytes > 0)
@@ -253,11 +261,13 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
     }
     else
     {
+        o++;
+            std::cout << o++ << " lods\n";
         if (readFromCgi(Web, obj, log.cgiData, req.method))
             return (1);
         if (log.cgiData.canRead) /* CHEEEECK /!\*/
         {
-
+            
             parseCgiResponse(log.cgiData);
             log.cgiData.canRead = false;
             // if (cgiData.cgStatusCode == 500)
