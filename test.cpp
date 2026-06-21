@@ -16,7 +16,7 @@ int main() {
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(8001);
+    addr.sin_port = htons(3050);
     inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr);
 
     if (connect(sock, (sockaddr*)&addr, sizeof(addr)) < 0) {
@@ -37,7 +37,7 @@ int main() {
             return 1;
         }
         std::cout << req [i] << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(800));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     // Read and print response
