@@ -70,14 +70,12 @@ void closeCGI(Webserv &Web, Server &obj, std::string method)
 
 void    returnedInternalError(CgiHandler &cgi)
 {
-    cgi.cgStatusCode = 500;
-    cgi.cgStatusName = "Internal Server Error";
+    cgi.status = 500;
     cgi.finFlag = true;
 }
 void    returnedBadError(CgiHandler &cgi)
 {
-    cgi.cgStatusCode = 502;
-    cgi.cgStatusName = "Bad Gateway";
+    cgi.status = 502;
     cgi.finFlag = true;
 }
 
@@ -90,8 +88,7 @@ std::string toStrC(int nb)
 
 int erorrCgi(CgiHandler &cgiData)
 {
-    cgiData.cgStatusCode = 500;
-    cgiData.cgStatusName = "Internal Server Error";
+    cgiData.status = 500;
     return 1;
 }
 CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false), count(0)
@@ -177,7 +174,7 @@ void createCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string metho
         {
             if (dup2(obj.recs[obj.iClnt].IndexPipe[2], STDIN_FILENO) < 0)
             {
-                cgiData.cgStatusCode = 500;
+                cgiData.cgStatusCode = 500;//prblm
                 throw std::exception();
             }
             close(obj.recs[obj.iClnt].IndexPipe[2]);
@@ -335,19 +332,31 @@ void getCgiEnv(playloadData &data, Request req, CgiHandler &cgiData, std::vector
 
 int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 {
-    if (cgiData.cgStatusCode == 500 || cgiData.cgStatusCode == 502)
+    if (cgiData.status == 500 || cgiData.status == 502)
     {
-        std::stringstream ss;
-        ss << cgiData.cgStatusCode;
-        data.statusName = cgiData.cgStatusName;
-        data.statusCode = ss.str();
+        data.statusCode = cgiData.status;
+        return 1;
+    }
+    if (data.table.count(cgiData.cgStatusCode))
+    {
+        if (data.table[cgiData.cgStatusCode] != cgiData.cgStatusName)
+        {
+            std::cout << cgiData.cgStatusName << std::endl;
+            data.statusCode = 502;
+            return 1;
+        }
+        data.statusCode = cgiData.cgStatusCode;
+    }
+    else
+    {
+        data.statusCode = 502;
         return 1;
     }
     log.fd = open(cgiData.cgBodyFileName.c_str(), O_RDONLY);
     struct stat info;
     if (log.fd == -1 || stat(cgiData.cgBodyFileName.c_str(), &info) == -1 )
     {
-        data.statusCode = "500";
+        data.statusCode = 500;
         data.statusName = "Internal Server Error";
         return 1;
     }

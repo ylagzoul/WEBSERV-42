@@ -3,21 +3,19 @@ server {
     root /home/abouhki/Desktop/owebserv;
     methods GET;
     error_page 400 /errors/400.html;
-    error_page 403 /errors/403.html;
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
     autoindex on;
+    cgi_data .py /usr/bin/python3;
 
     location / {
         client_max_body_size 100G;
-        methods POST GET;
+        methods GET DELETE;
         upload_path /goinfre;
-        root /home/abouhki/Desktop/owebserv;
+        root /home/abouhki/Desktop/owebserv/;
         index index.html gogo.jpg;
         error_page 400 /errors/400.html;
-        error_page 403 /errors/403.html;
         error_page 404 /errors/404.html;
-        cgi_data .py /usr/bin/python3;
         autoindex on;
     }
 
