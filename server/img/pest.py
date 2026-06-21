@@ -4,7 +4,8 @@ import sys
 
 image_path = "gogo.jpg"
 
-sys.stdout.buffer.write(b"status: 399 \r\n")
+sys.stdout.buffer.write(b"status: 599 \r\n")
+sys.stdout.buffer.write(b"content-length: 300000 \r\n")
 sys.stdout.buffer.write(b"content-type: image/jpg\r\n")
 sys.stdout.buffer.write(b"\r\n")
 

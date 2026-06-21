@@ -128,6 +128,7 @@ void getHeadersCgi(CgiHandler &cgiData)
         if (!isPrintableC(key) || !isHoldSpaceCgi(key) || key.empty())
             return(returnedBadError(cgiData));
         value = trimCgi(value);
+        // cout << key << " : " << value << std::endl;
         if (cgiData.cgHeaders.find(key) != cgiData.cgHeaders.end() && key == "content-length")
             return(returnedBadError(cgiData));
         cgiData.cgHeaders[tolowerStri(key)] = value;
@@ -156,7 +157,7 @@ void getBody(CgiHandler &cgiData)
             return(returnedInternalError(cgiData));
     }
     cgiData.bodyLen += cgiData.fullLine.length();
-    if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE) // after handel 
+    if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE * 87) // after handel 
         return(returnedBadError(cgiData));
     if (cgiData.endRead == false)
     {
