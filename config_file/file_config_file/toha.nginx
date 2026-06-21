@@ -1,0 +1,22 @@
+server {
+    listen 127.0.0.1:3050;
+
+    cgi_data .bla cgi_tester;
+
+    location / {
+        methods GET;
+        root /home/abouhki/Desktop/owebserv;
+        index index.html;
+    }
+
+    location /post_body {
+        methods POST;
+        client_max_body_size 100G;
+    }
+
+    location /directory/ {
+        methods GET;
+        root /home/abouhki/Desktop/owebserv/YoupiBanane;
+        index youpi.bad_extension;
+    }
+}

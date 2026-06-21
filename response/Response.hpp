@@ -26,7 +26,7 @@ class Webserv;
 class playloadData
 {
 public:
-    std::string statusCode;
+    int statusCode;
     std::string statusName;
     std::string connection;
     std::string contentType;
@@ -57,6 +57,7 @@ public:
     int uploadOn;
     int cgiDataPos;
     std::map<std::string, std::string> mime;
+    std::map<int, std::string> table;
 };
 
 #include "CgiHandler.hpp"

@@ -158,7 +158,7 @@ void getBody(CgiHandler &cgiData)
     cgiData.bodyLen += cgiData.fullLine.length();
     if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE) // after handel 
     {
-        cgiData.cgStatusCode = 502;
+        cgiData.status = 502;
         cgiData.getEndFile = true;
         return ;
     }
@@ -187,12 +187,12 @@ int parseCgiResponse(CgiHandler &cgiData)
         if (pos == std::string::npos && cgiData.getEndHeaders == false)
             break ;
         tes = cgiData.fullLine;
-        // if (cgiData.getEndHeaders == false)
-        //     getHeadersCgi(cgiData);
+        if (cgiData.getEndHeaders == false)
+            getHeadersCgi(cgiData);
         if (cgiData.getEndHeaders == false) // FIX the /r/n
         {
             getHeadersCgi(cgiData);
-            if (cgiData.cgStatusCode == 500 || cgiData.cgStatusCode == 501 || cgiData.cgStatusCode == 502)
+            if (cgiData.status == 500 || cgiData.status == 502)
                 cgiData.clientState = CLIENT_CGI_ON ;
             // cout << cgiData.getMove << std::endl;
             if (cgiData.getMove == 3)
@@ -203,7 +203,7 @@ int parseCgiResponse(CgiHandler &cgiData)
             getBody(cgiData);
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {
-            if ((cgiData.cgStatusCode == 500 || cgiData.cgStatusCode == 501 || cgiData.cgStatusCode == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
+            if ((cgiData.status == 500 || cgiData.status == 502) || cgiData.getEndFile || (pos != std::string::npos && tes.length() == 2))
                 cgiData.clientState = CLIENT_CGI_ON;
             cgiData.lenRead = 0;
             break ;
