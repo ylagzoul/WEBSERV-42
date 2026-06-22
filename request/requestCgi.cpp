@@ -158,7 +158,7 @@ void getBody(CgiHandler &cgiData)
             return(returnedInternalError(cgiData));
     }
     cgiData.bodyLen += cgiData.fullLine.length();
-    if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE * 87)
+    if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE )
         return(returnedBadError(cgiData));
     if (cgiData.endRead == false)
     {

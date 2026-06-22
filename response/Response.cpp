@@ -173,13 +173,13 @@ std::string getRandomName(Config &conf)
 
 int postBody(Record &log)
 {
-    // const int size = 8192;
     char buff[RDWR_SIZE];
-    int bytes = read(log.fileFd, buff, sizeof(buff));
+    int bytes = read(log.fileFd, buff, sizeof(buff) - 1);
     buff[bytes] = '\0';
     if (bytes == -1)
     {
         log.data.statusCode = 500;
+        
         // log.data.statusName = "Internal Server Error";
         // close(log.fd);
         // close(log.fileFd);
@@ -192,10 +192,12 @@ int postBody(Record &log)
         // log.data.statusName = "Internal Server Error";
         // close(log.fd);
         // close(log.fileFd);
+
         return 1;
     }
-    if (bytes < RDWR_SIZE)
+    if (bytes < RDWR_SIZE - 1)
     {
+
         log.status = CLOSED_RS;
         log.method = NONE_RS;
         // close(log.fd);
@@ -203,74 +205,77 @@ int postBody(Record &log)
     }
     else
     {
+
         log.status = ACTIVE_RS;
         log.method = POST_RS;
     }
     return 0;
 }
 
-int postHandler(Record &log, playloadData &data, Request &req, Config &conf)
+int postHandler(Record &log, Request &req, Config &conf)
 {
     struct stat info;
-    if (!data.uploadOn)
+    if (!log.data.uploadOn)
     {
-        data.statusCode = 403;
-        // data.statusName = "Forbidden";
+        log.data.statusCode = 403;
+        // log.data.statusName = "Forbidden";
         return 1;
     }
-    if (stat(data.realPath.c_str(), &info) != -1)
+    if (stat(log.data.realPath.c_str(), &info) != -1)
     {
         if (S_ISDIR(info.st_mode))
         {
             log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
             if (log.fileFd == -1)
             {
-                data.statusCode = 500;
-                // data.statusName = "Internal Server Error";
+                log.data.statusCode = 500;
+                // log.data.statusName = "Internal Server Error";
                 return 1;
             }
             std::string randName = getRandomName(conf);
-            std::string tmpStr = data.realPath + '/' + randName + ".txt";
+            std::string tmpStr = log.data.realPath + '/' + randName + ".txt";
             log.fd = open(tmpStr.c_str(), O_WRONLY | O_CREAT, 0644);
             if (log.fd == -1)
             {
-                data.statusCode = 500;
-                // data.statusName = "Internal Server Error";
+                log.data.statusCode = 500;
+                // log.data.statusName = "Internal Server Error";
                 return 1;
             }
             if (postBody(log))
                 return 1;
-            data.contentType = data.mime["txt"];
+        
+            log.data.contentType = log.data.mime["txt"];
         }
         else
         {
-            data.statusCode = 403;
-            // data.statusName = "Forbidden";
+            log.data.statusCode = 403;
+            // log.data.statusName = "Forbidden";
             return 1;
         }
     }
     else
     {
-        log.fd = open(data.realPath.c_str(), O_WRONLY | O_CREAT, 0644);
+        log.fd = open(log.data.realPath.c_str(), O_WRONLY | O_CREAT, 0644);
         if (log.fd == -1)
         {
-            data.statusCode = 403;
-            // data.statusName = "Forbidden";
+            log.data.statusCode = 403;//ask
+            // log.data.statusName = "Forbidden";
             return 1;
         }
         log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
         if (log.fileFd == -1)
         {
-            data.statusCode = 500;
-            // data.statusName = "Internal Server Error";
+            log.data.statusCode = 500;
+            // log.data.statusName = "Internal Server Error";
             return 1;
         }
         if (postBody(log))
             return 1;
-        getContentType(data, data.realPath);
+        getContentType(log.data, log.data.realPath);
     }
-    data.statusCode = 201;
-    // data.statusName = "Created";
+
+    log.data.statusCode = 201;
+    // log.data.statusName = "Created";
     return 0;
 }
 
@@ -762,6 +767,7 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
     log.data.statusCode = req.status;
     if (req.headers["connection"] == "Keep-Alive" || req.headers["connection"] == "keep-alive")
         log.data.connection = "keep-alive";
+
     if (log.data.statusCode == 400)
     {
         log.data.errorPages = conf.error_page;
@@ -808,7 +814,7 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
     }
     else if (req.method == "POST")
     {
-        if (postHandler(log, log.data, req, conf))
+        if (postHandler(log, req, conf))
         {
             if (access(req.bodyPath.c_str(), F_OK) != -1)
                 std::remove(req.bodyPath.c_str());
@@ -848,7 +854,7 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
         res << "Content-Length: " << data.bodySize << "\r\n";
     }
     if (req.headers.count("set-cookie"))
-        res << "Set-Cookie: " << req.headers["set-cookie"] << "\r\n";
+        res << "Cookie: " << req.headers["set-cookie"] << "\r\n"; // set cookie
     res << "\r\n";
     ret_resp = res.str();
 }

@@ -194,7 +194,7 @@ void Webserv::config_file()
         }
         if (emptyFile == false || count != 0)
             throw std::runtime_error("empty config file or {}");
-    }
+}               
     catch (const std::exception &e)
     {
         std::cout << e.what() << std::endl;

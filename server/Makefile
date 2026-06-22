@@ -1,24 +1,27 @@
 NAME = webserv
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98 -g #-fsanitize=address,undefined -g -O1 
+CFLAGS = -Wextra -Wall -Werror -std=c++98 # -fsanitize=address -g3 ,undefined -O1 
 CC = c++
 
-SRC = server.cpp \
-			../request/request.cpp \
-			../request/Sessions.cpp \
-			../request/SessionsList.cpp \
-			../request/requestCgi.cpp \
-			../response/Response.cpp \
-			../config_file/config_file.cpp \
-			../config_file/Helpful_functions/get_set_conf.cpp \
-			../config_file/Helpful_functions/ft_ft.cpp \
-			../config_file/line/listen.cpp \
-			../config_file/line/server_name.cpp \
-			../config_file/line/error_page.cpp Record.cpp\
+SRC = server.cpp												\
+			../request/request.cpp								\
+			../request/Sessions.cpp								\
+			../request/SessionsList.cpp							\
+			../request/requestCgi.cpp							\
+			../response/Response.cpp							\
+			../config_file/config_file.cpp						\
+			../config_file/Helpful_functions/get_set_conf.cpp	\
+			../config_file/Helpful_functions/ft_ft.cpp			\
+			../config_file/line/listen.cpp						\
+			../config_file/line/server_name.cpp					\
+			../config_file/line/error_page.cpp Record.cpp		\
 			../response/CgiHandler.cpp
 
-SRC_H = server.hpp ../request/SessionsList.hpp ../request/Sessions.hpp Record.hpp ../response/CgiHandler.hpp ../config_file/config_file.hpp
-
+SRC_H = server.hpp Record.hpp				\
+			../request/SessionsList.hpp		\
+			../request/Sessions.hpp			\
+			../response/CgiHandler.hpp		\
+			../config_file/config_file.hpp
 
 OBJ = $(SRC:.cpp=.o)
 

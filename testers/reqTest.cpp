@@ -25,7 +25,7 @@ int main() {
     }
 
     const char* req =
-        "GET / HTTP/1.1\r\n"
+        "GET /server HTTP/1.1\r\n"
         "Host: localhost\r\n"
         "Connection: close\r\n"
         "\r\n";
@@ -38,7 +38,7 @@ int main() {
             return 1;
         }
         std::cout << req [i] << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     // Read and print response
