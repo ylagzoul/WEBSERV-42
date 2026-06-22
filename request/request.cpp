@@ -264,7 +264,7 @@ void getHeaders(Request &req)
     size_t endLine = req.fullLine.find("\r\n");
     if (endLine == std::string::npos)
     {
-        // cout << "MOMO\n";
+        // cout << "MOMO " << req.getMove << "\n";
         if (req.getMove == 2)
             req.getMove = 3;
         return ;
@@ -292,6 +292,8 @@ void getHeaders(Request &req)
     {
         std::string key = tolowerStr(line.substr(0, colon));
         std::string value = line.substr(colon + 1);
+        if (key.length() >= MAX_LEN_HEADER_FEILD || value.length() >= MAX_LEN_HEADER_FEILD)
+            return (returnedBadError(req));
         if (!isPrintable(key) || !isHoldSpace(key) || key.empty())
             return (returnedBadError(req));
         value = trim(value);
@@ -307,7 +309,7 @@ void getHeaders(Request &req)
     req.countLenHead += req.fullLine.substr(0, endLine + 2).length();    
     req.fullLine.erase(0, endLine + 2);
     // cout << "O => " << req.countLenHead << std::endl;
-    if (req.countLenHead >= MAX_LEN_HEADER_FEILD)
+    if (req.countLenHead >= MAX_LEN_HEADERS_FEILD)
         return (returnedBadError(req));
     return ;
 }
@@ -362,7 +364,12 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     size_t pos;
     std::string tes;
     req[userId].fullLine.append(buffer, len);
-    // cout << "<---  " << req[userId].fullLine << "  --->\n";
+    if (req[userId].getMove == 3)
+    {
+        len = req[userId].fullLine.length();
+        req[userId].getMove = 0;
+    }    
+    // cout << "<---  " << req[userId].fullLine << " | " << req[userId].fullLine.length() << " -> " << len << "  --->\n";
     while (1)
     {
         if (req[userId].method.empty())
@@ -393,6 +400,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getFixedBody(req[userId], con);
         if (req[userId].lenRead == len)
         {
+            // cout << "<---  " << req[userId].fullLine.length() << "  --->\n";
             if ((req[userId].getEndFile) || (req[userId].status == 500) || (req[userId].status == 400) || (req[userId].status == 501))
                 req[userId].clientState = CLIENT_ON;
             if (pos != std::string::npos && tes.length() > 2)

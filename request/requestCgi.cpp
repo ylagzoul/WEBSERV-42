@@ -35,8 +35,9 @@ bool checkDigits(CgiHandler &cgi, std::string str)
     return (false);
 }
 
-std::string getRandomName(CgiHandler &cgi)
+std::string getRandomName()
 {
+    static size_t count;
     std::stringstream ss;
     time_t tStamp = time(NULL);
     struct tm *currentTime = localtime(&tStamp);
@@ -44,7 +45,7 @@ std::string getRandomName(CgiHandler &cgi)
 
     strftime(arr, sizeof(arr), "%H%M%S", currentTime);
     std::string randName = arr;
-    ss << cgi.count++;
+    ss << count++;
     randName += '_';
     randName += ss.str();
     return randName;
@@ -150,18 +151,15 @@ void getBody(CgiHandler &cgiData)
     cgiData.lenRead += cgiData.fullLine.length();
     if (cgiData.fd == -1)
     {
-        cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandomName(cgiData);
+        cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandomName();
         cgiData.bodyLen = 0;
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
             return(returnedInternalError(cgiData));
     }
     cgiData.bodyLen += cgiData.fullLine.length();
-    if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE * 87) // after handel 
-    {
-        returnedBadError(cgiData);
-        return ;
-    }
+    if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE * 87)
+        return(returnedBadError(cgiData));
     if (cgiData.endRead == false)
     {
         if (cgiData.bodyLen != 0)
@@ -170,8 +168,6 @@ void getBody(CgiHandler &cgiData)
                 return (returnedInternalError(cgiData));
             cgiData.fullLine.clear();
         }
-        if (cgiData.dataReady == true)
-            close(cgiData.fd);
         return ;
     }
 }

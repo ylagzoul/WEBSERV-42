@@ -50,7 +50,7 @@ void releaseExecResources(CgiHandler &cgiData)
 void closeCGI(Webserv &Web, Server &obj, std::string method)
 {
     int status;
-
+    // close(cg)
     if (method == "POST")
     {
         close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[1]].fd);
@@ -230,6 +230,7 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
         {
             cgiData.dataReady = true;
             cgiData.endRead = true;
+            close(cgiData.fd);
             closeCGI(Web, obj, method); // 7ala
         }
         else if (bytes > 0)
@@ -262,7 +263,7 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
             return (1);
         if (log.cgiData.canRead) /* CHEEEECK /!\*/
         {
-
+            
             parseCgiResponse(log.cgiData);
             log.cgiData.canRead = false;
             // if (cgiData.cgStatusCode == 500)
