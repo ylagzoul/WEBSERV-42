@@ -177,6 +177,8 @@ int parseCgiResponse(CgiHandler &cgiData)
     size_t pos;
     std::string tes;
     cgiData.fullLine.append(cgiData.cgBuff.c_str(), cgiData.cgBuff.length());
+    if (cgiData.getMove == 3)
+        cgiData.getMove = 0;
     while (1)
     {
         pos = cgiData.fullLine.find("\r\n");
