@@ -2,6 +2,7 @@ import os
 import sys
 # while True:
 #     a = 'a'
+
 print("status: 200 OK\r")
 print("Content-Type: text/html; charset=utf-8\r")
 

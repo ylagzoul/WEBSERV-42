@@ -8,6 +8,7 @@ server {
     autoindex on;
     cgi_data .py /usr/bin/python3;
     cgi_data .ps /usr/bin/python3;
+    client_max_body_size 10G;
 
     location / {
         client_max_body_size 100G;
@@ -21,7 +22,7 @@ server {
     }
 
     location /errors {
-        client_max_body_size 100G;
+        client_max_body_size 50G;
         methods GET POST DELETE;
         root /;
         upload_path /;

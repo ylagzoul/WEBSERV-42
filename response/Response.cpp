@@ -112,43 +112,43 @@ void getContentType(playloadData &data, std::string path)
     }
 }
 
-int deleteHandler(Record &log, playloadData &data)
+int deleteHandler(Record &log)
 {
     struct stat info;
 
-    if (access(data.realPath.c_str(), F_OK) == -1)
+    if (access(log.data.realPath.c_str(), F_OK) == -1)
     {
-        data.statusCode = 404;
-        // data.statusName = "Not Found";
+        log.data.statusCode = 404;
+        // log.data.statusName = "Not Found";
         return 1;
     }
-    if (stat(data.realPath.c_str(), &info) == -1)
+    if (stat(log.data.realPath.c_str(), &info) == -1)
     {
-        data.statusCode = 500;
-        // data.statusName = "Internal Server Error";
+        log.data.statusCode = 500;
+        // log.data.statusName = "Internal Server Error";
         return 1;
     }
     if (S_ISDIR(info.st_mode))
     {
-        data.statusCode = 403;
-        // data.statusName = "Forbidden";
+        log.data.statusCode = 403;
+        // log.data.statusName = "Forbidden";
         return 1;
     }
-    else if (access(data.realPath.c_str(), W_OK) == -1)
+    else if (access(log.data.realPath.c_str(), W_OK) == -1)
     {
-        data.statusCode = 403;
-        // data.statusName = "Forbidden";
+        log.data.statusCode = 403;
+        // log.data.statusName = "Forbidden";
         return 1;
     }
-    else if (std::remove(data.realPath.c_str()))
+    else if (std::remove(log.data.realPath.c_str()))
     {
-        data.statusCode = 500;
-        // data.statusName = "Internal Server Error";
+        log.data.statusCode = 500;
+        // log.data.statusName = "Internal Server Error";
         return 1;
     }
     log.buffer = "File deleted successfully!\n";
-    data.bodySize = log.buffer.length();
-    data.contentType = data.mime["txt"];
+    log.data.bodySize = log.buffer.length();
+    log.data.contentType = log.data.mime["txt"];
     log.status = CLOSED_RS;
 
     // data.statusName = "Ok";
@@ -258,7 +258,7 @@ int postHandler(Record &log, Request &req, Config &conf)
         log.fd = open(log.data.realPath.c_str(), O_WRONLY | O_CREAT, 0644);
         if (log.fd == -1)
         {
-            log.data.statusCode = 403;//ask
+            log.data.statusCode = 403; // -definitly 500---- ask
             // log.data.statusName = "Forbidden";
             return 1;
         }
@@ -650,15 +650,18 @@ int checkErrorFile(playloadData &data, Config &conf)
         page = page.substr(1);
     file += page;
     struct stat info;
+    std::cout << file<< std::endl;
     if (stat(file.c_str(), &info) == -1)
         return 1;
     if (S_ISDIR(info.st_mode))
         return 1;
+    
     if (info.st_size > 64 * 1024)
         return 1;
     int fd = open(file.c_str(), O_RDONLY);
     if (fd == -1)
         return 1;
+    
     char buff[RDWR_SIZE]; // use more
     int bytes = 0;
     while ((bytes = read(fd, buff, sizeof(buff) - 1)) > 0)
@@ -771,6 +774,7 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
     if (log.data.statusCode == 400)
     {
         log.data.errorPages = conf.error_page;
+        log.data.root = conf.root;
         return 1;
     }
     findLongestMatch(log.data, conf, cleanPath(req.path));
@@ -829,7 +833,7 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
     }
     else if (req.method == "DELETE")
     {
-        if (deleteHandler(log, log.data))
+        if (deleteHandler(log))
             return 1;
     }
     return 0;
@@ -854,7 +858,7 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
         res << "Content-Length: " << data.bodySize << "\r\n";
     }
     if (req.headers.count("set-cookie"))
-        res << "Cookie: " << req.headers["set-cookie"] << "\r\n"; // set cookie
+        res << "Set-Cookie: " << req.headers["set-cookie"] << "\r\n"; // set cookie
     res << "\r\n";
     ret_resp = res.str();
 }
@@ -880,7 +884,7 @@ void generateRetResponse(playloadData &data, std::string &ret_resp, Request &req
 
 void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req)
 {
-    if (data.connection == "keep-alive")
+    if (data.connection == "keep-alive" )
         log.clientState = ALIVE;
     if (cgiData.cgiValid)
     {
@@ -921,7 +925,6 @@ std::string respond(Webserv &Web, Server &obj, Record &log, Config &conf, Reques
         log.data.connection = "Close";
         if (responseHandler(Web, obj, log, req, conf))
         {
-            // std::cout << log.data.statusCode << std::endl;
             chooseErrorHandler(conf, log.data);
             log.data.contentType = log.data.mime["html"];
             log.status = ERROR_RS;

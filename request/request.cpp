@@ -238,14 +238,14 @@ void fillCheck(Request &req, std::string reqLine)
     req.method = array[0];
     req.path = array[1];
     req.httpVersion = array[2];
+    if ( req.path.length() >= MAX_LEN_PATH || !checkPath(req.path))
+        return (returnedBadError(req));
     if (!checkMethod(req.method))
     {
         req.status = 501;
         req.finFlag = true;
         return ;
     }
-    if ( req.path.length() >= MAX_LEN_PATH || !checkPath(req.path))
-        return (returnedBadError(req));
 }
 
 void getRequestLine(Request &req)

@@ -17,6 +17,7 @@ typedef enum e_state
     //methods
     NONE_RS,
     GET_RS,
+    GET_CGI_RS,
     POST_LIST_RS,
     GET_LIST_RS,
     POST_RS,

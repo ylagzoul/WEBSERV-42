@@ -300,7 +300,7 @@ void getCgiEnv(playloadData &data, Request req, CgiHandler &cgiData, std::vector
     cgiData.headers.push_back("REDIRECT_STATUS=200");
     cgiData.headers.push_back("SCRIPT_NAME=" + data.cgiFile);
     cgiData.headers.push_back("SCRIPT_FILENAME=" + data.cgiScriptFile);
-    cgiData.headers.push_back("SERVER_PORT=" + port); // you should get the working server port
+    cgiData.headers.push_back("SERVER_PORT=" + port);//the right server port?
     cgiData.headers.push_back("SERVER_PROTOCOL=HTTP/1.0");
 
     std::map<std::string, std::string>::iterator iter;
