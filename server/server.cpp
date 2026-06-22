@@ -115,9 +115,6 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
         clientId = i;
         cout << "ENTERED\n";
         readRequest(req, clientId, buffer, bytes, Web.config[Web.s], sList);
-        cout << req[i].status << std::endl;
-        cout << req[i].clientState << std::endl;
-
         cout << "EXITED\n";
 
         if (req[clientId].clientState == CLIENT_ON)
