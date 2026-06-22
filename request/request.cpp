@@ -390,7 +390,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getHeaders(req[userId]);
             if (req[userId].status == 500 || req[userId].status == 400 || req[userId].status == 501)
                 req[userId].clientState = CLIENT_ON ;
-            cout << req[userId].getMove << std::endl;
+            // cout << req[userId].getMove << std::endl;
             if (req[userId].getMove == 3)
                 break ;
         }
