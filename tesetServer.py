@@ -1,28 +1,18 @@
 import socket
 
-HOST = "localhost"
-
-PORT = 3050
+host = "127.0.2.1"
+port = 1111
 
 request = (
     "GET / HTTP/1.1\r\n"
-    f"Host: {HOST}\r\n"
-    "Connection: close\r\n"
+    "Host: localhost\r\n"
     "\r\n"
 )
 
-with socket.create_connection((HOST, PORT)) as sock:
-    # Send request
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    sock.connect((host, port))
     sock.sendall(request.encode())
 
-    print("Request sent")
-
-    # Close only the write side (send FIN)
-    sock.shutdown(socket.SHUT_WR)
-
-    print("Write side closed, waiting for response...")
-
-    # Continue reading response
     response = b""
     while True:
         data = sock.recv(4096)
@@ -30,5 +20,4 @@ with socket.create_connection((HOST, PORT)) as sock:
             break
         response += data
 
-    print("Response received:")
-    print(response.decode(errors="replace"))
+print(response.decode(errors="replace"))

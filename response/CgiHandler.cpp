@@ -4,7 +4,7 @@
 
 int cvb;
 
-static int o;
+
 
 void createExecResources(CgiHandler &cgiData, playloadData &data)
 {
@@ -261,8 +261,6 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
     }
     else
     {
-        o++;
-            std::cout << o++ << " lods\n";
         if (readFromCgi(Web, obj, log.cgiData, req.method))
             return (1);
         if (log.cgiData.canRead) /* CHEEEECK /!\*/

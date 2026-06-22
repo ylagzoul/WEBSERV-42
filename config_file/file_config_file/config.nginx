@@ -1,7 +1,7 @@
 server {
     listen 127.0.2.1:1111;
     server_name youssef;
-    root /home/ylagzoul/Desktop/WEBSERV-42/server/;
+    root /home/ylagzoul/Desktop/web/server/;
     methods GET;
     error_page 401 /errors/401.html;
     error_page 403 /errors/403.html;
@@ -16,7 +16,7 @@ server {
 
     location / {
         methods GET POST DELETE;
-        root /home/ylagzoul/Desktop/WEBSERV-42/;
+        root /home/ylagzoul/Desktop/web/;
         error_page 405 /errors/405.html;
         error_page 501 /errors/501.html;
         error_page 502 /errors/502.html;
