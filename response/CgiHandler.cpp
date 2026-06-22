@@ -342,7 +342,6 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
     {
         if (data.table[cgiData.cgStatusCode] != cgiData.cgStatusName)
         {
-            std::cout << cgiData.cgStatusName << std::endl;
             data.statusCode = 502;
             return 1;
         }

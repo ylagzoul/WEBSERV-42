@@ -10,8 +10,8 @@ server {
 
     location / {
         client_max_body_size 100G;
-        methods GET DELETE;
-        upload_path /goinfre;
+        methods GET DELETE POST;
+        upload_path /server;
         root /home/abouhki/Desktop/owebserv/;
         index index.html gogo.jpg;
         error_page 400 /errors/400.html;
