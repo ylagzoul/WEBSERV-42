@@ -4,7 +4,6 @@ import sys
 #     a = 'a'
 print("status: 200 OK\r")
 print("Content-Type: text/html; charset=utf-8\r")
-# print("Content-Length: 5000\r")
 
 # print("status: 400\r")
 print("\r")  # End of headers
