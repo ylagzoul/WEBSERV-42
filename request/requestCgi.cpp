@@ -28,8 +28,6 @@ bool checkDigits(CgiHandler &cgi, std::string str)
     if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
     {
         cgi.contentLength = value;
-        if (value == 0)
-            return (false);
         return (true);
     }
     return (false);
@@ -85,12 +83,30 @@ bool isLfCrCgi(const std::string &str)
     return (true);
 }
 
+bool isValidStatus(std::string str)
+{
+    int count = 0;
+    for (size_t i = 0; i < 3; i++)
+    {
+        if (isdigit(str.at(i)))
+            count++;
+    }
+    cout << count << std::endl;
+    if (count != 3)
+        return (false);
+    else
+        return (true);
+}
+
 bool    parseLine(std::string str, CgiHandler &cgiData)
 {
-    std::stringstream iss(str);
-    iss >> cgiData.cgStatusCode >> cgiData.cgStatusName;
-    if (!cgiData.cgStatusName.empty() && cgiData.cgStatusName.at(0) == ' ')
-        cgiData.cgStatusName.erase(0, 1);
+    char *tmp;
+    if (!isValidStatus(str))
+        return (false);
+    int st = std::strtol(str.c_str(), &tmp, 10);
+    cgiData.cgStatusCode = st;
+    cgiData.cgStatusName = tmp;
+    cout << cgiData.cgStatusCode << " <-> " << cgiData.cgStatusName << std::endl;
     if (cgiData.cgStatusCode >= 200 && cgiData.cgStatusCode <= 599)
         return (true);
     else
@@ -177,6 +193,8 @@ int parseCgiResponse(CgiHandler &cgiData)
     size_t pos;
     std::string tes;
     cgiData.fullLine.append(cgiData.cgBuff.c_str(), cgiData.cgBuff.length());
+    if (cgiData.getMove == 3)
+        cgiData.getMove = 0;
     while (1)
     {
         pos = cgiData.fullLine.find("\r\n");
