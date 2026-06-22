@@ -98,6 +98,7 @@ CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), cgStatusName("
     canRead = false;
     getMove = 0;
     countLenHead = 0;
+    recLen = 0;
 };
 
 std::string normalizeKey(std::string key)

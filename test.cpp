@@ -26,7 +26,7 @@ int main() {
 
     const char* req =
         "GET / HTTP/1.1\r\n"
-        "Host: localhost\r\n"
+        "Content-length: 20\r\n"
         "\r\n";
 
     // Send slowly

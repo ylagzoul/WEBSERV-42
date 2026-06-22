@@ -59,6 +59,7 @@ class Request
         int         countLenHead;
         int         bodyType;
         size_t          contentLength;
+        size_t          recLen;
         int getMove;
         // size_t          countLenHead;
         t_client_state  clientState;

@@ -28,8 +28,6 @@ bool checkDigits(CgiHandler &cgi, std::string str)
     if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
     {
         cgi.contentLength = value;
-        if (value == 0)
-            return (false);
         return (true);
     }
     return (false);

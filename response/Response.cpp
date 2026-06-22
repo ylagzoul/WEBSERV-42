@@ -666,6 +666,8 @@ int checkErrorFile(playloadData &data, Config &conf)
 
 void chooseErrorHandler(Config &conf, playloadData &data)
 {
+    // std::cout << data.errorPages.empty() << std::endl;
+
     if (data.errorPages.empty())
         defaultErrorPage(data);
     else if (checkErrorFile(data, conf))
@@ -762,13 +764,13 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
     log.data.statusCode = req.status;
     if (req.headers["connection"] == "Keep-Alive" || req.headers["connection"] == "keep-alive")
         log.data.connection = "keep-alive";
+    findLongestMatch(log.data, conf, cleanPath(req.path));
+    getImportantData(conf, log.data);
     if (log.data.statusCode == 400)
     {
         log.data.errorPages = conf.error_page;
         return 1;
     }
-    findLongestMatch(log.data, conf, cleanPath(req.path));
-    getImportantData(conf, log.data);
     // if (readyChecks(req, log.data))
     //     return 1;
     if (!log.data.retPath.empty())
