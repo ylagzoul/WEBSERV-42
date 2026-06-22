@@ -650,7 +650,6 @@ int checkErrorFile(playloadData &data, Config &conf)
         page = page.substr(1);
     file += page;
     struct stat info;
-    std::cout << file<< std::endl;
     if (stat(file.c_str(), &info) == -1)
         return 1;
     if (S_ISDIR(info.st_mode))

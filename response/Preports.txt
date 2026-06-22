@@ -22,11 +22,7 @@ shouldn't be working
 
 readme
 
-Content-length: 0 should be normal (get post cgi)
-cgstatusname
-chunk header
 bonus ckies some to add
-
 
 ----------response----------
 to ask:

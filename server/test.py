@@ -3,10 +3,10 @@ import sys
 # while True:
 #     a = 'a'
 
-print("status: 200 OK\r")
+print("status: 502\r")
+print("Content-Type: text/html; charset=utf-8\r")
 print("Content-Type: text/html; charset=utf-8\r")
 
-# print("status: 400\r")
 print("\r")  # End of headers
 
 print("<!DOCTYPE html>")

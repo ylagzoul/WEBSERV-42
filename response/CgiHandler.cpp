@@ -265,7 +265,7 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
         {
             
             parseCgiResponse(log.cgiData);
-            cout << log.cgiData.cgStatusCode << " <-> " << log.cgiData.cgStatusName << std::endl;
+            cout << log.cgiData.cgStatusCode << " <-> <" << log.cgiData.cgStatusName << '>' << std::endl;
             log.cgiData.canRead = false;
             // if (cgiData.cgStatusCode == 500)
             // {
@@ -341,7 +341,7 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
     }
     if (data.table.count(cgiData.cgStatusCode))
     {
-        if (data.table[cgiData.cgStatusCode] != cgiData.cgStatusName)
+        if (!cgiData.cgStatusName.empty() && data.table[cgiData.cgStatusCode] != cgiData.cgStatusName)
         {
             data.statusCode = 502;
             return 1;

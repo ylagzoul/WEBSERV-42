@@ -91,7 +91,7 @@ bool isValidStatus(std::string str)
         if (isdigit(str.at(i)))
             count++;
     }
-    cout << count << std::endl;
+    // cout << count << std::endl;
     if (count != 3)
         return (false);
     else
