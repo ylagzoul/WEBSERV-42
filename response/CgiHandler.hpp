@@ -44,6 +44,7 @@ class CgiHandler
     std::vector<std::string> headers;
     
     // --------------attributes for parsing-------------- //
+    int status;
     int fd;
     std::string cgBuff;
     int cgStatusCode;
