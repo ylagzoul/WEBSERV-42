@@ -77,6 +77,8 @@ int cgiProcess(Webserv &Web, Record &log, Server &obj, Request req);
 int parseCgiResponse(CgiHandler &cgiData);
 void    returnedInternalError(CgiHandler &cgiData);
 void    returnedBadError(CgiHandler &cgi);
+std::string trim(const std::string& str);
+
 
 
 #endif

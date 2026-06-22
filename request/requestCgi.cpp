@@ -105,8 +105,8 @@ bool    parseLine(std::string str, CgiHandler &cgiData)
         return (false);
     int st = std::strtol(str.c_str(), &tmp, 10);
     cgiData.cgStatusCode = st;
-    cgiData.cgStatusName = tmp;
-    cout << cgiData.cgStatusCode << " <-> " << cgiData.cgStatusName << std::endl;
+    cgiData.cgStatusName = trim(tmp);
+    
     if (cgiData.cgStatusCode >= 200 && cgiData.cgStatusCode <= 599)
         return (true);
     else

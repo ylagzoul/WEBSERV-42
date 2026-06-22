@@ -265,6 +265,7 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
         {
             
             parseCgiResponse(log.cgiData);
+            cout << log.cgiData.cgStatusCode << " <-> " << log.cgiData.cgStatusName << std::endl;
             log.cgiData.canRead = false;
             // if (cgiData.cgStatusCode == 500)
             // {
