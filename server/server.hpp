@@ -26,6 +26,7 @@
 #define SIZESR 8192
 
 // GET /file
+void closeCGI(Webserv &Web, Server &obj, std::string method);
 
 class Data
 {
@@ -67,7 +68,7 @@ class Server
         void acceptNewCleint(Webserv &Web, pollfd &p, size_t &i);
         bool receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sList);
         bool sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p);
-        void close_client(Webserv &Web, pollfd &p, int i);
+        void close_client(Webserv &Web, pollfd &p, size_t &i);
 };
 
 class Webserv

@@ -139,9 +139,23 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request req)
         int inputPipe[2];
         cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY, 0644);
         if (cgiData.bodyFd < 0)
+        {
+            close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
+            Web.fds.erase(Web.fds.begin() + obj.recs[obj.iClnt].IndexFdsPipe[0]);
+            obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
+            obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
+            obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
             return (erorrCgi(cgiData));
+        }
         if (pipe(inputPipe) == -1)
+        {
+            close(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd);
+            Web.fds.erase(Web.fds.begin() + obj.recs[obj.iClnt].IndexFdsPipe[0]);
+            obj.req.erase(obj.req.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
+            obj.recs.erase(obj.recs.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
+            obj.data.erase(obj.data.begin() + obj.recs[obj.iClnt].IndexPipe[0]);
             return (erorrCgi(cgiData));
+        }
         obj.recs[obj.iClnt].IndexPipe.push_back(inputPipe[0]);
 
         pollfd client_poll;
@@ -237,8 +251,8 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
         {
             cgiData.dataReady = true;
             cgiData.endRead = true;
-            close(cgiData.fd);
-            closeCGI(Web, obj, method); // 7ala
+            // close(cgiData.fd);
+            // closeCGI(Web, obj, method); // 7ala
         }
         else if (bytes > 0)
         {
@@ -267,7 +281,10 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
     else
     {
         if (readFromCgi(Web, obj, log.cgiData, req.method))
+        {
+            closeCGI(Web, obj, req.method);
             return (1);
+        }
         if (log.cgiData.canRead) /* CHEEEECK /!\*/
         {
             

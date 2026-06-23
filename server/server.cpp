@@ -71,11 +71,14 @@ Webserv::Webserv()
     }
 }
 
-void Server::close_client(Webserv &Web, pollfd &p, int i)
+
+
+void Server::close_client(Webserv &Web, pollfd &p, size_t &i)
 {
-    // std::cout << "cose client    ,,,,\n";
-    close(p.fd);
     (void)p;
+    // if (recs[i].status == CGI_ACTIVE)
+    //     closeCGI(Web,*this,req[i].method);
+    close(Web.fds[index_Client[i]].fd);
     Web.fds.erase(Web.fds.begin() + index_Client[i]);
 
     req[i].clean();
@@ -85,11 +88,13 @@ void Server::close_client(Webserv &Web, pollfd &p, int i)
 
     data.erase(data.begin() + i);
     index_Client.erase(index_Client.begin() + index_Client.size() - 1);// fds.fd -1 --> fd==5-index=3  fd==5-index=2
+    i--;
 }
 
 void Server::acceptNewCleint(Webserv &Web, pollfd &p, size_t &i)
 {
     (void)p;
+    (void)i;
     int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
     if (client_fd != -1)
     {
@@ -111,7 +116,7 @@ void Server::acceptNewCleint(Webserv &Web, pollfd &p, size_t &i)
         // close_client(Web, p, i);
         return ;
     }
-    i++;
+    // i++;
 }
 
 bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sList)
@@ -193,9 +198,11 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
         }
         else
         {
+            std::cout << "time --------------\n";
             recs[i].clean();
             req[i] = Request();
             recs[i] = Record();
+            data[i] = Data();
             data[i].time = time(NULL);
         }
         
@@ -224,32 +231,12 @@ int main(/*int arc,char *arv[]*/)
 
                 for (size_t t = 0; t < Web.server[Web.s].serverPort.size(); t++)
                 {
-                    for (size_t i = 0; i < Web.server[Web.s].serverPort[t].index_Client.size();)
+                    for (size_t i = 0; i < Web.server[Web.s].serverPort[t].index_Client.size(); i++)
                     {
-                        // cout << "for  for\n";
                         if (sList.checkIfNotNull())
                         sList.checkLimitSessions();
-                        // cout << "1111111111111111111111\n";
                         pollfd &p = Web.fds[Web.server[Web.s].serverPort[t].index_Client[i]];
-                        
-                        if (p.fd == Web.server[Web.s].serverPort[t].server_fd && (p.revents & POLLIN)) // CHECK ALL SERVER FDS
-                        {
-                            // cout << "acceptNewCleint\n";
-                            Web.server[Web.s].serverPort[t].acceptNewCleint(Web, p, i);
-                            continue;
-                        }
-                        if (p.revents & (POLLIN))
-                        {
-                            if (!Web.server[Web.s].serverPort[t].receiveRequest(Web, p, i, sList))
-                                continue;
-                        }
-                        if ((p.revents & POLLOUT))
-                        {
-                            
-                            Web.server[Web.s].serverPort[t].iClnt = i;
-                            if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
-                                continue ;
-                        }
+
                         if ((i != 0 && time(NULL) - Web.server[Web.s].serverPort[t].data[i].time > 60) || (p.revents & (POLLERR)))
                         {
                             if (p.revents & (POLLERR))
@@ -259,7 +246,29 @@ int main(/*int arc,char *arv[]*/)
                             Web.server[Web.s].serverPort[t].close_client(Web, p, i);
                             continue;
                         }
-                        i++;
+                        
+
+                        if (p.fd == Web.server[Web.s].serverPort[t].server_fd && (p.revents & POLLIN)) // CHECK ALL SERVER FDS
+                        {
+                            // cout << "acceptNewCleint\n";
+                            Web.server[Web.s].serverPort[t].acceptNewCleint(Web, p, i);
+                            // continue;
+                        }
+                        else if (p.revents & (POLLIN))
+                        {
+                            Web.server[Web.s].serverPort[t].receiveRequest(Web, p, i, sList);
+                            // if (!Web.server[Web.s].serverPort[t].receiveRequest(Web, p, i, sList))
+                            //     continue;
+                        }
+                        else if ((p.revents & POLLOUT))
+                        {
+                            
+                            Web.server[Web.s].serverPort[t].iClnt = i;
+                            Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p);
+                            // if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
+                            //     continue ;
+                        }
+                        // i++
                     }
                 }
             }
