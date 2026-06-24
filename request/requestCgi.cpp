@@ -233,9 +233,7 @@ int parseCgiResponse(CgiHandler &cgiData)
         }
     }
     if (cgiData.status == 500 || cgiData.status == 502)
-    {
         cgiData.dataReady = true;
-    }   
     cgiData.cgBuff.clear();
     return 0;
 }

@@ -26,6 +26,7 @@
 #define SIZESR 8192
 
 // GET /file
+void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i);
 
 class Data
 {
@@ -48,26 +49,22 @@ class Server
 {
 
     public:
-        Server(std::vector<pollfd> &fds, int port, const std::string &IP);
+        Server(Webserv &Web, int port, const std::string &IP);
         std::vector<Server> serverPort;
 
         int server_fd;
 
-        size_t iClnt;
-        pid_t pid;
+        // size_t iClnt;
 
-        size_t clientId;
         std::vector<int> index_Client;
         sockaddr_in addr;
         socklen_t len;
-        std::vector<Data> data;
-        std::deque<Record> recs;
-        std::vector<Request> req;
 
-        void acceptNewCleint(Webserv &Web, pollfd &p, size_t &i);
+
+        void acceptNewCleint(Webserv &Web);
         bool receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sList);
-        bool sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p);
-        void close_client(Webserv &Web, pollfd &p, int i);
+        bool sendRespond(Webserv &Web, size_t &i, pollfd &p);
+        void close_client(Webserv &Web, size_t &i);
 };
 
 class Webserv
@@ -75,10 +72,17 @@ class Webserv
 public:
     Webserv();
     size_t s;
+    size_t n;
     int indexC;
     std::vector<Server> server;
+    std::vector<Data> data;
+    std::deque<Record> recs;
+    std::vector<Request> req;
     std::vector<pollfd> fds;
-
+    std::map<int, std::string> typeFd;
+    std::map<int, std::string> statusFd;
+    std::vector<int> reuseFd;
+    
     // config file
     int count;
     std::vector<Config> config;
