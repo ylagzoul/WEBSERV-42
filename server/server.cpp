@@ -239,17 +239,14 @@ int main(/*int arc,char *arv[]*/)
 
                         if (Web.typeFd[indexClnt] == "server" && (p.revents & POLLIN)) // CHECK ALL SERVER FDS
                         {
-                            std::cout << "acceptNewCleint\n";
                             Web.server[Web.s].serverPort[t].acceptNewCleint(Web);
                         }
                         else if (Web.typeFd[indexClnt] == "client" && (p.revents & POLLIN))
                         {
-                            std::cout << "receiveRequest\n";
                             Web.server[Web.s].serverPort[t].receiveRequest(Web, p, indexClnt, sList);
                         }
                         else if (Web.typeFd[indexClnt] == "client" && (p.revents & POLLOUT))
                         {
-                            cout << "sendRespond\n";
                             Web.server[Web.s].serverPort[t].sendRespond(Web, indexClnt, p);
                         }
                     }
