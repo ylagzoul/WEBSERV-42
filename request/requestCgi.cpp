@@ -165,6 +165,7 @@ void getHeadersCgi(CgiHandler &cgiData)
 void getBody(CgiHandler &cgiData)
 {
     cgiData.lenRead += cgiData.fullLine.length();
+
     if (cgiData.fd == -1)
     {
         cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandomName();
@@ -231,6 +232,10 @@ int parseCgiResponse(CgiHandler &cgiData)
             break;
         }
     }
+    if (cgiData.status == 500 || cgiData.status == 502)
+    {
+        cgiData.dataReady = true;
+    }   
     cgiData.cgBuff.clear();
     return 0;
 }

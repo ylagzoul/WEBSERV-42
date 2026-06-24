@@ -37,6 +37,13 @@ void Config::check_default()
     }
 }
 
+void Config::ft_login()
+{
+    if (str.size() != 2 || str[1][0] != '/' || str[1][str[1].size() - 1] != ';')
+        throw std::runtime_error("login");
+    login = str[1];
+}
+
 void Config::ft_cgi_data()
 {
     if (str.size() != 3 || str[1][0] != '.')
@@ -86,6 +93,8 @@ void Config::function()
     }
     else if (str[0] == "return")
         ft_return();
+    else if (str[0] == "login")
+        ft_login();
     else if (str[0] == "cgi_data")
         ft_cgi_data();
     else

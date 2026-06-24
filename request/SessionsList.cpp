@@ -36,7 +36,6 @@ void SessionsList::generateSession(Request &req)
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
             req.headers["set-cookie"] = "session_id=" + id + " ;path=/";
-            // cout << "WAAA3\n";
         }
         else
         { // I will improve the code to evit the repetition
@@ -48,7 +47,6 @@ void SessionsList::generateSession(Request &req)
 
             req.session = &sessionLis[id];
             req.headers["set-cookie"] = "session_id=" + id + ";path=/";
-            // cout << "BAAA3\n";
         }
     }
     else
