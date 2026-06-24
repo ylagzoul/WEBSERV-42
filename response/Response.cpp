@@ -205,7 +205,6 @@ int postBody(Record &log)
     }
     else
     {
-
         log.status = ACTIVE_RS;
         log.method = POST_RS;
     }
@@ -532,7 +531,7 @@ int validateFile(Record &log, playloadData &data, Config &conf)
         }
         else
         {
-            data.statusCode = 404;
+            data.statusCode = 403;//
             // data.statusName = "Not Found";
         }
         return 1;
@@ -561,6 +560,11 @@ int getHandler(Record &log, playloadData &data, Config &conf)
         return 1;
     return 0;
 }
+///     server {max bodysize}
+///     location /{max bodysize}
+///     location /server
+///     location /servers
+///     location /errors
 
 void findLongestMatch(playloadData &data, Config &conf, std::string reqPath) // tests
 {
@@ -773,7 +777,7 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
         log.data.connection = "keep-alive";
     findLongestMatch(log.data, conf, cleanPath(req.path));
     getImportantData(conf, log.data);
-    if (log.data.statusCode == 400)
+    if (log.data.statusCode == 400)//500
     {
         log.data.errorPages = conf.error_page;
         log.data.root = conf.root;

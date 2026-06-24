@@ -16,7 +16,6 @@ Server::Server(std::vector<pollfd> &fds, int port, const std::string &IP)
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     y++;
-    cout << "y                              ===  " << y <<      "            ]]]]\n";
     int opt = 1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         std::cerr << "error in setsockopt\n";
@@ -124,7 +123,8 @@ bool Server::receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sL
         // cout << "start receiveRequest";
         clientId = i;
         // cout << "ENTERED\n";
-        readRequest(req, clientId, buffer, bytes, Web.config[Web.s], sList);
+        readRequest(req[clientId], buffer, bytes, Web.config[Web.s], sList, recs[clientId].data);// clientid
+        // std::cout << "request: " << buffer << "status: " << req[clientId].status << std::endl;
         // cout << "EXITED\n";
         // std::cout << req[clientId].clientState << std::endl;
         if (req[clientId].clientState == CLIENT_ON)
@@ -181,7 +181,6 @@ bool Server::sendRespond(Webserv &Web, Server &obj, size_t &i, pollfd &p)
     }
     if ((data[i].sendNext && recs[i].status == CLOSED_RS) || recs[i].status == ERROR_RS)
     {
-        // std::cout << "]]]]]]]]]]]]]]]]]]]\n";
         p.events &= ~POLLOUT;
         
         if (recs[i].clientState == DISCONNECTED)

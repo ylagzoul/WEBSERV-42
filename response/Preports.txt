@@ -18,30 +18,29 @@ errorpages of the root
 .py|
 shouldn't be working
 
+cgi_data .py /usr/bin/python3;#to9ba
+cgi_data .ps /usr/bin/python3;//
+
 -----------------requests-----------------------------
 
 readme
-
 bonus ckies some to add
 
 ----------response----------
 to ask:
     keep alive with errors
     set cookies with cgi
-    bonus cgs some to add
+    bonus cgs check
     if working with the server data root + errorpages is good or not when the bad request happend?
 
 to handle:
     you should work with max body size in config?
-    status CHECKING CGI (small check when moha ends)
 
 -------cgi-------
 ask about pathinfo ///v
----
-error sent by and close clients
 --
 
 try and catch check!
 waitPid
 handle timeout of cgi -- madani script
-many pages open cgi failes
+many pages open cgi fail

@@ -1,17 +1,20 @@
 server {
     listen 127.0.0.1:3050;
-
+    root /home/abouhki/Desktop/owebserv;
     cgi_data .bla cgi_tester;
 
     location / {
         methods GET;
         root /home/abouhki/Desktop/owebserv;
         index index.html;
+        autoindex on;
     }
 
     location /post_body {
         methods POST;
-        client_max_body_size 100G;
+        upload_path /;
+        root /home/abouhki/Desktop/owebserv;
+        client_max_body_size 100K;
     }
 
     location /directory/ {
