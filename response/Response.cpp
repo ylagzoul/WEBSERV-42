@@ -761,7 +761,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath)
     std::string compare = data.realPath.substr(0, rootUploadDir.length());
     if (compare[compare.length() - 1] != '/')
         compare.push_back('/');
-    std::cout << "rootUploadDir: " << rootUploadDir << "  data.realPath: " << data.realPath << " compare: " << compare << std::endl;
+    // std::cout << "rootUploadDir: " << rootUploadDir << "  data.realPath: " << data.realPath << " compare: " << compare << std::endl;
     // if (rootUploadDir[rootUploadDir.length() - 1] != '/')
     //     rootUploadDir.push_back('/'); //Fix
     if (compare == rootUploadDir)
