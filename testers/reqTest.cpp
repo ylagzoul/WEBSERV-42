@@ -25,10 +25,15 @@ int main() {
     }
 
     const char* req =
-        "GET /server HTTP/1.1\r\n"
-        "Host: localhost\r\n"
-        "Connection: close\r\n"
-        "\r\n";
+        "POST / HTTP/1.1\r\n"
+        "Host: 127.0.0.1:3050\r\n"
+        "User-Agent: Go-http-client/1.1\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "Content-Type: test/file\r\n"
+        "Accept-Encoding:gzip\r\n"
+        "content-length: 10\r\n"
+        "\r\n"
+        "hellohellohello";
 
     // Send slowly
     for (size_t i = 0; req[i] != '\0'; ++i) {
@@ -38,7 +43,7 @@ int main() {
             return 1;
         }
         std::cout << req [i] << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     // Read and print response

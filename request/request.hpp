@@ -16,6 +16,7 @@
 #include "SessionsList.hpp"
 #include <vector>
 #include "../config_file/config_file.hpp"
+#include "../response/Response.hpp"
 
 using std::cout;
 
@@ -71,7 +72,7 @@ class Request
 
 };
 
-void    readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con, SessionsList &sList);
+void    readRequest(Request &req, char buffer[], size_t len, Config con, SessionsList &sList, playloadData &pdata);
 std::string tolowerStr(std::string str);
 
 

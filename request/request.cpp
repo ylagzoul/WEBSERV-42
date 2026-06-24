@@ -8,6 +8,32 @@ Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(
     recLen = 0;
 };
 
+void findLongestMatchLocation(playloadData &data, Config &conf, std::string reqPath) // tests
+{
+    std::map<int, std::string> locs;
+    if (reqPath.empty())
+        reqPath = "/";
+    for (size_t i = 0; i < conf.location.size(); i++)
+    {
+        std::string name = conf.location[i].location_name;
+        size_t f = reqPath.find(name);
+        if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
+            locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
+    }
+    if (locs.empty())
+    {
+        data.uri = reqPath.substr(1);
+        if (data.uri[0] != '/')
+            data.uri.insert(0, "/");
+        return;
+    }
+    else
+        data.location = locs.rbegin()->second;
+    data.uri = reqPath.substr(data.location.length());
+    if (data.uri[0] != '/')
+        data.uri.insert(0, "/");
+}
+
 bool checkDigits(Request &req, std::string str)
 {
     std::stringstream iss(str);
@@ -248,7 +274,7 @@ void fillCheck(Request &req, std::string reqLine)
     }
 }
 
-void getRequestLine(Request &req)
+void getRequestLine(Request &req, playloadData &pdata, Config &conf)
 {
     size_t pos = req.fullLine.find("\r\n");
     if (pos == std::string::npos)
@@ -258,6 +284,11 @@ void getRequestLine(Request &req)
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
     req.getMove = 1;
+    if (req.status == 200)
+    {
+        findLongestMatchLocation(pdata, conf, req.path);
+    }
+    
 }
 
 void getHeaders(Request &req)
@@ -360,68 +391,69 @@ void    generateCookies(Request &req, SessionsList &sList)
     sList.generateSession(req);
 }
 
-void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t len, Config con, SessionsList &sList)
+void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsList &sList, playloadData &pdata)
 {
+    (void)pdata;
     size_t pos;
     std::string tes;
-    req[userId].fullLine.append(buffer, len);
-    req[userId].recLen += len;
-    if (req[userId].getMove == 3)
-        req[userId].getMove = 0;
-    // cout << "[  " << req[userId].fullLine << " | " << req[userId].fullLine.length() << " -> " << len << "  ]\n";
+    req.fullLine.append(buffer, len);
+    req.recLen += len;
+    if (req.getMove == 3)
+        req.getMove = 0;
+    // cout << "[  " << req.fullLine << " | " << req.fullLine.length() << " -> " << len << "  ]\n";
     while (1)
     {
-        if (req[userId].method.empty())
-            getRequestLine(req[userId]);
-        if (req[userId].method.empty())
+        if (req.method.empty())
+            getRequestLine(req, pdata, con);
+        if (req.method.empty())
         {
-            if (req[userId].status != 200 )
-                req[userId].clientState = CLIENT_ON;
+            if (req.status != 200 )
+                req.clientState = CLIENT_ON;
             break ;
         }
         else
         {
-            pos = req[userId].fullLine.find("\r\n");
-            tes = req[userId].fullLine;
+            pos = req.fullLine.find("\r\n");
+            tes = req.fullLine;
         }
 
-        if (req[userId].getEndHeaders == false)
+        if (req.getEndHeaders == false)
         {
-            getHeaders(req[userId]);
-            if (req[userId].status == 500 || req[userId].status == 400 || req[userId].status == 501)
-                req[userId].clientState = CLIENT_ON ;
-            // cout << req[userId].getMove << std::endl;
-            if (req[userId].getMove == 3)
+            getHeaders(req);
+            if (req.status == 500 || req.status == 400 || req.status == 501)
+                req.clientState = CLIENT_ON ;
+            // cout << req.getMove << std::endl;
+            if (req.getMove == 3)
                 break ;
         }
-        req[userId].getMove = 2;
-        if (req[userId].method == "POST" && req[userId].getEndFile == false && req[userId].bodyType == FIXED)
-            getFixedBody(req[userId], con);
-        if (req[userId].lenRead == req[userId].recLen)
+        req.getMove = 2;
+        if (req.method == "POST" && req.getEndFile == false && req.bodyType == FIXED)
+            getFixedBody(req, con);
+        if (req.lenRead == req.recLen)
         {
-            if ((req[userId].getEndFile) || (req[userId].status == 500) || (req[userId].status == 400) || (req[userId].status == 501))
-                req[userId].clientState = CLIENT_ON;
+            if ((req.getEndFile) || (req.status == 500) || (req.status == 400) || (req.status == 501))
+                req.clientState = CLIENT_ON;
             if (pos != std::string::npos && tes.length() > 2)
                 tes.erase(0, pos + 2);
-            if (req[userId].method == "GET" || req[userId].method == "DELETE")
+            if (req.method == "GET" || req.method == "DELETE")
             {
-                if ((req[userId].method != "POST" && pos != std::string::npos && tes.length() == 2))
-                    req[userId].clientState = CLIENT_ON;
+                if ((req.method != "POST" && pos != std::string::npos && tes.length() == 2))
+                    req.clientState = CLIENT_ON;
             }
-            req[userId].lenRead = 0;
-            req[userId].recLen  = 0;
+            req.lenRead = 0;
+            req.recLen  = 0;
             break ;
         }
         
-        if ((req[userId].getEndFile))  /*|| (req[userId].method != "POST" && !req[userId].method.empty())*/
-            req[userId].finFlag = true;
-        if (req[userId].finFlag)
+        if ((req.getEndFile))  /*|| (req.method != "POST" && !req.method.empty())*/
+            req.finFlag = true;
+        if (req.finFlag)
         {
-            req[userId].clientState = CLIENT_ON;
+            req.clientState = CLIENT_ON;
             break;
         }
     }
-    if (req[userId].getEndHeaders)
-        generateCookies(req[userId], sList);
+    if (req.getEndHeaders)
+        generateCookies(req, sList);
     return;
 }
