@@ -10,6 +10,7 @@ class Sessions
 {
     public:
         std::string userName;
+        bool        logged;
         time_t      lastLog;
         Sessions();
 };

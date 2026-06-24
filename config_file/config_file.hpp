@@ -47,6 +47,8 @@ public:
     std::vector<std::string> cgiExt;
     std::vector<std::string> cgiPath;
 
+    std::string login;
+
     int size;
     int ser_num;
     int autoIndex;
@@ -73,6 +75,7 @@ public:
     void ft_autoindex();
     void ft_upload_path();
     void ft_return();
+    void ft_login();
     void ft_cgi_data();
 
     void check_default();

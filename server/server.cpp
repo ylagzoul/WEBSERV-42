@@ -192,6 +192,7 @@ int main(/*int arc,char *arv[]*/)
 {
     Webserv Web;
     SessionsList sList;
+    // std::cout << Web.config[0].login << std::endl;
     try
     {
         while (true)

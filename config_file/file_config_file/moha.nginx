@@ -1,6 +1,6 @@
 server {
     listen 127.0.0.1:3050;
-    root /home/mradouan/Desktop/WEBSERV-42;
+    root /home/mradouan/Desktop/small-portfolio;
     methods GET;
     error_page 400 /errors/400.html;
     error_page 403 /errors/403.html;
@@ -8,12 +8,27 @@ server {
     error_page 500 /errors/500.html;
     autoindex on;
 
+    login /home/mradouan/Desktop/small-portfolio/html/login.html;
+    
     location / {
         client_max_body_size 100G;
         methods POST GET;
-        upload_path /goinfre;
-        root /home/mradouan/Desktop/WEBSERV-42;
-        index index.html gogo.jpg;
+        upload_path /server;
+        root /home/mradouan/Desktop/WEBSERV-42/;
+        index gogo.jpg;
+        error_page 400 /errors/400.html;
+        error_page 403 /errors/403.html;
+        error_page 404 /errors/404.html;
+
+        cgi_data .py /usr/bin/python3;
+        autoindex on;
+    }
+    location /Desktop {
+        client_max_body_size 100G;
+        methods POST GET;
+        upload_path /html;
+        root /home/mradouan/Desktop/small-portfolio;
+        index gogo.jpg;
         error_page 400 /errors/400.html;
         error_page 403 /errors/403.html;
         error_page 404 /errors/404.html;

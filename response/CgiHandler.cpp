@@ -93,11 +93,13 @@ int erorrCgi(CgiHandler &cgiData)
 }
 CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), cgStatusName("OK"), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false), count(0)
 {
+    status = 200;
     dataReady = false;
     cgiValid = false;
     canRead = false;
     getMove = 0;
     countLenHead = 0;
+    fd = -1;
 };
 
 std::string normalizeKey(std::string key)
@@ -135,10 +137,10 @@ int createPipes(Webserv &Web, Server &obj, CgiHandler &cgiData, Request req)
     {
         int inputPipe[2];
         cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY, 0644);
-        if (cgiData.bodyFd < 0)
+        if (cgiData.bodyFd < 0)//
             return (erorrCgi(cgiData));
         if (pipe(inputPipe) == -1)
-            return (erorrCgi(cgiData));
+            return (erorrCgi(cgiData));//
         obj.recs[obj.iClnt].IndexPipe.push_back(inputPipe[0]);
 
         pollfd client_poll;
@@ -223,15 +225,13 @@ int readFromCgi(Webserv &Web, Server &obj, CgiHandler &cgiData, std::string meth
     {
         char buffer[SIZESR];
         int bytes = read(Web.fds[obj.recs[obj.iClnt].IndexFdsPipe[0]].fd, buffer, SIZESR - 1);
-
         if (bytes < 0)
             return (erorrCgi(cgiData));
+        
         else if (bytes == 0)
         {
             cgiData.dataReady = true;
             cgiData.endRead = true;
-            close(cgiData.fd);
-            closeCGI(Web, obj, method); // 7ala
         }
         else if (bytes > 0)
         {
@@ -260,17 +260,15 @@ int runCgi(Webserv &Web, Record &log, Server &obj, Request req)
     else
     {
         if (readFromCgi(Web, obj, log.cgiData, req.method))
-            return (1);
-        if (log.cgiData.canRead) /* CHEEEECK /!\*/
         {
-            
+            closeCGI(Web, obj, req.method);
+            return (1);
+        }
+        if (log.cgiData.canRead)
+        {
             parseCgiResponse(log.cgiData);
-            cout << log.cgiData.cgStatusCode << " <-> " << log.cgiData.cgStatusName << std::endl;
+            // cout << log.cgiData.cgStatusCode << " <-> " << log.cgiData.cgStatusName << std::endl;
             log.cgiData.canRead = false;
-            // if (cgiData.cgStatusCode == 500)
-            // {
-            //     closeCGI(Web, obj, method);
-            // }
         }
     }
     // std::cout << obj.pid << std::endl;
@@ -376,6 +374,12 @@ int cgiProcess(Webserv &Web, Record &log, Server &obj, Request req)
     }
     if (log.cgiData.dataReady == true || log.status == ERROR_RS)
     {
+        if (log.cgiData.fd != -1)
+            close(log.cgiData.fd), log.cgiData.fd = -1;
+        if (log.cgiData.dataReady)
+        {
+            closeCGI(Web, obj, req.method);
+        }
         if (cgiResponseHandler(log, log.cgiData, log.data))
             return 1;
         else

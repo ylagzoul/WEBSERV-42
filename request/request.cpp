@@ -368,7 +368,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
     req[userId].recLen += len;
     if (req[userId].getMove == 3)
         req[userId].getMove = 0;
-    // cout << "[  " << req[userId].fullLine << " | " << req[userId].fullLine.length() << " -> " << len << "  ]\n";
+    cout << "[  " << req[userId].fullLine << " | " << req[userId].fullLine.length() << " -> " << len << "  ]\n";
     while (1)
     {
         if (req[userId].method.empty())
@@ -390,7 +390,6 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
             getHeaders(req[userId]);
             if (req[userId].status == 500 || req[userId].status == 400 || req[userId].status == 501)
                 req[userId].clientState = CLIENT_ON ;
-            cout << req[userId].getMove << std::endl;
             if (req[userId].getMove == 3)
                 break ;
         }
@@ -418,7 +417,7 @@ void readRequest(std::vector<Request> &req, int userId, char buffer[], size_t le
         if (req[userId].finFlag)
         {
             req[userId].clientState = CLIENT_ON;
-            break;
+            break ;
         }
     }
     if (req[userId].getEndHeaders)
