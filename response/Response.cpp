@@ -2,11 +2,11 @@
 
 int v = 0;
 
-void Request::clean() // add youssef
-{
-    if (access(bodyPath.c_str(), F_OK) != -1)
-        std::remove(bodyPath.c_str());
-}
+// void Request::clean() // add youssef
+// {
+//     if (access(bodyPath.c_str(), F_OK) != -1)
+//         std::remove(bodyPath.c_str());
+// }
 
 void defaultErrorPage(playloadData &data)
 {
@@ -665,6 +665,7 @@ int checkErrorFile(playloadData &data, Config &conf)
     int bytes = 0;
     while ((bytes = read(fd, buff, sizeof(buff) - 1)) > 0)
         data.bodyStr.append(buff, bytes);
+    close(fd);
     if (bytes < 0)
         return 1;
     data.bodySize = info.st_size;
@@ -764,7 +765,7 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath)
     return 0;
 }
 
-int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config &conf)
+int responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_t &i)
 {
     log.data.retValid = false;
     log.data.isCgi = false;
@@ -804,7 +805,7 @@ int responseHandler(Webserv &Web, Server &obj, Record &log, Request &req, Config
     
     if (log.data.isCgi)
     {
-        if (cgiHandler(Web, log, obj, req, conf.listen_Port))
+        if (cgiHandler(Web, log, req, conf.listen_Port,i))
         {
             log.cgiData.cgiValid = false;
             return 1;
@@ -912,7 +913,7 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     }
 }
 
-std::string respond(Webserv &Web, Server &obj, Record &log, Config &conf, Request &req)
+std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &indexClnt)
 {
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -923,7 +924,7 @@ std::string respond(Webserv &Web, Server &obj, Record &log, Config &conf, Reques
         loadExtensions(log.data);
         loadStatusCode(log.data);
         log.data.connection = "Close";
-        if (responseHandler(Web, obj, log, req, conf))
+        if (responseHandler(Web, log, req, conf,indexClnt))
         {
             chooseErrorHandler(conf, log.data);
             log.data.contentType = log.data.mime["html"];
@@ -934,7 +935,7 @@ std::string respond(Webserv &Web, Server &obj, Record &log, Config &conf, Reques
     {
         if (log.method == CGI_RDWR)
         {
-            if (cgiProcess(Web, log, obj, req))
+            if (cgiProcess(Web, log, req,indexClnt))
             {
                 log.data.contentType = log.data.mime["html"];
                 chooseErrorHandler(conf, log.data);
