@@ -37,16 +37,27 @@ void Config::check_default()
     }
 }
 
-void Config::ft_login()
+void Config::ft_authInfo()
 {
-    if (str.size() != 2 || str[1][0] != '/' || str[1][str[1].size() - 1] != ';')
-        throw std::runtime_error("login");
-    login = str[1];
+    if (str[1][0] != '/' || str[str.size()-1][str[str.size()-1].size() - 1] != ';')
+        throw std::runtime_error("loginToken");
+    loginToken = str[1];
+    for (size_t i = 2; i < str.size() - 1; i++)
+    {
+        if (str[i][0] != '/')   
+            throw std::runtime_error("redirectTokens");
+        redirectTokens.push_back(str[i]);
+    }
 }
 
 void Config::ft_cgi_data()
 {
-    if (str.size() != 3 || str[1][0] != '.')
+    for (size_t i = 0; i < cgiExt.size();i++)
+    {
+        if (cgiExt[i] == str[1])
+            throw std::runtime_error("error in cgi_ data " + str[1]);
+    }
+    if (str.size() != 3 || str[1][0] != '.' || str[2][str[2].size() - 1] != ';')
         throw std::runtime_error("ft_cgi_data");
 
     if (delet_data["cgiExt"] == true)
@@ -93,8 +104,8 @@ void Config::function()
     }
     else if (str[0] == "return")
         ft_return();
-    else if (str[0] == "login")
-        ft_login();
+    else if (str[0] == "authInfo")
+        ft_authInfo();
     else if (str[0] == "cgi_data")
         ft_cgi_data();
     else

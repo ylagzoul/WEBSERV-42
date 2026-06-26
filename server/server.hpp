@@ -57,14 +57,17 @@ class Server
         // size_t iClnt;
 
         std::vector<int> index_Client;
+        std::vector<int> activClient;
+        size_t ii;
+
         sockaddr_in addr;
         socklen_t len;
 
 
         void acceptNewCleint(Webserv &Web);
-        bool receiveRequest(Webserv &Web, pollfd &p, size_t &i, SessionsList &sList);
-        bool sendRespond(Webserv &Web, size_t &i, pollfd &p);
-        void close_client(Webserv &Web, size_t &i);
+        bool receiveRequest(Webserv &Web, size_t &i, SessionsList &sList);
+        bool sendRespond(Webserv &Web, size_t &i);
+        void close_client(Webserv &Web, size_t &indexClnt);
 };
 
 class Webserv

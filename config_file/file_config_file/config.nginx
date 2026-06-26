@@ -1,5 +1,5 @@
 server {
-    listen 127.0.2.1:1111;
+    listen 127.0.0.1:8080;
     server_name youssef;
     root /home/ylagzoul/Desktop/web/server/;
     methods GET;
@@ -8,10 +8,9 @@ server {
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
     error_page 404 /;
-        cgi_data .py /usr/bin/python33;
-        cgi_data .py /usr/bin/python55;
-        cgi_data .py /usr/bin/python99;
-
+    cgi_data .py /usr/bin/python33;
+    cgi_data .py2 /usr/bin/python33;
+    authInfo /loginpage /page1 /page2 / page3;
     autoindex on;
 
     location / {
@@ -21,7 +20,6 @@ server {
         error_page 501 /errors/501.html;
         error_page 502 /errors/502.html;
         upload_path /server;
-        cgi_data .py /usr/bin/python3;
         autoindex on;
     }
 

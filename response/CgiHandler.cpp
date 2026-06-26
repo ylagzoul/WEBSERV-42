@@ -50,7 +50,7 @@ void releaseExecResources(CgiHandler &cgiData)
 void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
 {
     int status;
-    // close(cg)
+    cout << "....................................- close CGI\n";
     if (method == "POST")
     {
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
@@ -60,10 +60,12 @@ void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &ind
     
     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
     Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[0]] = "close";
+    Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[1]] = "close";
     Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[0]);
+    Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[1]);
 
-    waitpid(cgiData.pid, &status, WNOHANG);
     kill(cgiData.pid, SIGKILL);
+    waitpid(cgiData.pid, &status, WNOHANG);
 }
 
 void returnedInternalError(CgiHandler &cgi)
@@ -207,8 +209,8 @@ void createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDa
         throw std::exception();
     }
     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-    // if (method == "POST")
-    //     close(Web.fds[obj.recs[i].IndexFdsPipe[3]].fd);
+    if (method == "POST")
+        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
 }
 
 int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
