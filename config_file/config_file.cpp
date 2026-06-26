@@ -15,7 +15,6 @@ Config::Config()
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELET"] = false;
-    count = 1; // merge
 }
 
 void Config::splite()

@@ -12,7 +12,7 @@ Data::Data()
     recvNum = 0;
 }
 
-Server::Server(std::vector<pollfd> &fds, int port, const std::string &IP)
+Server::Server(std::vector<pollfd> &fds, int port, const std::string &ip)
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     y++;
@@ -22,7 +22,7 @@ Server::Server(std::vector<pollfd> &fds, int port, const std::string &IP)
     len = sizeof(addr);
     addr.sin_family = AF_INET;  
     addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(IP.c_str());
+    addr.sin_addr.s_addr = inet_addr(ip.c_str());
 
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
     {
@@ -213,7 +213,7 @@ int main(/*int arc,char *arv[]*/)
         {
            
             // cout << "while true\n";
-            if (poll(&Web.fds[0], Web.fds.size(), -1) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
+            if (poll(&Web.fds[0], Web.fds.size(), 30) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
             {
                 std::cout << "poll error\n";
                 continue;
@@ -249,12 +249,12 @@ int main(/*int arc,char *arv[]*/)
                             if (!Web.server[Web.s].serverPort[t].sendRespond(Web, Web.server[Web.s].serverPort[t], i, p))
                                 continue ;
                         }
-                        if ((i != 0 && time(NULL) - Web.server[Web.s].serverPort[t].data[i].time > 60) || (p.revents & (POLLERR)))
+                        if ((i != 0 && time(NULL) - Web.server[Web.s].serverPort[t].data[i].time > 30) || (p.revents & (POLLERR)))
                         {
                             if (p.revents & (POLLERR))
                                 cout << "close POLLERR\n";
                             else
-                                std::cout << "close clneit about finsh time..............................................\n\n";
+                                std::cout << "close client about finsh time..............................................\n\n";
                             Web.server[Web.s].serverPort[t].close_client(Web, p, i);
                             continue;
                         }

@@ -51,7 +51,6 @@ public:
     int ser_num;
     int autoIndex;
     std::map<std::string, bool> delet_data;
-    size_t count;
     std::vector<std::string> str;
     std::string line;
     std::vector<Location> location;

@@ -47,6 +47,8 @@ public:
     std::string cgiFile;
     std::string cgiExecutePath;
     std::string retPath;
+    std::string loginToken;
+    std::vector<std::string> redirectTokens;
     int retCode;
     size_t bodySize;
 
