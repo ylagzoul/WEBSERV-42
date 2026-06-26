@@ -14,17 +14,17 @@
 #define MAXIP 256
 #define RDWR_SIZE 8192
 
-#define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
-#define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
-#define CONF_FILE_PATH "/home/ylagzoul/Desktop/web/config_file/file_config_file/config.nginx"
+// #define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
+// #define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
+// #define CONF_FILE_PATH "/home/ylagzoul/Desktop/web/config_file/file_config_file/config.nginx"
 
 // # define LIST_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/server"
 // # define BODY_FILE_PATH "/home/mradouan/goinfre/"
 // # define CONF_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/config_file/file_config_file/moha.nginx"
 
-// # define LIST_FILE_PATH "/home/abouhki/goinfre/"
-// # define BODY_FILE_PATH "/home/abouhki/goinfre/"
-// # define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/toha.nginx"
+# define LIST_FILE_PATH "/home/abouhki/goinfre/"
+# define BODY_FILE_PATH "/home/abouhki/goinfre/"
+# define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/toha.nginx"
 
 class Location;
 
@@ -54,7 +54,6 @@ public:
     int ser_num;
     int autoIndex;
     std::map<std::string, bool> delet_data;
-    size_t count;
     std::vector<std::string> str;
     std::string line;
     std::vector<Location> location;

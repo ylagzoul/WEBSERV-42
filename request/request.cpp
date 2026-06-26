@@ -8,7 +8,13 @@ Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(
     recLen = 0;
 };
 
-void findLongestMatchLocation(playloadData &data, Config &conf, std::string reqPath) // tests
+void Request::clean() // add youssef
+{
+    if (access(bodyPath.c_str(), F_OK) != -1)
+        std::remove(bodyPath.c_str());
+}
+
+void findLongestMatchLocation(playloadData &data, Config &conf, std::string reqPath)
 {
     std::map<int, std::string> locs;
     if (reqPath.empty())
@@ -287,6 +293,11 @@ void getRequestLine(Request &req, playloadData &pdata, Config &conf)
     if (req.status == 200)
     {
         findLongestMatchLocation(pdata, conf, req.path);
+        for (size_t i = 0; i < conf.location.size(); i++)
+        {
+            if (conf.location[i].location_name == pdata.location)
+                req.maxBodySize = conf.location[i].conf.client_max_body_size ;
+        }
     }
     
 }
@@ -317,6 +328,8 @@ void getHeaders(Request &req)
             req.bodyType = FIXED;
         else if (req.method != "GET" && req.method != "DELETE")
             return (returnedBadError(req));
+        // if (req.method == "POST" && req.contentLength > req.maxBodySize)
+        //     return (returnedBadError(req));
         return ;
     }
     size_t colon = line.find(':');
@@ -347,7 +360,7 @@ void getHeaders(Request &req)
 }
 
 
-void getFixedBody(Request &req, Config con)
+void getFixedBody(Request &req)
 {
     req.lenRead += req.fullLine.length();
     if (req.bodyFd == -1)
@@ -362,7 +375,7 @@ void getFixedBody(Request &req, Config con)
         }
     }
     req.bodyLen += req.fullLine.length();
-    if (req.bodyLen > con.client_max_body_size)
+    if (req.bodyLen > req.maxBodySize)
     {
         req.getEndFile = true;
         return (returnedBadError(req));
@@ -393,7 +406,6 @@ void    generateCookies(Request &req, SessionsList &sList)
 
 void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsList &sList, playloadData &pdata)
 {
-    (void)pdata;
     size_t pos;
     std::string tes;
     req.fullLine.append(buffer, len);
@@ -428,7 +440,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
         }
         req.getMove = 2;
         if (req.method == "POST" && req.getEndFile == false && req.bodyType == FIXED)
-            getFixedBody(req, con);
+            getFixedBody(req);
         if (req.lenRead == req.recLen)
         {
             if ((req.getEndFile) || (req.status == 500) || (req.status == 400) || (req.status == 501))
