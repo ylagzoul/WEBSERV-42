@@ -15,9 +15,6 @@ authInfo
 .py|
 shouldn't be working
 
-cgi_data .py /usr/bin/python3;#to9ba
-cgi_data .ps /usr/bin/python3;//
-
 -------cgi---youssef----
 
 try and catch check!

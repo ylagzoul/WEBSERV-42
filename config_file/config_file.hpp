@@ -24,7 +24,7 @@
 
 # define LIST_FILE_PATH "/home/abouhki/goinfre/"
 # define BODY_FILE_PATH "/home/abouhki/goinfre/"
-# define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/toha.nginx"
+# define CONF_FILE_PATH "/home/abouhki/Desktop/owebserv/config_file/file_config_file/boha.nginx"
 
 class Location;
 

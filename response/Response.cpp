@@ -565,6 +565,8 @@ void getImportantData(Config &conf, playloadData &data)
         data.retCode = conf.retCode;
         data.cgiExt = conf.cgiExt;
         data.cgiPath = conf.cgiPath;
+        data.loginToken = conf.loginToken;
+        data.redirectTokens = conf.redirectTokens;
         return;
     }
     for (size_t i = 0; i < conf.location.size(); i++)
@@ -581,9 +583,16 @@ void getImportantData(Config &conf, playloadData &data)
             data.retCode = conf.location[i].conf.retCode;
             data.cgiExt = conf.location[i].conf.cgiExt;
             data.cgiPath = conf.location[i].conf.cgiPath;
+            data.loginToken = conf.location[i].conf.loginToken;
+            data.redirectTokens = conf.location[i].conf.redirectTokens;
             break;
         }
     }
+    // std::cout << data.loginToken << "\n";
+    // for(size_t i = 0; i < data.redirectTokens.size(); i++)
+    // {
+    //     std::cout << data.redirectTokens[i] << "\n";
+    // }
 }
 
 int checkErrorFile(playloadData &data, Config &conf)
@@ -717,7 +726,7 @@ int authenCheck(Record &log, Request &req)
     {
         if (req.method != "GET")
             return 0;
-        log.data.retPath = log.data.redirectTokens[0];
+        log.data.retPath = log.data.redirectTokens[0];//empty
         log.data.retValid = true;
         log.data.retCode = 302;
         return 1;
@@ -737,6 +746,8 @@ int authenCheck(Record &log, Request &req)
             }
             else if (log.data.redirectTokens[i] == req.path && logged)
             {
+                if (req.method == "POST")
+
                 if (req.method == "POST")
                     req.method = "GET";
                 return 0;
@@ -772,8 +783,8 @@ int responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_
         log.data.retValid = true;
         return 0;
     }
-    // if (authenCheck(log, req))
-    //     return 0;
+    if (authenCheck(log, req))
+        return 0;
     if (resolvePath(log.data, conf, req.path))
         return 1;
     if (log.data.isCgi)
