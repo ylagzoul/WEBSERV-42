@@ -134,6 +134,7 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
 
     char buffer[SIZESR] = {0};
     int bytes = recv(Web.fds[indexClnt].fd, buffer, SIZESR, 0);
+    // std::cout << buffer <<"\n\n\n\n";
     if (bytes > 0)
     {
         Web.data[indexClnt].time = ::time(NULL);
@@ -159,12 +160,12 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
     }
 }
 
-bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
+bool Server::sendRespond(Webserv &Web, size_t &indexClnt, SessionsList &sList)
 {
     if (Web.data[indexClnt].sendNext)
     {
         Web.indexC = indexClnt;
-        Web.data[indexClnt].response = respond(Web, Web.recs[indexClnt], Web.config[Web.s], Web.req[indexClnt], indexClnt);
+        Web.data[indexClnt].response = respond(Web, Web.recs[indexClnt], Web.config[Web.s], Web.req[indexClnt], indexClnt, sList);
 
         if (Web.data[indexClnt].response.empty() && (Web.recs[indexClnt].status == ACTIVE_RS || Web.recs[indexClnt].status == CGI_ACTIVE))
             return (true);
@@ -259,7 +260,7 @@ int main(int ac, char *arv[])
                         }
                         else if (Web.typeFd[indexClnt] == "client" && (Web.fds[indexClnt].revents & POLLOUT))
                         {
-                            Web.server[Web.s].serverPort[t].sendRespond(Web, indexClnt);
+                            Web.server[Web.s].serverPort[t].sendRespond(Web, indexClnt, sList);
                         }
                         Web.fds[indexClnt].revents = 0;
                     }

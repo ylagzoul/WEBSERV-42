@@ -60,7 +60,7 @@ class Server
 
         void acceptNewCleint(Webserv &Web);
         bool receiveRequest(Webserv &Web, size_t &i, SessionsList &sList);
-        bool sendRespond(Webserv &Web, size_t &i);
+        bool sendRespond(Webserv &Web, size_t &i, SessionsList &sList);
         void close_client(Webserv &Web, size_t &indexClnt);
 };
 
