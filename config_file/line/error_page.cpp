@@ -38,7 +38,7 @@ void Config::ft_client_max_body_size()
     size_t size_a = str[1].size();
     size_t i = 0;
     char c = str[1][size_a - 2];
-    if (size != 2 || !ft_str_char("MGK", str[1][size_a - 2]) || str[1][size_a - 1] != ';')
+    if (size != 2 || !ft_str_char("mMgGkKbB", str[1][size_a - 2]) || str[1][size_a - 1] != ';')
         throw std::runtime_error("client_max_body_size");
     str[1].erase(size_a - 2, 2);
     while (i < str[1].size())
@@ -48,12 +48,12 @@ void Config::ft_client_max_body_size()
         i++;
     }
     client_max_body_size = atoi(str[1].c_str());
-    if (c == 'G')
-        client_max_body_size = client_max_body_size * DEFAULT_MAX_BODY_SIZE * DEFAULT_MAX_BODY_SIZE * DEFAULT_MAX_BODY_SIZE;
-    else if (c == 'K')
-        client_max_body_size = client_max_body_size * DEFAULT_MAX_BODY_SIZE;
-    else if (c == 'M')
-        client_max_body_size = client_max_body_size * DEFAULT_MAX_BODY_SIZE * DEFAULT_MAX_BODY_SIZE;
+    if (c == 'K' || c == 'k')
+        client_max_body_size = client_max_body_size * 1024;
+    else if (c == 'M' || c == 'm')
+        client_max_body_size = client_max_body_size * 1024 * 1024;
+    else if (c == 'G' || c == 'g')
+        client_max_body_size = client_max_body_size * 1024 * 1024 * 1024;
 }
 
 void Config::ft_upload_path()

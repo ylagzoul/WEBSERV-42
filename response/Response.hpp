@@ -22,6 +22,7 @@ class Record;
 class Request;
 class Server;
 class Webserv;
+class SessionsList;
 
 class playloadData
 {
@@ -47,6 +48,8 @@ public:
     std::string cgiFile;
     std::string cgiExecutePath;
     std::string retPath;
+    std::string loginToken;
+    std::vector<std::string> redirectTokens;
     int retCode;
     size_t bodySize;
 
@@ -66,6 +69,6 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 
 int getFile(Record &log);
 
-std::string respond(Webserv &Web, Server &obj, Record &log, Config &conf, Request &req);
+std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &i, SessionsList &sList);
 
 #endif

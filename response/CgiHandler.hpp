@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <sys/types.h>
 
 class Webserv;
 class Record;
@@ -36,6 +37,8 @@ class CgiHandler
     char **cgiArgs;
     char **env;
     int canRead;
+
+    pid_t pid;
     
     // -------------------------------------------------- //
     size_t bodyLen;
@@ -72,8 +75,8 @@ class CgiHandler
 // #include "../server/server.hpp"
 
 
-int cgiHandler(Webserv &Web, Record &log, Server &obj, Request req, std::vector<int> &listenPorts);
-int cgiProcess(Webserv &Web, Record &log, Server &obj, Request req);
+int cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listenPorts, size_t &i);
+int cgiProcess(Webserv &Web, Record &log, Request req, size_t &i);
 int parseCgiResponse(CgiHandler &cgiData);
 void    returnedInternalError(CgiHandler &cgiData);
 void    returnedBadError(CgiHandler &cgi);

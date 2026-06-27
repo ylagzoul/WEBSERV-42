@@ -21,6 +21,7 @@ class SessionsList
         void    printSesions();
         void    generateSession(Request &req);
         void    checkLimitSessions();
+        void    storeInputs(Request &req, std::string email);
         bool    checkIfNotNull();
 
 };

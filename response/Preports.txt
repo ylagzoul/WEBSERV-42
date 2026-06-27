@@ -9,38 +9,29 @@ valgrind with webserv : 2 requests!
 
 |= with gogo.jpg
 
--------config----------
-
-errorpages of the root
--/location/
-100B? max
+-------config-----------
+authInfo
 .py|
 .py|
 shouldn't be working
 
-cgi_data .py /usr/bin/python3;#to9ba
-cgi_data .ps /usr/bin/python3;//
-
------------------requests-----------------------------
-
-readme
-bonus ckies some to add
-
-----------response----------
-to ask:
-    keep alive with errors
-    set cookies with cgi
-    bonus cgs check
-    if working with the server data root + errorpages is good or not when the bad request happend?
-
-to handle:
-    you should work with max body size in config?
-
--------cgi-------
-ask about pathinfo ///v
---
+-------cgi---youssef----
 
 try and catch check!
 waitPid
 handle timeout of cgi -- madani script
 many pages open cgi fail
+
+
+-----------------requests-----------------------------
+name my location with / at the begin to remove the perfix func
+set-Cookie to Cookie
+readme
+write fail in the half
+bonus ckies some to add
+
+----------response----------
+to ask:
+    bonus cgs check
+
+to handle:

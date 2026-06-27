@@ -6,14 +6,25 @@ server {
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
     autoindex on;
-    client_max_body_size 10G;
+    client_max_body_size 5K;
 
     location / {
-        client_max_body_size 100G;
+        client_max_body_size 20b;
         methods GET DELETE POST;
+        authInfo /portf/html/login.html /portf/html/index.html;
         upload_path /server;
         root /home/abouhki/Desktop/owebserv/;
-        index index.html gogo.jpg;
+        index gogo.jpg;
+        cgi_data .py /usr/bin/python3;
+        autoindex on;
+
+    }
+
+    location /portf {
+        methods GET POST;
+        upload_path /html;
+        root /home/abouhki/Desktop/owebserv/portf/;
+        index gogo.jpg;
         error_page 400 /errors/400.html;
         error_page 404 /errors/404.html;
         cgi_data .py /usr/bin/python3;

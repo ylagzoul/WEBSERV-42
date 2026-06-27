@@ -8,8 +8,6 @@ server {
     error_page 500 /errors/500.html;
     autoindex on;
 
-    login /home/mradouan/Desktop/small-portfolio/html/login.html;
-    
     location / {
         client_max_body_size 100G;
         methods POST GET;
@@ -20,6 +18,16 @@ server {
         error_page 403 /errors/403.html;
         error_page 404 /errors/404.html;
 
+        cgi_data .py /usr/bin/python3;
+        autoindex on;
+    }
+    location /portf {
+        methods GET POST;
+        upload_path /html;
+        root /home/mradouan/Desktop/WEBSERV-42/portf/;
+        index gogo.jpg;
+        error_page 400 /errors/400.html;
+        error_page 404 /errors/404.html;
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }

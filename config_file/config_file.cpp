@@ -15,7 +15,6 @@ Config::Config()
     methods["GET"] = false;
     methods["POST"] = false;
     methods["DELET"] = false;
-    count = 1; // merge
 }
 
 void Config::splite()
@@ -37,16 +36,33 @@ void Config::check_default()
     }
 }
 
-void Config::ft_login()
+void Config::ft_authInfo()
 {
-    if (str.size() != 2 || str[1][0] != '/' || str[1][str[1].size() - 1] != ';')
-        throw std::runtime_error("login");
-    login = str[1];
+    if (str.size() < 3 || str[1][0] != '/' || str[str.size() - 1][str[str.size() - 1].size() - 1] != ';')
+        throw std::runtime_error("loginToken");
+    loginToken = str[1];
+    for (size_t i = 2; i < str.size(); i++)
+    { 
+        if (str[i][0] != '/')
+            throw std::runtime_error("redirectTokens");
+        redirectTokens.push_back(str[i]);
+    }
+    redirectTokens[redirectTokens.size() - 1].erase(redirectTokens[redirectTokens.size() - 1].size() - 1);
 }
 
 void Config::ft_cgi_data()
 {
-    if (str.size() != 3 || str[1][0] != '.')
+    if (delet_data["cgiExt"] == true)
+    {
+        cgiExt.clear();
+        cgiPath.clear();
+    }
+    for (size_t i = 0; i < cgiExt.size(); i++)
+    {
+        if (cgiExt[i] == str[1])
+            throw std::runtime_error("error in cgi_ data " + str[1]);
+    }
+    if (str.size() != 3 || str[1][0] != '.' || str[2][str[2].size() - 1] != ';')
         throw std::runtime_error("ft_cgi_data");
 
     if (delet_data["cgiExt"] == true)
@@ -55,11 +71,6 @@ void Config::ft_cgi_data()
         cgiPath.clear();
     }
 
-    // if (cgiExt.size() > 1)
-    // {
-    //     cgiExt.erase(cgiExt.begin(), cgiExt.end());
-    //     cgiPath.erase(cgiPath.begin(), cgiPath.end());
-    // }
     str[2].erase(str[2].size() - 1);
     cgiExt.push_back(str[1]);
     cgiPath.push_back(str[2]);
@@ -93,8 +104,8 @@ void Config::function()
     }
     else if (str[0] == "return")
         ft_return();
-    else if (str[0] == "login")
-        ft_login();
+    else if (str[0] == "authInfo")
+        ft_authInfo();
     else if (str[0] == "cgi_data")
         ft_cgi_data();
     else
@@ -107,18 +118,16 @@ void ft_function(Location &obj)
     obj.conf.delet_data["error_page"] = true;
     obj.conf.delet_data["index"] = true;
     obj.conf.delet_data["cgiExt"] = true;
-
 }
 
-void Webserv::config_file()
+void Webserv::config_file(std::string nameFielConfig)
 {
     count = 0;
     try
     {
-
-        std::ifstream file(CONF_FILE_PATH);
+        std::ifstream file((nameFielConfig).c_str());
         if (!file)
-            std::cout << "Error opening file\n";
+            throw std::runtime_error("Error opening file");
 
         std::string sstr;
         bool emptyFile = false;
@@ -200,10 +209,11 @@ void Webserv::config_file()
             //     if (cnf.str.size() > 0)
             //         throw std::runtime_error("An error occurred after the server finished");
             // }
+
         }
         if (emptyFile == false || count != 0)
             throw std::runtime_error("empty config file or {}");
-}               
+    }
     catch (const std::exception &e)
     {
         std::cout << e.what() << std::endl;
