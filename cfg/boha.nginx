@@ -29,7 +29,6 @@ server {
         error_page 404 /errors/404.html;
         cgi_data .py /usr/bin/python3;
         autoindex on;
-
     }
 
     location /errors {

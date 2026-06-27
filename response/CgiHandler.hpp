@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <sys/types.h>
 
 class Webserv;
 class Record;

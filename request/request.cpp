@@ -6,6 +6,7 @@ Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(
     getMove = 0;
     countLenHead = 0;
     recLen = 0;
+    isLoggedCookie = false;
 };
 
 void Request::clean() // add youssef
@@ -285,18 +286,23 @@ void getRequestLine(Request &req, playloadData &pdata, Config &conf)
     size_t pos = req.fullLine.find("\r\n");
     if (pos == std::string::npos)
         return ;
-    // cout << "--------------------------------- dkhlet\n";
     fillCheck(req, req.fullLine.substr(0, pos));
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
     req.getMove = 1;
     if (req.status == 200)
     {
+        pdata.loginToken = "/portf/html/login.html";//tmp
+        pdata.redirectTokens.push_back("/portf/html/index.html");//tmp
         findLongestMatchLocation(pdata, conf, req.path);
         for (size_t i = 0; i < conf.location.size(); i++)
         {
             if (conf.location[i].location_name == pdata.location)
+            {
                 req.maxBodySize = conf.location[i].conf.client_max_body_size ;
+                // pdata.loginToken = conf.location[i].conf.loginToken;
+                // pdata.redirectTokens = conf.location[i].conf.redirectTokens;
+            }
         }
     }
     
@@ -322,8 +328,8 @@ void getHeaders(Request &req)
         it = req.headers.find("transfer-encoding");
         if (req.headers.find("host") != req.headers.end())
             req.host = req.headers["host"];
-        if (req.headers.find("set-cookie") != req.headers.end())
-            req.storeCookies(req.headers["set-cookie"]);
+        if (req.headers.find("cookie") != req.headers.end())
+            req.storeCookies(req.headers["cookie"]);
         if (req.headers.find("content-length") != req.headers.end())
             req.bodyType = FIXED;
         else if (req.method != "GET" && req.method != "DELETE")
@@ -399,9 +405,48 @@ void getFixedBody(Request &req)
     req.getEndFile = true;
 }
 
-void    generateCookies(Request &req, SessionsList &sList)
+std::string getEmail(char *buff)
+{
+    std::string tmp;
+    if (buff)
+        tmp = buff;
+    std::stringstream ss(tmp);
+    std::string email;
+    std::getline(ss, email, '&');
+    // cout << " --------------> " << email << std::endl;
+    return (email);
+}
+
+void    generateCookies(Request &req, SessionsList &sList, playloadData &pdata)
 {
     sList.generateSession(req);
+    // std::cout << pdata.redirectTokens[0] << ' ' << req.path << "\n";
+    for (size_t i = 0; i < pdata.redirectTokens.size(); i++)
+    {
+        if (pdata.redirectTokens[i] == req.path && req.method == "POST")
+        {
+            char buff[SIZESR];
+            int fd = open(req.bodyPath.c_str(), O_RDONLY);
+            if (fd == -1)
+            {
+                req.status = 500;
+                return ;
+            }
+            int bytes = read(fd, buff, SIZESR);
+            if (bytes == -1)
+            {
+                req.status = 500;
+                close(fd);
+                return ;
+            }//case0
+            else if (bytes > 0)
+            {
+                std::string email = getEmail(buff);
+                sList.storeInputs(req, email);
+                close(fd);
+            }
+        }
+    }
 }
 
 void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsList &sList, playloadData &pdata)
@@ -412,7 +457,6 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     req.recLen += len;
     if (req.getMove == 3)
         req.getMove = 0;
-    // cout << "[  " << req.fullLine << " | " << req.fullLine.length() << " -> " << len << "  ]\n";
     while (1)
     {
         if (req.method.empty())
@@ -434,7 +478,6 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
             getHeaders(req);
             if (req.status == 500 || req.status == 400 || req.status == 501)
                 req.clientState = CLIENT_ON ;
-            // cout << req.getMove << std::endl;
             if (req.getMove == 3)
                 break ;
         }
@@ -466,6 +509,6 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
         }
     }
     if (req.getEndHeaders)
-        generateCookies(req, sList);
+        generateCookies(req, sList, pdata);
     return;
 }

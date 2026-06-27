@@ -565,8 +565,8 @@ void getImportantData(Config &conf, playloadData &data)
         data.retCode = conf.retCode;
         data.cgiExt = conf.cgiExt;
         data.cgiPath = conf.cgiPath;
-        data.loginToken = conf.loginToken;
-        data.redirectTokens = conf.redirectTokens;
+        // data.loginToken = conf.loginToken;
+        // data.redirectTokens = conf.redirectTokens;
         return;
     }
     for (size_t i = 0; i < conf.location.size(); i++)
@@ -583,8 +583,8 @@ void getImportantData(Config &conf, playloadData &data)
             data.retCode = conf.location[i].conf.retCode;
             data.cgiExt = conf.location[i].conf.cgiExt;
             data.cgiPath = conf.location[i].conf.cgiPath;
-            data.loginToken = conf.location[i].conf.loginToken;
-            data.redirectTokens = conf.location[i].conf.redirectTokens;
+            // data.loginToken = conf.location[i].conf.loginToken;
+            // data.redirectTokens = conf.location[i].conf.redirectTokens;
             break;
         }
     }
@@ -719,14 +719,16 @@ int resolvePath(playloadData &data, Config &conf, std::string &reqPath)
     return 0;
 }
 
-int authenCheck(Record &log, Request &req)
+
+int authenCheck(Record &log, Request &req, SessionsList &sList)
 {
-    bool logged = true;
-    if (log.data.loginToken == req.path && logged)
+    // bool logged = true;
+    (void) sList;
+    if (log.data.loginToken == req.path && req.isLoggedCookie)
     {
         if (req.method != "GET")
             return 0;
-        log.data.retPath = log.data.redirectTokens[0];//empty
+        log.data.retPath = log.data.redirectTokens[0];
         log.data.retValid = true;
         log.data.retCode = 302;
         return 1;
@@ -735,29 +737,31 @@ int authenCheck(Record &log, Request &req)
     {
         if (req.method == "DELETE")
             return 0;
+        // std::cout << req.isLoggedCookie << "\n";
         for (size_t i = 0; i < log.data.redirectTokens.size(); i++)
         {
-            if (log.data.redirectTokens[i] == req.path && !logged)
+                
+            if (log.data.redirectTokens[i] == req.path && req.isLoggedCookie == false)
             {
                 log.data.retPath = log.data.loginToken;
                 log.data.retValid = true;
                 log.data.retCode = 302;
                 return 1;
             }
-            else if (log.data.redirectTokens[i] == req.path && logged)
+            else if (log.data.redirectTokens[i] == req.path && req.isLoggedCookie)
             {
                 if (req.method == "POST")
-
-                if (req.method == "POST")
                     req.method = "GET";
-                return 0;
+                return 0;// std::cout << "rootUploadDir: " << rootUploadDir << "  data.realPath: " << data.realPath << " compare: " << compare << std::endl;
+    // if (rootUploadDir[rootUploadDir.length() - 1] != '/')
+    //     rootUploadDir.push_back('/'); //Fix
             }
         }
     }
     return 0;
 }
 
-int responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_t &i)
+int responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_t &i, SessionsList &sList)
 {
     log.data.retValid = false;
     log.data.isCgi = false;
@@ -783,7 +787,7 @@ int responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_
         log.data.retValid = true;
         return 0;
     }
-    if (authenCheck(log, req))
+    if (authenCheck(log, req, sList))
         return 0;
     if (resolvePath(log.data, conf, req.path))
         return 1;
@@ -842,8 +846,8 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
     {
         res << "Content-Length: " << data.bodySize << "\r\n";
     }
-    if (req.headers.count("Cookie"))
-        res << "Set-Cookie: " << req.headers["Cookie"] << "\r\n"; // set cookie
+    if (req.headers.count("cookie"))
+        res << "Set-Cookie: " << req.headers["cookie"] << "\r\n"; // set cookie
     res << "\r\n";
     ret_resp = res.str();
 }
@@ -858,8 +862,8 @@ void generateRetResponse(playloadData &data, std::string &ret_resp, Request &req
         res << "HTTP/1.0 " << data.retCode << " " << data.table[data.retCode] << "\r\n";
         res << "Location: " << data.retPath << "\r\n";
     }
-    if (req.headers.count("Cookie"))
-        res << "Set-Cookie: " << req.headers["Cookie"] << "\r\n";
+    if (req.headers.count("cookie"))
+        res << "Set-Cookie: " << req.headers["cookie"] << "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Length: 0\r\n";
     res << "\r\n";
@@ -890,8 +894,8 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Type: " << data.contentType << "\r\n";
     res << "Content-Length: " << data.bodySize << "\r\n";
-    if (req.headers.count("Cookie"))
-        res << "Set-Cookie: " << req.headers["Cookie"] << "\r\n";
+    if (req.headers.count("cookie"))
+        res << "Set-Cookie: " << req.headers["cookie"] << "\r\n";
     res << "\r\n";
     if ((log.method != POST_RS && log.method != POST_LIST_RS) || log.status == ERROR_RS)
     {
@@ -899,7 +903,7 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     }
 }
 
-std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &indexClnt)
+std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &indexClnt, SessionsList &sList)
 {
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -910,7 +914,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
         loadExtensions(log.data);
         loadStatusCode(log.data);
         log.data.connection = "Close";
-        if (responseHandler(Web, log, req, conf,indexClnt))
+        if (responseHandler(Web, log, req, conf,indexClnt, sList))
         {
             chooseErrorHandler(conf, log.data);
             log.data.contentType = log.data.mime["html"];

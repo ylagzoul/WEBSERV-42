@@ -1,3 +1,3 @@
 #include "Sessions.hpp"
 
-Sessions::Sessions() : userName(""), logged(false), lastLog(0) {}
+Sessions::Sessions() : email(""), logged(false), lastLog(0) {}

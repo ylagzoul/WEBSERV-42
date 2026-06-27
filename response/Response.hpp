@@ -22,6 +22,7 @@ class Record;
 class Request;
 class Server;
 class Webserv;
+class SessionsList;
 
 class playloadData
 {
@@ -68,6 +69,6 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
 
 int getFile(Record &log);
 
-std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &i);
+std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &i, SessionsList &sList);
 
 #endif

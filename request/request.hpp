@@ -59,10 +59,11 @@ class Request
         bool        getEndFile;
         int         countLenHead;
         int         bodyType;
-        size_t          contentLength;
-        size_t          recLen;
-        int getMove;
-        size_t          maxBodySize;
+        size_t      contentLength;
+        size_t      recLen;
+        int         getMove;
+        size_t      maxBodySize;
+        bool        isLoggedCookie;
         // size_t          countLenHead;
         t_client_state  clientState;
         Sessions    *session;

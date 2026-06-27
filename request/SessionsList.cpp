@@ -27,7 +27,7 @@ void    SessionsList::createUnicId()
 void SessionsList::generateSession(Request &req)
 {
 
-    // std::cout << "test test test " <<  std::endl;
+    // std::cout << "---> " << req.cookies["session_id"] <<  std::endl;
     if (req.cookies.find("session_id") != req.cookies.end())
     {
         id = req.cookies["session_id"];
@@ -35,32 +35,49 @@ void SessionsList::generateSession(Request &req)
         {
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
-            req.headers["set-cookie"] = "session_id=" + id + " ;path=/";
+            req.headers["cookie"] = "session_id=" + id + " ;path=/";
+            if (req.session->logged == true)
+                req.isLoggedCookie = true;
         }
         else
         { // I will improve the code to evit the repetition
             createUnicId();
             Sessions tmpSession;
-            tmpSession.userName = id;
+            tmpSession.email = id;
             tmpSession.lastLog = std::time(NULL);
             sessionLis[id] = tmpSession;
+            req.cookies["session_id"] = id;
 
             req.session = &sessionLis[id];
-            req.headers["set-cookie"] = "session_id=" + id + ";path=/";
+            req.headers["cookie"] = "session_id=" + id + ";path=/";
         }
     }
     else
     {
         createUnicId();
         Sessions tmpSession;
-        tmpSession.userName = id;
+        tmpSession.email = id;
         tmpSession.lastLog = std::time(NULL);
         sessionLis[id] = tmpSession;
+        req.cookies["session_id"] = id;
 
         req.session = &sessionLis[id];
-        req.headers["set-cookie"] = "session_id=" + id + ";path=/";
+        req.headers["cookie"] = "session_id=" + id + ";path=/";
     }
     
+}
+
+void SessionsList::storeInputs(Request &req, std::string email)
+{
+    for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end(); ++it)
+    {
+        if (req.cookies["session_id"] == (*it).first)
+        {
+            (*it).second.email = email; 
+            (*it).second.logged = true;
+            req.isLoggedCookie = true;
+        }
+    }
 }
 
 void SessionsList::printSesions()
@@ -84,7 +101,7 @@ void    SessionsList::checkLimitSessions()
 
     for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end();)
     {
-        if ( now - it->second.lastLog > 30 )
+        if ( now - it->second.lastLog > 10 )
         {
             sessionLis.erase(it++);
             // cout << "DKHELT\n";
