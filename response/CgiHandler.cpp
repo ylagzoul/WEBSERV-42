@@ -50,7 +50,7 @@ void releaseExecResources(CgiHandler &cgiData)
 void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
 {
     // int status;
-    cout << "....................................- close CGI\n";
+    // cout << "....................................- close CGI\n";
     if (method == "POST")
     {
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);

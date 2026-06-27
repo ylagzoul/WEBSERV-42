@@ -56,6 +56,7 @@ class Server
         std::vector<int> index_Client;
         sockaddr_in addr;
         socklen_t len;
+        size_t ii;
 
 
         void acceptNewCleint(Webserv &Web);

@@ -76,9 +76,10 @@ void Server::close_client(Webserv &Web, size_t &indexClnt)
         closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
     close(Web.fds[indexClnt].fd);
     Web.fds[indexClnt].fd = -1;
-    Web.fds[indexClnt].events = 0;
-    Web.fds[indexClnt].revents = 0;
+    // Web.fds[indexClnt].events = 0;
+    // Web.fds[indexClnt].revents = 0;
     Web.statusFd[indexClnt] = "close";
+    // index_Client.erase(index_Client.begin() + ii);
     Web.reuseFd.push_back(indexClnt);
     // Web.req[indexClnt].clean();
     Web.recs[indexClnt].clean();
@@ -91,7 +92,7 @@ void Server::acceptNewCleint(Webserv &Web)
     {
         int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
 
-        if (client_fd == -1)
+        if (client_fd < 0)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 break;
@@ -104,6 +105,7 @@ void Server::acceptNewCleint(Webserv &Web)
         client_poll.revents = 0;
         if (Web.reuseFd.size() == 0)
         {
+            cout << "new\n";
             Web.fds.push_back(client_poll);
             Web.typeFd[Web.fds.size() - 1] = "client";
             Web.statusFd[Web.fds.size() - 1] = "active";
@@ -115,9 +117,12 @@ void Server::acceptNewCleint(Webserv &Web)
         }
         else
         {
+            cout << "reuseFd\n";
+
             Web.fds[Web.reuseFd[0]] = client_poll;
             Web.typeFd[Web.reuseFd[0]] = "client";
             Web.statusFd[Web.reuseFd[0]] = "active";
+            // index_Client.push_back(Web.reuseFd[0]);
             Web.req[Web.reuseFd[0]] = Request();
             Web.recs[Web.reuseFd[0]] = Record();
             Web.data[Web.reuseFd[0]] = Data();
@@ -142,20 +147,10 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
             Web.fds[indexClnt].events |= POLLOUT;
         return (true);
     }
-    else if (bytes == 0)
+    else
     {
         close_client(Web, indexClnt);
         return (false);
-    }
-    else
-    {
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
-            return (true);
-        else
-        {
-            close_client(Web, indexClnt);
-            return (false);
-        }
     }
 }
 
@@ -178,13 +173,8 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
     }
     if (sent < 0)
     {
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
-            return (true);
-        else
-        {
-            close_client(Web, indexClnt);
-            return (false);
-        }
+        close_client(Web, indexClnt);
+        return (false);
     }
     if ((Web.data[indexClnt].sendNext && Web.recs[indexClnt].status == CLOSED_RS) || Web.recs[indexClnt].status == ERROR_RS)
     {
@@ -221,11 +211,12 @@ int main(int arc,char *arv[])
     {
         while (true)
         {
-            if (poll(&Web.fds[0], Web.fds.size(), 30) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
+            if (poll(&Web.fds[0], Web.fds.size(), 30000) == -1) // MOCHKIL F TIMEOUT!!!!! 3LA 7SAB HANDLE DISCONNECTION DYAL CLIENT
             {
                 std::cout << "poll error\n";
                 continue;
             }
+            cout << "activ\n";
             int status;
             while ((waitpid(-1, &status, WNOHANG)) > 0)
                 ;
@@ -235,6 +226,8 @@ int main(int arc,char *arv[])
                 {
                     for (size_t i = 0; i < Web.server[Web.s].serverPort[t].index_Client.size(); i++)
                     {
+                        // cout << "index_Client = " << Web.fds.size() << "---" << i<< " ----- " << Web.server[Web.s].serverPort[t].index_Client.size() << "\n";
+                        Web.server[Web.s].serverPort[t].ii = i;
                         size_t indexClnt = Web.server[Web.s].serverPort[t].index_Client[i];
 
                         if (Web.statusFd[indexClnt] == "close")
@@ -243,7 +236,7 @@ int main(int arc,char *arv[])
                             sList.checkLimitSessions();
     
     
-                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.data[indexClnt].time > 60) || (Web.fds[indexClnt].revents & (POLLERR)))
+                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.data[indexClnt].time > 60) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP | POLLRDHUP)))
                         {
                             Web.server[Web.s].serverPort[t].close_client(Web, indexClnt);
                             continue;
@@ -261,7 +254,6 @@ int main(int arc,char *arv[])
                         {
                             Web.server[Web.s].serverPort[t].sendRespond(Web, indexClnt);
                         }
-                        Web.fds[indexClnt].revents = 0;
                     }
                 }
             }
