@@ -207,11 +207,11 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
     return (true);
 }
 
-int main(int arc,char *arv[])
+int main(int ac, char *arv[])
 {
-    if (arc != 2)
+    if (ac != 2)
     {
-        cout << "error arc \n";
+        cout << "Error: you should enter the config file only\n";
         exit(1);
     }
     Webserv Web(arv[1]);

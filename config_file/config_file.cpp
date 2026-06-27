@@ -125,7 +125,7 @@ void Webserv::config_file(std::string nameFielConfig)
     count = 0;
     try
     {
-        std::ifstream file((CONF_FILE_PATH + nameFielConfig).c_str());
+        std::ifstream file((nameFielConfig).c_str());
         if (!file)
             throw std::runtime_error("Error opening file");
 

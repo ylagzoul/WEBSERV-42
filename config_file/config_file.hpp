@@ -16,7 +16,6 @@
 
 #define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
 #define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
-#define CONF_FILE_PATH "/home/ylagzoul/Desktop/web/config_file/file_config_file/"
 
 
 class Location;

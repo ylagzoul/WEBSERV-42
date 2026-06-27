@@ -393,7 +393,6 @@ int cgiProcess(Webserv &Web, Record &log, Request req, size_t &i)
         if (log.cgiData.dataReady)
         {
             closeCGI(Web, log.cgiData, req.method, i);
-
         }
         if (cgiResponseHandler(log, log.cgiData, log.data))
             return 1;
