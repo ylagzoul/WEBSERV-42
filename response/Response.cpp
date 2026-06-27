@@ -381,7 +381,10 @@ int autoIndex(Record &log, playloadData &data)
     log.fileName += "bodyList_" + getRandName();
     log.fileFd = open(log.fileName.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
     if (log.fileFd == -1)
+    {
+        std::cerr << "bahmaz\n";
         return 1;
+    }
     log.dir = opendir(data.realPath.c_str());
     if (!log.dir)
     {
@@ -410,6 +413,7 @@ int autoIndex(Record &log, playloadData &data)
     if (postFilesList(log))
     {
         std::remove(log.fileName.c_str());
+        
         return 1;
     }
     if (log.method == GET_LIST_RS)
@@ -492,7 +496,7 @@ int validateFile(Record &log, playloadData &data)
         }
         else
         {
-            data.statusCode = 403;//
+            data.statusCode = 403;//////////////////
         }
         return 1;
     }
@@ -525,12 +529,16 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath)
     std::map<int, std::string> locs;
     if (reqPath.empty())
         reqPath = "/";
+    //location : /server
+    //req.path = /server/boha.txt
     for (size_t i = 0; i < conf.location.size(); i++)
     {
         std::string name = conf.location[i].location_name;
         size_t f = reqPath.find(name);
         if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
+        {
             locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
+        }
     }
     if (locs.empty())
     {
@@ -544,11 +552,13 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath)
     data.uri = reqPath.substr(data.location.length());
     if (data.uri[0] != '/')
         data.uri.insert(0, "/");
+    
 }
 
 void getImportantData(Config &conf, playloadData &data)
 {
     data.loginToken = "/portf/html/login.html";//tmp
+    data.redirectTokens.clear();
     data.redirectTokens.push_back("/portf/html/index.html");//tmp
     data.redirectTokens.push_back("/portf/nothing");//tmp
     data.redirectTokens.push_back("/portf/nothing");//tmp

@@ -22,9 +22,6 @@ using std::cout;
 
 #define FIXED   1
 
-
-
-
 typedef enum e_client_state
 {
     CLIENT_OF,
