@@ -752,9 +752,7 @@ int authenCheck(Record &log, Request &req, SessionsList &sList)
             {
                 if (req.method == "POST")
                     req.method = "GET";
-                return 0;// std::cout << "rootUploadDir: " << rootUploadDir << "  data.realPath: " << data.realPath << " compare: " << compare << std::endl;
-    // if (rootUploadDir[rootUploadDir.length() - 1] != '/')
-    //     rootUploadDir.push_back('/'); //Fix
+                return 0;
             }
         }
     }
