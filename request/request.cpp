@@ -292,17 +292,21 @@ void getRequestLine(Request &req, playloadData &pdata, Config &conf)
     req.getMove = 1;
     if (req.status == 200)
     {
-        pdata.loginToken = "/portf/html/login.html";//tmp
-        pdata.redirectTokens.push_back("/portf/html/index.html");//tmp
         findLongestMatchLocation(pdata, conf, req.path);
         for (size_t i = 0; i < conf.location.size(); i++)
         {
             if (conf.location[i].location_name == pdata.location)
             {
                 req.maxBodySize = conf.location[i].conf.client_max_body_size ;
-                // pdata.loginToken = conf.location[i].conf.loginToken;
-                // pdata.redirectTokens = conf.location[i].conf.redirectTokens;
+                pdata.loginToken = conf.location[i].conf.loginToken;
+                pdata.redirectTokens = conf.location[i].conf.redirectTokens;
             }
+        }
+        if (pdata.location.empty())
+        {
+            req.maxBodySize = conf.client_max_body_size;
+            pdata.loginToken = conf.loginToken;
+            pdata.redirectTokens = conf.redirectTokens;
         }
     }
     

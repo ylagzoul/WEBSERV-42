@@ -11,7 +11,7 @@ server {
     location / {
         client_max_body_size 20b;
         methods GET DELETE POST;
-        authInfo /portf/html/login.html /portf/html/index.html;
+        authInfo /portf/html/login.html /portf/html/index.html /portf/html/myProjects.html;
         upload_path /server;
         root /home/abouhki/Desktop/owebserv/;
         index gogo.jpg;

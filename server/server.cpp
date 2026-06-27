@@ -134,7 +134,6 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
 
     char buffer[SIZESR] = {0};
     int bytes = recv(Web.fds[indexClnt].fd, buffer, SIZESR, 0);
-    // std::cout << buffer <<"\n\n\n\n";
     if (bytes > 0)
     {
         Web.data[indexClnt].time = ::time(NULL);

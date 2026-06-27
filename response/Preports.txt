@@ -1,7 +1,6 @@
 --------server---------
 
 makefile
-conf in para
 header relink fix
 
 
@@ -10,10 +9,7 @@ valgrind with webserv : 2 requests!
 |= with gogo.jpg
 
 -------config-----------
-authInfo
-.py|
-.py|
-shouldn't be working
+authInfo mixed between server and location
 
 -------cgi---youssef----
 
@@ -24,14 +20,11 @@ many pages open cgi fail
 
 
 -----------------requests-----------------------------
-name my location with / at the begin to remove the perfix func
-set-Cookie to Cookie
 readme
 write fail in the half
-bonus ckies some to add
-
+bonus Cookies to test
 ----------response----------
 to ask:
-    bonus cgs check
+    bonus cgs check and with Cookie
 
 to handle:

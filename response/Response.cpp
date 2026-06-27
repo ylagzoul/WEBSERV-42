@@ -557,11 +557,11 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath)
 
 void getImportantData(Config &conf, playloadData &data)
 {
-    data.loginToken = "/portf/html/login.html";//tmp
-    data.redirectTokens.clear();
-    data.redirectTokens.push_back("/portf/html/index.html");//tmp
-    data.redirectTokens.push_back("/portf/nothing");//tmp
-    data.redirectTokens.push_back("/portf/nothing");//tmp
+    // data.loginToken = "/portf/html/login.html";//tmp
+    // data.redirectTokens.clear();
+    // data.redirectTokens.push_back("/portf/html/index.html");//tmp
+    // data.redirectTokens.push_back("/portf/nothing");//tmp
+    // data.redirectTokens.push_back("/portf/nothing");//tmp
     if (data.location.empty())
     {
         data.location = "/";
@@ -575,9 +575,7 @@ void getImportantData(Config &conf, playloadData &data)
         data.retCode = conf.retCode;
         data.cgiExt = conf.cgiExt;
         data.cgiPath = conf.cgiPath;
-        // data.loginToken = conf.loginToken;
-        // data.redirectTokens = conf.redirectTokens;
-        return;
+        return ;
     }
     for (size_t i = 0; i < conf.location.size(); i++)
     {
@@ -593,21 +591,19 @@ void getImportantData(Config &conf, playloadData &data)
             data.retCode = conf.location[i].conf.retCode;
             data.cgiExt = conf.location[i].conf.cgiExt;
             data.cgiPath = conf.location[i].conf.cgiPath;
-            // data.loginToken = conf.location[i].conf.loginToken;
-            // data.redirectTokens = conf.location[i].conf.redirectTokens;
             break;
         }
     }
     // std::cout << data.loginToken << "\n";
     // for(size_t i = 0; i < data.redirectTokens.size(); i++)
     // {
+    //     std::cout << "i: " << i << "\n";
     //     std::cout << data.redirectTokens[i] << "\n";
     // }
 }
 
-int checkErrorFile(playloadData &data, Config &conf)
+int checkErrorFile(playloadData &data)
 {
-    (void)conf;// ***************remove***************
     std::string file = data.root;
     if (file[file.length() - 1] != '/')
         file += '/';
@@ -640,11 +636,11 @@ int checkErrorFile(playloadData &data, Config &conf)
     return 0;
 }
 
-void chooseErrorHandler(Config &conf, playloadData &data)
+void chooseErrorHandler(playloadData &data)
 {
     if (data.errorPages.empty())
         defaultErrorPage(data);
-    else if (checkErrorFile(data, conf))
+    else if (checkErrorFile(data))
         defaultErrorPage(data);
 }
 
@@ -750,7 +746,6 @@ int authenCheck(Record &log, Request &req, SessionsList &sList)
         // std::cout << req.isLoggedCookie << "\n";
         for (size_t i = 0; i < log.data.redirectTokens.size(); i++)
         {
-                
             if (log.data.redirectTokens[i] == req.path && req.isLoggedCookie == false)
             {
                 log.data.retPath = log.data.loginToken;
@@ -761,7 +756,12 @@ int authenCheck(Record &log, Request &req, SessionsList &sList)
             else if (log.data.redirectTokens[i] == req.path && req.isLoggedCookie)
             {
                 if (req.method == "POST")
-                    req.method = "GET";
+                {
+                    log.data.retPath = log.data.loginToken;
+                    log.data.retValid = true;
+                    log.data.retCode = 302;
+                    return 1;
+                }
                 return 0;
             }
         }
@@ -776,7 +776,7 @@ int responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_
     log.data.statusCode = req.status;
     if (tolowerStr(req.headers["connection"]) == "keep-alive")
         log.data.connection = "keep-alive";
-    findLongestMatch(log.data, conf, cleanPath(req.path));//should be removed
+    // findLongestMatch(log.data, conf, cleanPath(req.path));//should be removed
     getImportantData(conf, log.data);
     if (log.data.statusCode != 200)
         return 1;
@@ -924,7 +924,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
         log.data.connection = "Close";
         if (responseHandler(Web, log, req, conf,indexClnt, sList))
         {
-            chooseErrorHandler(conf, log.data);
+            chooseErrorHandler(log.data);
             log.data.contentType = log.data.mime["html"];
             log.status = ERROR_RS;
         }
@@ -936,7 +936,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
             if (cgiProcess(Web, log, req,indexClnt))
             {
                 log.data.contentType = log.data.mime["html"];
-                chooseErrorHandler(conf, log.data);
+                chooseErrorHandler(log.data);
                 log.status = ERROR_RS;
             }
         }
@@ -946,7 +946,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
             {
                 std::remove(log.fileName.c_str());
                 log.data.statusCode = 500;
-                chooseErrorHandler(conf, log.data);
+                chooseErrorHandler(log.data);
                 log.status = ERROR_RS;
             }
         }
