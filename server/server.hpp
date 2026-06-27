@@ -53,13 +53,7 @@ class Server
         std::vector<Server> serverPort;
 
         int server_fd;
-
-        // size_t iClnt;
-
         std::vector<int> index_Client;
-        std::vector<int> activClient;
-        size_t ii;
-
         sockaddr_in addr;
         socklen_t len;
 
@@ -73,7 +67,7 @@ class Server
 class Webserv
 {
 public:
-    Webserv();
+    Webserv(std::string nameFielConfig);
     size_t s;
     size_t n;
     int indexC;
@@ -86,10 +80,9 @@ public:
     std::map<int, std::string> statusFd;
     std::vector<int> reuseFd;
     
-    // config file
     int count;
     std::vector<Config> config;
-    void config_file();
+    void config_file(std::string nameFielConfig);
 
 };
 

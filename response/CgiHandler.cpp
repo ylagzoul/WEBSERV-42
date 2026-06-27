@@ -49,7 +49,7 @@ void releaseExecResources(CgiHandler &cgiData)
 
 void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
 {
-    int status;
+    // int status;
     cout << "....................................- close CGI\n";
     if (method == "POST")
     {
@@ -65,7 +65,7 @@ void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &ind
     Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[1]);
 
     kill(cgiData.pid, SIGKILL);
-    waitpid(cgiData.pid, &status, WNOHANG);
+    // waitpid(cgiData.pid, &status, WNOHANG);
 }
 
 void returnedInternalError(CgiHandler &cgi)
