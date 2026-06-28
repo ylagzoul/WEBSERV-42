@@ -1,5 +1,5 @@
 server {
-    listen 127.0.0.1:8080;
+    listen 127.0.2.1:1111;
     server_name youssef;
     root /home/ylagzoul/Desktop/web/server/;
     methods GET;

@@ -50,18 +50,17 @@ class Server
 
     public:
         Server(Webserv &Web, int port, const std::string &IP);
-        std::vector<Server> serverPort;
-
         int server_fd;
+
+        std::vector<Server> serverPort;
         std::vector<int> index_Client;
         sockaddr_in addr;
         socklen_t len;
-        size_t ii;
 
 
         void acceptNewCleint(Webserv &Web);
-        bool receiveRequest(Webserv &Web, size_t &i, SessionsList &sList);
-        bool sendRespond(Webserv &Web, size_t &i);
+        bool receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList);
+        bool sendRespond(Webserv &Web, size_t &indexClnt);
         void close_client(Webserv &Web, size_t &indexClnt);
 };
 
@@ -70,6 +69,8 @@ class Webserv
 public:
     Webserv(std::string nameFielConfig);
     size_t s;
+    size_t t;
+    size_t i;
     size_t n;
     int indexC;
     std::vector<Server> server;
@@ -80,7 +81,6 @@ public:
     std::map<int, std::string> typeFd;
     std::map<int, std::string> statusFd;
     std::vector<int> reuseFd;
-    
     int count;
     std::vector<Config> config;
     void config_file(std::string nameFielConfig);
