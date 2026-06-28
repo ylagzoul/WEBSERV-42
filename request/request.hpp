@@ -21,6 +21,7 @@
 using std::cout;
 
 #define FIXED   1
+#define CHUNKED 2
 
 typedef enum e_client_state
 {

@@ -313,7 +313,6 @@ void getHeaders(Request &req)
     size_t endLine = req.fullLine.find("\r\n");
     if (endLine == std::string::npos)
     {
-        // cout << "MOMO " << req.getMove << "\n";
         if (req.getMove == 2)
             req.getMove = 3;
         return ;
@@ -330,7 +329,9 @@ void getHeaders(Request &req)
             req.host = req.headers["host"];
         if (req.headers.find("cookie") != req.headers.end())
             req.storeCookies(req.headers["cookie"]);
-        if (req.headers.find("content-length") != req.headers.end())
+        if (it != req.headers.end() && it->second == "chunked")
+            req.bodyType = CHUNKED;
+        else if (req.headers.find("content-length") != req.headers.end())
             req.bodyType = FIXED;
         else if (req.method != "GET" && req.method != "DELETE")
             return (returnedBadError(req));
@@ -365,6 +366,62 @@ void getHeaders(Request &req)
     return ;
 }
 
+
+void getChunkedBody(Request &req)
+{
+    size_t endTxt;
+    size_t endNum;
+    if (req.bodyFd == -1)
+    {
+        req.bodyLen = 0;
+        req.generateRandomName(BODY_FILE_PATH + std::string("client"));
+        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+        if (req.bodyFd == -1)
+        {
+            req.getEndFile = true;
+            return (returnedInternalError(req));
+        }
+    }
+    endNum = req.fullLine.find("\r\n");
+    if (endNum != std::string::npos)
+        endTxt = req.fullLine.find("\r\n", endNum + 2);
+    while (endNum != std::string::npos && endTxt != std::string::npos)
+    {
+        char *end = NULL;
+        std::string chunkNum  = req.fullLine.substr(0, endNum);
+        std::string chunkData = req.fullLine.substr(endNum + 2, endTxt - endNum - 2);
+        req.lenRead += req.fullLine.substr(0, endTxt + 2).length();
+        double chunkSize = std::strtol(chunkNum.c_str(), &end, 16);
+        if (errno == ERANGE || *end)
+        {
+            req.status = 400;
+            close(req.bodyFd);
+            return ;
+        }
+        if (chunkSize == 0 && chunkData.empty())
+        {
+            cout << "BOOYAH\n";
+            write(req.bodyFd, chunkData.c_str(), chunkSize);
+            req.fullLine.erase(0, endTxt + 2);
+            req.getEndFile = true;
+            close(req.bodyFd);
+            return ;
+        }
+        if (chunkData.length() < (size_t)chunkSize)
+        {
+            req.status = 400;
+            close(req.bodyFd);
+            return ;
+        }
+        write(req.bodyFd, chunkData.c_str(), chunkSize);
+        req.fullLine.erase(0, endTxt + 2);
+        endNum = req.fullLine.find("\r\n");
+        if (endNum != std::string::npos)
+            endTxt = req.fullLine.find("\r\n", endNum + 2);
+    }
+    if (req.getMove == 4)
+        req.getMove = 3;
+}
 
 void getFixedBody(Request &req)
 {
@@ -457,6 +514,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     req.recLen += len;
     if (req.getMove == 3)
         req.getMove = 0;
+    // cout << "-----> " << req.fullLine <<  " <----\n";
     while (1)
     {
         if (req.method.empty())
@@ -480,10 +538,19 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
                 req.clientState = CLIENT_ON ;
             if (req.getMove == 3)
                 break ;
+            req.getMove = 2; // This is the change in header
         }
-        req.getMove = 2;
         if (req.method == "POST" && req.getEndFile == false && req.bodyType == FIXED)
             getFixedBody(req);
+        else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
+        {
+            getChunkedBody(req);
+            // cout << "Get MOve : " <<  req.getMove << "\n";
+            if (req.getMove == 3)
+                break ;
+        }
+        req.getMove = 4;
+        // cout << "-> " << req.lenRead << "--> " << req.recLen << std::endl;
         if (req.lenRead == req.recLen)
         {
             if ((req.getEndFile) || (req.status == 500) || (req.status == 400) || (req.status == 501))
@@ -495,6 +562,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
                 if ((req.method != "POST" && pos != std::string::npos && tes.length() == 2))
                     req.clientState = CLIENT_ON;
             }
+            cout << "BOBO\n";
             req.lenRead = 0;
             req.recLen  = 0;
             break ;

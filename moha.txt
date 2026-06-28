@@ -65,3 +65,13 @@ DON'T TOUCH  THIS PLEASE
 //     if ( i != nb.size() )
 //         readRequest(req, fd);
 // }
+
+(endNum + 2, endTxt - endNum + 2)
+
+endNum = 1
+endTxt = 5
+
+3/r/n
+txt/r/n
+0/r/n
+/r/n
