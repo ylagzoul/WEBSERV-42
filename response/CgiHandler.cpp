@@ -49,8 +49,6 @@ void releaseExecResources(CgiHandler &cgiData)
 
 void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
 {
-    // int status;
-    cout << "....................................- close CGI\n";
     if (method == "POST")
     {
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
@@ -65,7 +63,6 @@ void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &ind
     Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[1]);
 
     kill(cgiData.pid, SIGKILL);
-    // waitpid(cgiData.pid, &status, WNOHANG);
 }
 
 void returnedInternalError(CgiHandler &cgi)
@@ -124,6 +121,7 @@ void addFdPollfd(Webserv &Web, size_t &indexClnt, size_t fdPipe, int poll)
         Web.fds.push_back(client_poll);
         Web.typeFd[Web.fds.size() - 1] = "pipe";
         Web.statusFd[Web.fds.size() - 1] = "active";
+        Web.server[Web.s].serverPort[Web.t].index_Client.push_back(Web.fds.size() - 1);
         Web.recs.push_back(Record());
         Web.req.push_back(Request());
         Web.data.push_back(Data());

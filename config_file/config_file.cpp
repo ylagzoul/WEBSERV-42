@@ -38,6 +38,11 @@ void Config::check_default()
 
 void Config::ft_authInfo()
 {
+    if (delet_data["authInfo"] == true)
+    {
+        loginToken.clear();
+        redirectTokens.clear();
+    }
     if (str.size() < 3 || str[1][0] != '/' || str[str.size() - 1][str[str.size() - 1].size() - 1] != ';')
         throw std::runtime_error("loginToken");
     loginToken = str[1];
@@ -48,6 +53,7 @@ void Config::ft_authInfo()
         redirectTokens.push_back(str[i]);
     }
     redirectTokens[redirectTokens.size() - 1].erase(redirectTokens[redirectTokens.size() - 1].size() - 1);
+    delet_data["authInfo"] = false;
 }
 
 void Config::ft_cgi_data()
@@ -118,6 +124,7 @@ void ft_function(Location &obj)
     obj.conf.delet_data["error_page"] = true;
     obj.conf.delet_data["index"] = true;
     obj.conf.delet_data["cgiExt"] = true;
+    obj.conf.delet_data["authInfo"] = true;
 }
 
 void Webserv::config_file(std::string nameFielConfig)
