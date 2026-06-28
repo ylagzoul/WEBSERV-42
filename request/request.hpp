@@ -21,6 +21,7 @@
 using std::cout;
 
 #define FIXED   1
+#define CHUNKED 2
 
 
 
