@@ -278,7 +278,7 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
         }
         if (log.cgiData.canRead) /* CHEEEECK /!\*/
         {
-            parseCgiResponse(log.cgiData);
+            parseCgiResponse(log.cgiData, req);
             log.cgiData.canRead = false;
         }
     }

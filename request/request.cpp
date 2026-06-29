@@ -392,7 +392,9 @@ void getChunkedBody(Request &req)
         std::string chunkData = req.fullLine.substr(endNum + 2, endTxt - endNum - 2);
         req.lenRead += req.fullLine.substr(0, endTxt + 2).length();
         double chunkSize = std::strtol(chunkNum.c_str(), &end, 16);
-        if (errno == ERANGE || *end)
+        // cout << "3amro -> " << chunkSize << std::endl;
+        req.bodyLen += chunkSize;
+        if (errno == ERANGE || *end || chunkSize < 0 || req.bodyLen > req.maxBodySize)
         {
             req.status = 400;
             close(req.bodyFd);
@@ -438,7 +440,7 @@ void getFixedBody(Request &req)
         }
     }
     req.bodyLen += req.fullLine.length();
-    if (req.bodyLen > req.maxBodySize)
+    if (req.contentLength > req.maxBodySize)
     {
         req.getEndFile = true;
         return (returnedBadError(req));
@@ -514,7 +516,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     req.recLen += len;
     if (req.getMove == 3)
         req.getMove = 0;
-    cout << "-----> " << req.fullLine <<  "\n";
+    // cout << "-----> " << req.fullLine <<  "\n";
     while (1)
     {
         if (req.method.empty())
