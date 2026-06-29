@@ -400,7 +400,7 @@ void getChunkedBody(Request &req)
         }
         if (chunkSize == 0 && chunkData.empty())
         {
-            cout << "BOOYAH\n";
+            // cout << "BOOYAH\n";
             write(req.bodyFd, chunkData.c_str(), chunkSize);
             req.fullLine.erase(0, endTxt + 2);
             req.getEndFile = true;
@@ -514,7 +514,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     req.recLen += len;
     if (req.getMove == 3)
         req.getMove = 0;
-    // cout << "-----> " << req.fullLine <<  " <----\n";
+    cout << "-----> " << req.fullLine <<  "\n";
     while (1)
     {
         if (req.method.empty())
@@ -545,12 +545,10 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
         else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
         {
             getChunkedBody(req);
-            // cout << "Get MOve : " <<  req.getMove << "\n";
             if (req.getMove == 3)
                 break ;
         }
         req.getMove = 4;
-        // cout << "-> " << req.lenRead << "--> " << req.recLen << std::endl;
         if (req.lenRead == req.recLen)
         {
             if ((req.getEndFile) || (req.status == 500) || (req.status == 400) || (req.status == 501))
@@ -562,7 +560,6 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
                 if ((req.method != "POST" && pos != std::string::npos && tes.length() == 2))
                     req.clientState = CLIENT_ON;
             }
-            cout << "BOBO\n";
             req.lenRead = 0;
             req.recLen  = 0;
             break ;

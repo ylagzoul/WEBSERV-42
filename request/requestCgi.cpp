@@ -216,27 +216,20 @@ void getChunked(CgiHandler &cgiData)
         cgiData.lenRead += cgiData.fullLine.substr(0, endTxt + 2).length();
         double chunkSize = std::strtol(chunkNum.c_str(), &end, 16);
         if (errno == ERANGE || *end)
-        {
-            cgiData.status = 400;
-            close(cgiData.bodyFd);
-            return ;
-        }
+            return(returnedBadError(cgiData));
         if (chunkSize == 0 && chunkData.empty())
         {
-            cout << "BOOYAH\n";
-            write(cgiData.bodyFd, chunkData.c_str(), chunkSize);
+            // cout << "BOOYAH\n";
+            if (write(cgiData.fd, chunkData.c_str(), chunkSize) == -1)
+                return(returnedInternalError(cgiData));
             cgiData.fullLine.erase(0, endTxt + 2);
             cgiData.getEndFile = true;
-            close(cgiData.bodyFd);
             return ;
         }
-        if (chunkData.length() < (size_t)chunkSize)
-        {
-            cgiData.status = 400;
-            close(cgiData.bodyFd);
-            return ;
-        }
-        write(cgiData.bodyFd, chunkData.c_str(), chunkSize);
+        if (chunkData.length() < chunkSize)
+            return(returnedBadError(cgiData));
+        if (write(cgiData.fd, chunkData.c_str(), chunkSize) == -1)
+                return(returnedInternalError(cgiData));
         cgiData.fullLine.erase(0, endTxt + 2);
         endNum = cgiData.fullLine.find("\r\n");
         if (endNum != std::string::npos)
@@ -260,8 +253,6 @@ int parseCgiResponse(CgiHandler &cgiData)
         if (pos == std::string::npos && cgiData.getEndHeaders == false)
             break ;
         tes = cgiData.fullLine;
-        if (cgiData.getEndHeaders == false)
-            getHeadersCgi(cgiData);
         if (cgiData.getEndHeaders == false) // FIX the /r/n
         {
             getHeadersCgi(cgiData);
@@ -273,13 +264,13 @@ int parseCgiResponse(CgiHandler &cgiData)
             cgiData.getMove = 2;
         }
         if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.bodyType == CHUNKED)
-            getBody(cgiData);
-        else if (cgiData.getEndHeaders && cgiData.getEndFile == false)
         {
             getChunked(cgiData);
             if (cgiData.getMove == 3)
                 break;
         }
+        else if (cgiData.getEndHeaders && cgiData.getEndFile == false)
+            getBody(cgiData);
         cgiData.getMove = 4;
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {

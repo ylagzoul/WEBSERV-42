@@ -1,11 +1,11 @@
 server {
     listen 127.0.0.1:3050;
-    root /home/abouhki/Desktop/owebserv;
+    root /home/mradouan/Desktop/WEBSERV-42;
     cgi_data .bla cgi_tester;
 
     location / {
         methods GET;
-        root /home/abouhki/Desktop/owebserv;
+        root /home/mradouan/Desktop/WEBSERV-42;
         index index.html;
         autoindex on;
     }
@@ -13,13 +13,14 @@ server {
     location /post_body {
         methods POST;
         upload_path /;
-        root /home/abouhki/Desktop/owebserv;
-        client_max_body_size 100K;
+        root /home/mradouan/Desktop/WEBSERV-42;
+        client_max_body_size 100M;
     }
 
     location /directory/ {
+        client_max_body_size 100M;
         methods GET;
-        root /home/abouhki/Desktop/owebserv/YoupiBanane;
+        root /home/mradouan/Desktop/WEBSERV-42/YoupiBanane;
         index youpi.bad_extension;
     }
 }
