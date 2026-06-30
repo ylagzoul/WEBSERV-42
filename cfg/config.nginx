@@ -22,7 +22,11 @@ server {
         cgi_data .py /usr/bin/python3;
         upload_path /server;
         autoindex on;
+
     }
 
-
 }
+
+
+POST / HTTP/1.1
+content-length:32000

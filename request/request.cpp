@@ -435,6 +435,7 @@ void getFixedBody(Request &req)
         }
     }
     req.bodyLen += req.fullLine.length();
+    cout << "--> " << req.bodyLen << std::endl;
     if (req.contentLength > req.maxBodySize)
     {
         req.getEndFile = true;
@@ -507,6 +508,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     std::string tes;
     req.fullLine.append(buffer, len);
     req.recLen += len;
+    // cout << "len " << len << std::endl;
     if (req.getMove == 3)
         req.getMove = 0;
     while (1)
