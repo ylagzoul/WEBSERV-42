@@ -21,7 +21,7 @@ for k, v in sorted(os.environ.items()):
 print("</pre>\r")
 
 print("<h2>STDIN</h2>")
-# data = sys.stdin.read()
+#data = sys.stdin.read()
 print("<pre>")
 # print(data if data else "(empty)")
 print("</pre>")
