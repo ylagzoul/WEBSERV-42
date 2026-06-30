@@ -6,7 +6,7 @@ typedef enum e_state
     //status
     NEW_RS = 100,
     ACTIVE_RS,
-    CGI_ACTIVE,
+    CGI_ACTIVE_RS,
     CLOSED_RS,
     ERROR_RS,
 
@@ -17,7 +17,7 @@ typedef enum e_state
     //methods
     NONE_RS,
     GET_RS,
-    GET_CGI_RS,
+    GET_CGI_RS,// not used
     POST_LIST_RS,
     GET_LIST_RS,
     POST_RS,

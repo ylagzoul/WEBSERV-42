@@ -15,31 +15,31 @@ void Request::clean() // add youssef
         std::remove(bodyPath.c_str());
 }
 
-void findLongestMatchLocation(playloadData &data, Config &conf, std::string reqPath)
-{
-    std::map<int, std::string> locs;
-    if (reqPath.empty())
-        reqPath = "/";
-    for (size_t i = 0; i < conf.location.size(); i++)
-    {
-        std::string name = conf.location[i].location_name;
-        size_t f = reqPath.find(name);
-        if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
-            locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
-    }
-    if (locs.empty())
-    {
-        data.uri = reqPath.substr(1);
-        if (data.uri[0] != '/')
-            data.uri.insert(0, "/");
-        return;
-    }
-    else
-        data.location = locs.rbegin()->second;
-    data.uri = reqPath.substr(data.location.length());
-    if (data.uri[0] != '/')
-        data.uri.insert(0, "/");
-}
+// void findLongestMatchLocation(playloadData &data, Config &conf, std::string reqPath)
+// {
+//     std::map<int, std::string> locs;
+//     if (reqPath.empty())
+//         reqPath = "/";
+//     for (size_t i = 0; i < conf.location.size(); i++)
+//     {
+//         std::string name = conf.location[i].location_name;
+//         size_t f = reqPath.find(name);
+//         if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
+//             locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
+//     }
+//     if (locs.empty())
+//     {
+//         data.uri = reqPath.substr(1);
+//         if (data.uri[0] != '/')
+//             data.uri.insert(0, "/");
+//         return;
+//     }
+//     else
+//         data.location = locs.rbegin()->second;
+//     data.uri = reqPath.substr(data.location.length());
+//     if (data.uri[0] != '/')
+//         data.uri.insert(0, "/");
+// }
 
 bool checkDigits(Request &req, std::string str)
 {
@@ -292,7 +292,7 @@ void getRequestLine(Request &req, playloadData &pdata, Config &conf)
     req.getMove = 1;
     if (req.status == 200)
     {
-        findLongestMatchLocation(pdata, conf, req.path);
+        findLongestMatch(pdata, conf, req.path);
         for (size_t i = 0; i < conf.location.size(); i++)
         {
             if (conf.location[i].location_name == pdata.location)
