@@ -335,8 +335,6 @@ void getHeaders(Request &req)
             req.bodyType = FIXED;
         else if (req.method != "GET" && req.method != "DELETE")
             return (returnedBadError(req));
-        // if (req.method == "POST" && req.contentLength > req.maxBodySize)
-        //     return (returnedBadError(req));
         return ;
     }
     size_t colon = line.find(':');
@@ -360,7 +358,6 @@ void getHeaders(Request &req)
     req.lenRead += req.fullLine.substr(0, endLine + 2).length();
     req.countLenHead += req.fullLine.substr(0, endLine + 2).length();    
     req.fullLine.erase(0, endLine + 2);
-    // cout << "O => " << req.countLenHead << std::endl;
     if (req.countLenHead >= MAX_LEN_HEADERS_FEILD)
         return (returnedBadError(req));
     return ;
@@ -392,7 +389,6 @@ void getChunkedBody(Request &req)
         std::string chunkData = req.fullLine.substr(endNum + 2, endTxt - endNum - 2);
         req.lenRead += req.fullLine.substr(0, endTxt + 2).length();
         double chunkSize = std::strtol(chunkNum.c_str(), &end, 16);
-        // cout << "3amro -> " << chunkSize << std::endl;
         req.bodyLen += chunkSize;
         if (errno == ERANGE || *end || chunkSize < 0 || req.bodyLen > req.maxBodySize)
         {
@@ -402,7 +398,6 @@ void getChunkedBody(Request &req)
         }
         if (chunkSize == 0 && chunkData.empty())
         {
-            // cout << "BOOYAH\n";
             write(req.bodyFd, chunkData.c_str(), chunkSize);
             req.fullLine.erase(0, endTxt + 2);
             req.getEndFile = true;
@@ -472,14 +467,12 @@ std::string getEmail(char *buff)
     std::stringstream ss(tmp);
     std::string email;
     std::getline(ss, email, '&');
-    // cout << " --------------> " << email << std::endl;
     return (email);
 }
 
 void    generateCookies(Request &req, SessionsList &sList, playloadData &pdata)
 {
     sList.generateSession(req);
-    // std::cout << pdata.redirectTokens[0] << ' ' << req.path << "\n";
     for (size_t i = 0; i < pdata.redirectTokens.size(); i++)
     {
         if (pdata.redirectTokens[i] == req.path && req.method == "POST")
@@ -516,7 +509,6 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     req.recLen += len;
     if (req.getMove == 3)
         req.getMove = 0;
-    // cout << "-----> " << req.fullLine <<  "\n";
     while (1)
     {
         if (req.method.empty())
@@ -540,7 +532,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
                 req.clientState = CLIENT_ON ;
             if (req.getMove == 3)
                 break ;
-            req.getMove = 2; // This is the change in header
+            req.getMove = 2;
         }
         if (req.method == "POST" && req.getEndFile == false && req.bodyType == FIXED)
             getFixedBody(req);
@@ -567,7 +559,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
             break ;
         }
         
-        if ((req.getEndFile))  /*|| (req.method != "POST" && !req.method.empty())*/
+        if ((req.getEndFile))
             req.finFlag = true;
         if (req.finFlag)
         {

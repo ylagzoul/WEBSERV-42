@@ -9,7 +9,7 @@ server {
     autoindex on;
 
     location / {
-        client_max_body_size 100G;
+        client_max_body_size 10B;
         methods POST GET;
         upload_path /server;
         root /home/mradouan/Desktop/WEBSERV-42/;
