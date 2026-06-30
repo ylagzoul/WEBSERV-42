@@ -15,31 +15,31 @@ void Request::clean() // add youssef
         std::remove(bodyPath.c_str());
 }
 
-void findLongestMatchLocation(playloadData &data, Config &conf, std::string reqPath)
-{
-    std::map<int, std::string> locs;
-    if (reqPath.empty())
-        reqPath = "/";
-    for (size_t i = 0; i < conf.location.size(); i++)
-    {
-        std::string name = conf.location[i].location_name;
-        size_t f = reqPath.find(name);
-        if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
-            locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
-    }
-    if (locs.empty())
-    {
-        data.uri = reqPath.substr(1);
-        if (data.uri[0] != '/')
-            data.uri.insert(0, "/");
-        return;
-    }
-    else
-        data.location = locs.rbegin()->second;
-    data.uri = reqPath.substr(data.location.length());
-    if (data.uri[0] != '/')
-        data.uri.insert(0, "/");
-}
+// void findLongestMatchLocation(playloadData &data, Config &conf, std::string reqPath)
+// {
+//     std::map<int, std::string> locs;
+//     if (reqPath.empty())
+//         reqPath = "/";
+//     for (size_t i = 0; i < conf.location.size(); i++)
+//     {
+//         std::string name = conf.location[i].location_name;
+//         size_t f = reqPath.find(name);
+//         if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
+//             locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
+//     }
+//     if (locs.empty())
+//     {
+//         data.uri = reqPath.substr(1);
+//         if (data.uri[0] != '/')
+//             data.uri.insert(0, "/");
+//         return;
+//     }
+//     else
+//         data.location = locs.rbegin()->second;
+//     data.uri = reqPath.substr(data.location.length());
+//     if (data.uri[0] != '/')
+//         data.uri.insert(0, "/");
+// }
 
 bool checkDigits(Request &req, std::string str)
 {
@@ -292,17 +292,21 @@ void getRequestLine(Request &req, playloadData &pdata, Config &conf)
     req.getMove = 1;
     if (req.status == 200)
     {
-        pdata.loginToken = "/portf/html/login.html";//tmp
-        pdata.redirectTokens.push_back("/portf/html/index.html");//tmp
-        findLongestMatchLocation(pdata, conf, req.path);
+        findLongestMatch(pdata, conf, req.path);
         for (size_t i = 0; i < conf.location.size(); i++)
         {
             if (conf.location[i].location_name == pdata.location)
             {
                 req.maxBodySize = conf.location[i].conf.client_max_body_size ;
-                // pdata.loginToken = conf.location[i].conf.loginToken;
-                // pdata.redirectTokens = conf.location[i].conf.redirectTokens;
+                pdata.loginToken = conf.location[i].conf.loginToken;
+                pdata.redirectTokens = conf.location[i].conf.redirectTokens;
             }
+        }
+        if (pdata.location.empty())
+        {
+            req.maxBodySize = conf.client_max_body_size;
+            pdata.loginToken = conf.loginToken;
+            pdata.redirectTokens = conf.redirectTokens;
         }
     }
     
@@ -400,7 +404,6 @@ void getChunkedBody(Request &req)
         }
         if (chunkSize == 0 && chunkData.empty())
         {
-            // cout << "BOOYAH\n";
             write(req.bodyFd, chunkData.c_str(), chunkSize);
             req.fullLine.erase(0, endTxt + 2);
             req.getEndFile = true;
@@ -514,7 +517,6 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     req.recLen += len;
     if (req.getMove == 3)
         req.getMove = 0;
-    cout << "-----> " << req.fullLine <<  "\n";
     while (1)
     {
         if (req.method.empty())

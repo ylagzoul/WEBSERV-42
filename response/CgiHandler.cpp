@@ -2,11 +2,11 @@
 #include "../server/server.hpp"
 #include "Response.hpp"
 
-int cvb;
+// TODO Remove int cvb;
 
 void createExecResources(CgiHandler &cgiData, playloadData &data)
 {
-    cvb++;
+    // cvb++; // TODO Remove 
     cgiData.env = NULL;
     cgiData.env = new char *[cgiData.headers.size() + 1];
     for (size_t i = 0; i < cgiData.headers.size() + 1; i++)
@@ -22,8 +22,8 @@ void createExecResources(CgiHandler &cgiData, playloadData &data)
     cgiData.cgiArgs[1] = NULL;
     cgiData.cgiArgs[2] = NULL;
     cgiData.cgiArgs[0] = new char[data.cgiExecutePath.length() + 1];
-    // if (cvb > 50)
-    //     throw std::bad_alloc();
+    // if (cvb > 50)// TODO Remove 
+    //     throw std::bad_alloc();// TODO Remove 
     cgiData.cgiArgs[1] = new char[data.cgiScriptFile.length() + 1];
     std::strcpy(cgiData.cgiArgs[0], data.cgiExecutePath.c_str());
     std::strcpy(cgiData.cgiArgs[1], data.cgiScriptFile.c_str());
@@ -36,7 +36,7 @@ void releaseExecResources(CgiHandler &cgiData)
         for (size_t i = 0; i < cgiData.headers.size(); i++)
             delete[] cgiData.env[i];
         delete[] cgiData.env;
-        cgiData.env = NULL; // know
+        cgiData.env = NULL; // know// TODO Remove 
     }
     if (cgiData.cgiArgs)
     {
@@ -98,7 +98,6 @@ CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), lenRead(0), ge
     canRead = false;
     getMove = 0;
     countLenHead = 0;
-    status = 200;
 };
 
 std::string normalizeKey(std::string key)
@@ -284,10 +283,10 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
 {
     if (log.status == NEW_RS)
     {
-        log.isItCgi = true;
+        log.isItCgi = true;//! remove
         if (createPipes(Web, log.cgiData, req, indexClnt))
             return (1);
-        log.status = CGI_ACTIVE;
+        log.status = CGI_ACTIVE_RS;
         log.method = CGI_RDWR;
         createCgi(Web, log.cgiData, req.method, log.data, indexClnt);
 
@@ -297,11 +296,10 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
     {
         if (readFromCgi(Web, log.cgiData, req.method, indexClnt))
         {
-            
             closeCGI(Web, log.cgiData, req.method, indexClnt);
             return (1);
         }
-        if (log.cgiData.canRead) /* CHEEEECK /!\*/
+        if (log.cgiData.canRead) // *CHEEEECK 
         {
             parseCgiResponse(log.cgiData);
             log.cgiData.canRead = false;
@@ -310,15 +308,11 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
     return 0;
 }
 
-void getCgiEnv(playloadData &data, Request req, CgiHandler &cgiData, std::vector<int> &listenPorts) // put them on the class so you'll have refer
+void getCgiUtils(playloadData &data, Request req, CgiHandler &cgiData, std::vector<int> &listenPorts) // put them on the class so you'll have refer
 {
     std::string pathInfo = "PATH_INFO=";
     std::string query = "QUERY_STRING=";
     size_t k = data.cgiInfo.find('?');
-
-    std::stringstream ss;
-    ss << listenPorts[0];
-    std::string port = ss.str();
     if (k != std::string::npos)
     {
         pathInfo += data.cgiInfo.substr(0, k);
@@ -326,7 +320,10 @@ void getCgiEnv(playloadData &data, Request req, CgiHandler &cgiData, std::vector
     }
     else
         pathInfo += data.cgiInfo;
-    // headers.push_back("AUTH")!!
+    std::stringstream ss;
+    ss << listenPorts[0];
+    std::string port = ss.str();
+    // headers.push_back("AUTH") //!
     cgiData.headers.push_back("GATEWAY_INTERFACE=CGI/1.1");
     cgiData.headers.push_back(pathInfo);
     cgiData.headers.push_back(query);
@@ -340,14 +337,13 @@ void getCgiEnv(playloadData &data, Request req, CgiHandler &cgiData, std::vector
     std::map<std::string, std::string>::iterator iter;
     for (iter = req.headers.begin(); iter != req.headers.end(); iter++)
     {
-        if (iter->first == "content-lenght")
+        if (iter->first == "content-length")
             cgiData.headers.push_back("CONTENT_LENGTH=" + iter->second);
         else if (iter->second == "content-type")
             cgiData.headers.push_back("CONTENT_TYPE=" + iter->second);
         else
             cgiData.headers.push_back("HTTP_" + normalizeKey(iter->first) + "=" + iter->second);
     }
-
     try
     {
         createExecResources(cgiData, data);
@@ -386,12 +382,12 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
         data.statusCode = 502;
         return 1;
     }
+    //if no body
     log.fd = open(cgiData.cgBodyFileName.c_str(), O_RDONLY);
     struct stat info;
     if (log.fd == -1 || stat(cgiData.cgBodyFileName.c_str(), &info) == -1)
     {
         data.statusCode = 500;
-        data.statusName = "Internal Server Error";
         return 1;
     }
     data.bodySize = info.st_size;
@@ -427,12 +423,12 @@ int cgiProcess(Webserv &Web, Record &log, Request req, size_t &i)
 
 int cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listenPorts, size_t &i)
 {
-    std::vector<char *> exFile;
-    std::vector<char *> env;
-    std::vector<std::string> headers;
+    // std::vector<char *> exFile;
+    // std::vector<char *> env;
+    // std::vector<std::string> headers;
     if (log.status == NEW_RS)
         log.cgiData.dataReady = false;
-    getCgiEnv(log.data, req, log.cgiData, listenPorts);
+    getCgiUtils(log.data, req, log.cgiData, listenPorts);
     if (cgiProcess(Web, log, req, i))
         return 1;
     return 0;

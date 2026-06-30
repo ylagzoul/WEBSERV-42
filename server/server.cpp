@@ -72,7 +72,7 @@ Webserv::Webserv(std::string nameFielConfig)
 
 void Server::close_client(Webserv &Web, size_t &indexClnt)
 {
-    if (Web.recs[indexClnt].status == CGI_ACTIVE)
+    if (Web.recs[indexClnt].status == CGI_ACTIVE_RS)
         closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
     close(Web.fds[indexClnt].fd);
     Web.fds[indexClnt].fd = -1;
@@ -132,12 +132,10 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
 
     char buffer[SIZESR] = {0};
     int bytes = recv(Web.fds[indexClnt].fd, buffer, SIZESR, 0);
-    // std::cout << buffer <<"\n\n\n\n";
     if (bytes > 0)
     {
         Web.data[indexClnt].time = ::time(NULL);
         readRequest(Web.req[indexClnt], buffer, bytes, Web.config[Web.s], sList, Web.recs[indexClnt].data);
-        cout << "EXITED\n";
         if (Web.req[indexClnt].clientState == CLIENT_ON)
             Web.fds[indexClnt].events |= POLLOUT;
         return (true);
@@ -156,11 +154,11 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt, SessionsList &sList)
         Web.indexC = indexClnt;
         Web.data[indexClnt].response = respond(Web, Web.recs[indexClnt], Web.config[Web.s], Web.req[indexClnt], indexClnt, sList);
 
-        if (Web.data[indexClnt].response.empty() && (Web.recs[indexClnt].status == ACTIVE_RS || Web.recs[indexClnt].status == CGI_ACTIVE))
+        if (Web.data[indexClnt].response.empty() && (Web.recs[indexClnt].status == ACTIVE_RS || Web.recs[indexClnt].status == CGI_ACTIVE_RS))
             return (true);
     }
     int sent = send(Web.fds[indexClnt].fd, Web.data[indexClnt].response.c_str(), Web.data[indexClnt].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
-    Web.recs[indexClnt].number += sent;
+    Web.recs[indexClnt].number += sent; // tmp
     if (sent > 0)
     {
         Web.data[indexClnt].response = Web.data[indexClnt].response.substr(sent);
@@ -261,7 +259,7 @@ int main(int ac, char *arv[])
     }
     catch (std::exception &e)
     {
-        std::cout << e.what() << std::endl;
+        std::cout << "Error: " << e.what() << std::endl;
         for (size_t s = 0; s < Web.server.size(); s++)
         {
             for (size_t t = 0; t < Web.server[s].serverPort.size(); t++)

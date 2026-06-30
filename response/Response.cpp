@@ -4,10 +4,10 @@ void defaultErrorPage(playloadData &data)
 {
     std::stringstream ss;
     ss <<
-        "<!DOCTYPE html>\n"
+        "<!DOCTYPE html>\n"//!you can remove
         "<html lang=\"en\">\n"
         "<head>\n"
-        "<meta charset=\"UTF-8\">\n"
+        "<meta charset=\"UTF-8\">\n"//!you can remove
         "<title>Error page</title>\n"
         "</head>\n"
         "<body>\n";
@@ -16,32 +16,33 @@ void defaultErrorPage(playloadData &data)
         "<hr>"
         "</body>\n"
         "</html>\n";
-    data.bodyStr = ss.str();
-    data.bodySize = data.bodyStr.length();
+    data.errorBody = ss.str();
+    data.bodySize = data.errorBody.length();
+    data.contentType = data.mime["html"];
 }
 
-int readyChecks(Request &req, playloadData &data)
-{
-    data.statusCode = req.status;
-    if (req.status != 200)
-    {
-        if (req.status)
-        // data.statusCode = "400";
-        return 1;
-    }
-    // else if (req.status == 500)
-    // {
-        // data.statusCode = "500";
-        // return 1;
-    // }
-    // if (req.method != "GET" && req.method != "POST" && req.method != "DELETE")
-    // {
-    //     data.statusCode = 501;
-    //     return 1;
-    // }
-    // data.statusCode = "200";
-    return 0;
-}
+// int readyChecks(Request &req, playloadData &data)
+// {
+//     data.statusCode = req.status;
+//     if (req.status != 200)
+//     {
+//         if (req.status)
+//         // data.statusCode = "400";
+//         return 1;
+//     }
+//     // else if (req.status == 500)
+//     // {
+//         // data.statusCode = "500";
+//         // return 1;
+//     // }
+//     // if (req.method != "GET" && req.method != "POST" && req.method != "DELETE")
+//     // {
+//     //     data.statusCode = 501;
+//     //     return 1;
+//     // }
+//     // data.statusCode = "200";
+//     return 0;
+// }
 
 void loadExtensions(playloadData &data)
 {
@@ -91,7 +92,8 @@ void getContentType(playloadData &data, std::string path)
 {
     std::string extension;
     size_t pos = path.rfind('.');
-    data.contentType = "application/octet-stream";
+    if (data.contentType.empty())
+        data.contentType = "application/octet-stream";
     if (pos != std::string::npos)
     {
         extension = path.substr(pos + 1);
@@ -114,12 +116,12 @@ int deleteHandler(Record &log)
         log.data.statusCode = 500;
         return 1;
     }
-    if (S_ISDIR(info.st_mode))
+    if (S_ISDIR(info.st_mode))//do you need?
     {
         log.data.statusCode = 403;
         return 1;
     }
-    else if (access(log.data.realPath.c_str(), W_OK) == -1)
+    else if (access(log.data.realPath.c_str(), W_OK) == -1)//do you need?
     {
         log.data.statusCode = 403;
         return 1;
@@ -141,11 +143,10 @@ std::string getRandName()
 {
     static size_t count;
     std::stringstream ss;
-    time_t tStamp = time(NULL);
-    struct tm *currentTime = localtime(&tStamp);
+    time_t tStamp = std::time(NULL);
+    struct tm *currentTime = std::localtime(&tStamp);
     char arr[9];
-
-    strftime(arr, sizeof(arr), "%H%M%S", currentTime);
+    std::strftime(arr, sizeof(arr), "%H%M%S", currentTime);
     std::string randName = arr;
     ss << count++;
     randName += '_';
@@ -157,7 +158,7 @@ int postBody(Record &log)
 {
     char buff[RDWR_SIZE];
     int bytes = read(log.fileFd, buff, sizeof(buff) - 1);
-    buff[bytes] = '\0';
+    buff[bytes] = '\0';//!why
     if (bytes == -1)
     {
         log.data.statusCode = 500;
@@ -166,7 +167,7 @@ int postBody(Record &log)
         // close(log.fileFd);
         return 1;
     }
-    if ((write(log.fd, buff, bytes)) == -1)
+    if ((write(log.fd, buff, bytes)) == -1)// write smaller than the bytes
     {
         log.data.statusCode = 500;
         // close(log.fd);
@@ -202,16 +203,16 @@ int postHandler(Record &log, Request &req)
     {
         if (S_ISDIR(info.st_mode))
         {
-            log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
-            if (log.fileFd == -1)
-            {
-                log.data.statusCode = 500;
-                return 1;
-            }
             std::string randName = getRandName();
             std::string tmpStr = log.data.realPath + '/' + randName + ".txt";
             log.fd = open(tmpStr.c_str(), O_WRONLY | O_CREAT, 0644);
             if (log.fd == -1)
+            {
+                log.data.statusCode = 500;
+                return 1;
+            }
+            log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
+            if (log.fileFd == -1)
             {
                 log.data.statusCode = 500;
                 return 1;
@@ -231,7 +232,7 @@ int postHandler(Record &log, Request &req)
         log.fd = open(log.data.realPath.c_str(), O_WRONLY | O_CREAT, 0644);
         if (log.fd == -1)
         {
-            log.data.statusCode = 403; // -definitely 500---- ask
+            log.data.statusCode = 500; //! ---- it was 403 ---- ask
             return 1;
         }
         log.fileFd = open(req.bodyPath.c_str(), O_RDONLY);
@@ -248,6 +249,7 @@ int postHandler(Record &log, Request &req)
     return 0;
 }
 
+
 int getFile(Record &log)
 {
     char buffer[RDWR_SIZE];
@@ -261,9 +263,8 @@ int getFile(Record &log)
             std::remove(log.fileName.c_str());
         return 1;
     }
-
     log.buffer.append(buffer, bytes);
-    if (bytes < RDWR_SIZE)
+    if (bytes < RDWR_SIZE)//!eof
     {
         log.status = CLOSED_RS;
         // close(log.fd);
@@ -328,17 +329,19 @@ int postFilesList(Record &log)
         tmpPath.resize(tmpPath.length() - 1);
     tmpPath = cleanPath(tmpPath);
     while ((rdir = readdir(log.dir)))
-    {
+    {	
         tmp = rdir->d_name;
-        if (tmp == "." || tmp == "..")
+        if (tmp == ".")
             continue;
-        buff = "<a href=\"" + tmpPath + '/' + fileNameHandler(tmp) + "\">" + tmp + "</a><br>\n";
+        buff = "<a href=\"" + tmpPath + '/' + fileNameHandler(tmp) + "\">";
+        if (tmp == "..")
+            tmp += "/";
+        buff += tmp + "</a><br>\n";
         tmpBuff += buff;
         if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
         {
             // close(log.fileFd);
             // closedir(log.dir);
-            log.method = NONE_RS;
             return 1;
         }
         if (tmpBuff.length() > RDWR_SIZE)
@@ -355,7 +358,6 @@ int postFilesList(Record &log)
     {
         // close(log.fileFd);
         // closedir(log.dir);
-        log.method = NONE_RS;
         return 1;
     }
     log.method = GET_LIST_RS;
@@ -368,10 +370,7 @@ int postFilesList(Record &log)
     log.data.bodySize = info.st_size;
     log.fd = open(log.fileName.c_str(), O_RDONLY);
     if (log.fd == -1)
-    {
-        log.method = NONE_RS;
         return 1;
-    }
     return 0;
 }
 
@@ -381,10 +380,7 @@ int autoIndex(Record &log, playloadData &data)
     log.fileName += "bodyList_" + getRandName();
     log.fileFd = open(log.fileName.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
     if (log.fileFd == -1)
-    {
-        std::cerr << "bahmaz\n";
         return 1;
-    }
     log.dir = opendir(data.realPath.c_str());
     if (!log.dir)
     {
@@ -394,15 +390,14 @@ int autoIndex(Record &log, playloadData &data)
     data.contentType = data.mime["html"];
     std::string buff;
     buff =
-        "<!DOCTYPE html>\n"
+        "<!DOCTYPE html>\n"//!you can remove
         "<html lang=\"en\">\n"
         "<head>\n"
-        "<meta charset=\"UTF-8\">\n"
-        "<title>File List</title>\n"
+        "<meta charset=\"UTF-8\">\n"//!you can remove
+        "<title>Directory Listing</title>\n"
         "</head>\n"
         "<body>\n"
-        "<h1>File List</h1>\n"
-        "<a href=\"../\">../</a><br>\n";
+        "<h1>Directory Listing</h1>\n";
     if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
     {
         // close(log.fileFd);
@@ -413,7 +408,6 @@ int autoIndex(Record &log, playloadData &data)
     if (postFilesList(log))
     {
         std::remove(log.fileName.c_str());
-        
         return 1;
     }
     if (log.method == GET_LIST_RS)
@@ -496,7 +490,7 @@ int validateFile(Record &log, playloadData &data)
         }
         else
         {
-            data.statusCode = 403;//////////////////
+            data.statusCode = 403;//!check
         }
         return 1;
     }
@@ -529,39 +523,36 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath)
     std::map<int, std::string> locs;
     if (reqPath.empty())
         reqPath = "/";
-    //location : /server
-    //req.path = /server/boha.txt
     for (size_t i = 0; i < conf.location.size(); i++)
     {
         std::string name = conf.location[i].location_name;
         size_t f = reqPath.find(name);
-        if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
-        {
+        if (f == 0
+            && (reqPath.length() == name.length()
+            || reqPath[name.length()] == '/' || name == "/"))
             locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
-        }
     }
     if (locs.empty())
-    {
-        data.uri = reqPath.substr(1);
-        if (data.uri[0] != '/')
-            data.uri.insert(0, "/");
-        return ;
-    }
+        data.uri = reqPath;
     else
+    {
         data.location = locs.rbegin()->second;
-    data.uri = reqPath.substr(data.location.length());
+        data.uri = reqPath.substr(data.location.length()); // you can enter in the past condition
+    }
     if (data.uri[0] != '/')
         data.uri.insert(0, "/");
-    
 }
+// std::cout << data.location.length() << " before taking the perfix: " << data.uri << "\n";
+// std::cout << "after  taking the perfix: " << data.uri << "\n";
+// -------
+// data.loginToken = "/portf/html/login.html";//tmp
+// data.redirectTokens.clear();
+// data.redirectTokens.push_back("/portf/html/index.html");//tmp
+// data.redirectTokens.push_back("/portf/nothing");//tmp
+// data.redirectTokens.push_back("/portf/nothing");//tmp
 
 void getImportantData(Config &conf, playloadData &data)
 {
-    data.loginToken = "/portf/html/login.html";//tmp
-    data.redirectTokens.clear();
-    data.redirectTokens.push_back("/portf/html/index.html");//tmp
-    data.redirectTokens.push_back("/portf/nothing");//tmp
-    data.redirectTokens.push_back("/portf/nothing");//tmp
     if (data.location.empty())
     {
         data.location = "/";
@@ -575,9 +566,7 @@ void getImportantData(Config &conf, playloadData &data)
         data.retCode = conf.retCode;
         data.cgiExt = conf.cgiExt;
         data.cgiPath = conf.cgiPath;
-        // data.loginToken = conf.loginToken;
-        // data.redirectTokens = conf.redirectTokens;
-        return;
+        return ;
     }
     for (size_t i = 0; i < conf.location.size(); i++)
     {
@@ -593,21 +582,13 @@ void getImportantData(Config &conf, playloadData &data)
             data.retCode = conf.location[i].conf.retCode;
             data.cgiExt = conf.location[i].conf.cgiExt;
             data.cgiPath = conf.location[i].conf.cgiPath;
-            // data.loginToken = conf.location[i].conf.loginToken;
-            // data.redirectTokens = conf.location[i].conf.redirectTokens;
             break;
         }
     }
-    // std::cout << data.loginToken << "\n";
-    // for(size_t i = 0; i < data.redirectTokens.size(); i++)
-    // {
-    //     std::cout << data.redirectTokens[i] << "\n";
-    // }
 }
 
-int checkErrorFile(playloadData &data, Config &conf)
+int checkErrorFile(playloadData &data)
 {
-    (void)conf;// ***************remove***************
     std::string file = data.root;
     if (file[file.length() - 1] != '/')
         file += '/';
@@ -628,23 +609,24 @@ int checkErrorFile(playloadData &data, Config &conf)
     int fd = open(file.c_str(), O_RDONLY);
     if (fd == -1)
         return 1;
-    
     char buff[RDWR_SIZE];
     int bytes = 0;
     while ((bytes = read(fd, buff, sizeof(buff) - 1)) > 0)
-        data.bodyStr.append(buff, bytes);
+        data.errorBody.append(buff, bytes);
     close(fd);
     if (bytes < 0)
         return 1;
     data.bodySize = info.st_size;
+    data.contentType = data.mime["txt"];
+    getContentType(data, file);
     return 0;
 }
 
-void chooseErrorHandler(Config &conf, playloadData &data)
+void chooseErrorHandler(playloadData &data)
 {
     if (data.errorPages.empty())
         defaultErrorPage(data);
-    else if (checkErrorFile(data, conf))
+    else if (checkErrorFile(data))
         defaultErrorPage(data);
 }
 
@@ -668,72 +650,57 @@ int checkCgi(playloadData &data, std::string realNames, std::string &reqPath)
     return 0;
 }
 
-int resolvePath(playloadData &data, Config &conf, std::string &reqPath)
+int resolvePath(playloadData &data, Request &req)
 {
-    (void)conf;
     struct stat info;
     std::stringstream ssPath(data.root + data.uri);
     std::vector<std::string> realNames;
     std::string tmp;
-    size_t index = 0;
     while (std::getline(ssPath, tmp, '/'))
     {
         if (tmp == "")
             continue;
-        if (tmp == ".." || tmp == ".")
+        else if (tmp == ".." || tmp == ".")
         {
             data.statusCode = 403;
             return 1;
         }
         else
             realNames.push_back(tmp);
-        index++;
     }
     for (size_t i = 0; i < realNames.size(); i++)
     {
         data.realPath += '/' + realNames[i];
-        if (!checkCgi(data, realNames[i], reqPath))
+        if (!checkCgi(data, realNames[i], req.path))
             continue;
         if (stat(data.cgiScriptFile.c_str(), &info) != -1)
         {
             if (S_ISDIR(info.st_mode))
                 continue;
-            // data.isCgi = true;
-            // return 0;
         }
-        // else
-        // {
-        //     if (!data.cgiInfo.empty())// check ask oussama
-        //     {
-        //         data.statusCode = "404";
-        //         return 1;
-        //     }
-        // }
         data.isCgi = true;
         return 0;
     }
-    if (!index)
+    if (realNames.empty())
         data.realPath = "/";
-    data.uploadOn = 0;
-    if (data.upload.empty())
+    data.uploadOn = false;
+    if (req.method != "POST" || data.upload.empty())
         return 0;
-    std::string rootUploadDir = cleanPath(data.root + data.upload) + '/';
-    std::string compare = data.realPath.substr(0, rootUploadDir.length());
-    if (compare[compare.length() - 1] != '/')
-        compare.push_back('/');
-    // std::cout << "rootUploadDir: " << rootUploadDir << "  data.realPath: " << data.realPath << " compare: " << compare << std::endl;
-    // if (rootUploadDir[rootUploadDir.length() - 1] != '/')
-    //     rootUploadDir.push_back('/'); //Fix
-    if (compare == rootUploadDir)
-        data.uploadOn = 1;
+        
+    size_t find = data.uri.find(data.upload);
+    if (find == 0
+        && (data.uri.length() == data.upload.length() || data.uri[data.upload.length()] == '/'))
+        data.uploadOn = true;
     return 0;
 }
 
+// std::cout << "rootUploadDir: " << rootUploadDir << "  data.realPath: " 
+//           << data.realPath << " compare: " << compare << std::endl;
+// std::cout <<  data.uploadOn << "\n";
 
 int authenCheck(Record &log, Request &req, SessionsList &sList)
 {
-    // bool logged = true;
-    (void) sList;
+    (void) sList;//! remove it if no need
     if (log.data.loginToken == req.path && req.isLoggedCookie)
     {
         if (req.method != "GET")
@@ -747,10 +714,8 @@ int authenCheck(Record &log, Request &req, SessionsList &sList)
     {
         if (req.method == "DELETE")
             return 0;
-        // std::cout << req.isLoggedCookie << "\n";
         for (size_t i = 0; i < log.data.redirectTokens.size(); i++)
         {
-                
             if (log.data.redirectTokens[i] == req.path && req.isLoggedCookie == false)
             {
                 log.data.retPath = log.data.loginToken;
@@ -761,7 +726,12 @@ int authenCheck(Record &log, Request &req, SessionsList &sList)
             else if (log.data.redirectTokens[i] == req.path && req.isLoggedCookie)
             {
                 if (req.method == "POST")
-                    req.method = "GET";
+                {
+                    log.data.retPath = log.data.loginToken;
+                    log.data.retValid = true;
+                    log.data.retCode = 302;
+                    return 1;
+                }
                 return 0;
             }
         }
@@ -776,7 +746,6 @@ int responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_
     log.data.statusCode = req.status;
     if (tolowerStr(req.headers["connection"]) == "keep-alive")
         log.data.connection = "keep-alive";
-    findLongestMatch(log.data, conf, cleanPath(req.path));//should be removed
     getImportantData(conf, log.data);
     if (log.data.statusCode != 200)
         return 1;
@@ -797,7 +766,7 @@ int responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_
     }
     if (authenCheck(log, req, sList))
         return 0;
-    if (resolvePath(log.data, conf, req.path))
+    if (resolvePath(log.data, req))
         return 1;
     if (log.data.isCgi)
     {
@@ -879,7 +848,7 @@ void generateRetResponse(playloadData &data, std::string &ret_resp, Request &req
     return;
 }
 
-void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req)
+void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req)
 {
     if (data.statusCode != 200 && data.statusCode != 201)
         data.connection = "close";
@@ -905,10 +874,10 @@ void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_
     if (req.headers.count("cookie"))
         res << "Set-Cookie: " << req.headers["cookie"] << "\r\n";
     res << "\r\n";
-    if ((log.method != POST_RS && log.method != POST_LIST_RS) || log.status == ERROR_RS)
-    {
-        ret_resp = res.str();
-    }
+    // if ((log.method != POST_RS && log.method != POST_LIST_RS) || log.status == ERROR_RS)
+    // {
+    ret_resp = res.str();
+    // }
 }
 
 std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &indexClnt, SessionsList &sList)
@@ -924,20 +893,20 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
         log.data.connection = "Close";
         if (responseHandler(Web, log, req, conf,indexClnt, sList))
         {
-            chooseErrorHandler(conf, log.data);
-            log.data.contentType = log.data.mime["html"];
+            chooseErrorHandler(log.data);
+            log.method = NONE_RS;//!CHECK
             log.status = ERROR_RS;
         }
     }
-    else if (log.status == ACTIVE_RS || log.status == CGI_ACTIVE)
+    else if (log.status == ACTIVE_RS || log.status == CGI_ACTIVE_RS)
     {
         if (log.method == CGI_RDWR)
         {
             if (cgiProcess(Web, log, req,indexClnt))
             {
-                log.data.contentType = log.data.mime["html"];
-                chooseErrorHandler(conf, log.data);
+                chooseErrorHandler(log.data);
                 log.status = ERROR_RS;
+                log.method = NONE_RS; //!CHECK
             }
         }
         if (log.method == POST_LIST_RS)
@@ -946,8 +915,8 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
             {
                 std::remove(log.fileName.c_str());
                 log.data.statusCode = 500;
-                chooseErrorHandler(conf, log.data);
                 log.status = ERROR_RS;
+                log.method = NONE_RS;
             }
         }
         if (log.method == GET_RS || log.method == GET_LIST_RS)
@@ -955,6 +924,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
             if (getFile(log))
             {
                 // may be something
+                // log.method = NONE_RS; //!CHECK
                 log.status = ERROR_RS;
             }
         }
@@ -963,6 +933,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
             if (postBody(log))
             {
                 // may be something
+                chooseErrorHandler(log.data);
                 log.method = NONE_RS;
                 log.status = ERROR_RS;
             }
@@ -973,24 +944,24 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
             }
         }
     }
-    if (log.method == POST_LIST_RS || log.status == CGI_ACTIVE)
+    if (log.method == POST_LIST_RS || log.method == POST_RS || log.status == CGI_ACTIVE_RS)
         return "";
 
     if (pastStatus == NEW_RS
-        // || (log.method == NONE_RS && log.status == ERROR_RS) /!\  TEST
-        || (pastMethod == POST_RS && log.method == NONE_RS)
-        || (pastMethod == POST_LIST_RS && (log.method == GET_LIST_RS || log.method == NONE_RS))
-        || (pastStatus == CGI_ACTIVE && log.status != CGI_ACTIVE))
+        //// || (log.method == NONE_RS && log.status == ERROR_RS)
+        || (pastMethod == POST_RS)
+        || (pastMethod == POST_LIST_RS)
+        || (pastStatus == CGI_ACTIVE_RS/* && log.status != CGI_ACTIVE_RS*/))
     {
-        generateResponse(log.cgiData, log.data, ret_resp, log, req);
+        responseGenerator(log.cgiData, log.data, ret_resp, log, req);
         if (log.status == ERROR_RS)
-            ret_resp += log.data.bodyStr;
+            ret_resp += log.data.errorBody;
         else
             ret_resp += log.buffer;
     }
-    else if (log.status == ERROR_RS)
-        ret_resp.clear();
-    else
+    // else if (log.status == ERROR_RS)
+    //     ret_resp.clear();
+    else if (log.status != ERROR_RS)
         ret_resp = log.buffer;
     log.buffer.clear();
     return (ret_resp);

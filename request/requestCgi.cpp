@@ -37,11 +37,11 @@ std::string getRandomName()
 {
     static size_t count;
     std::stringstream ss;
-    time_t tStamp = time(NULL);
-    struct tm *currentTime = localtime(&tStamp);
+    time_t tStamp = std::time(NULL);
+    struct tm *currentTime = std::localtime(&tStamp);
     char arr[9];
 
-    strftime(arr, sizeof(arr), "%H%M%S", currentTime);
+    std::strftime(arr, sizeof(arr), "%H%M%S", currentTime);
     std::string randName = arr;
     ss << count++;
     randName += '_';

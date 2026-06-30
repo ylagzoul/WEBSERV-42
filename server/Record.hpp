@@ -10,8 +10,7 @@ public:
     void clean();
     int fd;
     int fileFd;
-    int k;
-    int number;
+    int number; //tmp
     DIR *dir;
     t_state status;
     t_state method;
@@ -23,7 +22,7 @@ public:
     bool isItCgi;
     std::vector<int> IndexPipe;
     std::vector<int> IndexFdsPipe;
-    int cont;
+    // int cont; //why?
 };
 
 #endif

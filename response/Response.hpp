@@ -32,7 +32,7 @@ public:
     std::string connection;
     std::string contentType;
     std::string realPath;
-    std::string bodyStr;
+    std::string errorBody;
     std::string error;
     std::string uri;
     std::vector<std::string> index;
@@ -56,8 +56,8 @@ public:
     int autoIndex;
     bool isCgi;
     bool retValid;
+    bool uploadOn;
     int listFd;
-    int uploadOn;
     int cgiDataPos;
     std::map<std::string, std::string> mime;
     std::map<int, std::string> table;
@@ -65,10 +65,12 @@ public:
 
 #include "CgiHandler.hpp"
 
-void generateResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req);
-
 int getFile(Record &log);
-
+void findLongestMatch(playloadData &data, Config &conf, std::string reqPath);
+void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req);
 std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &i, SessionsList &sList);
+
+
+
 
 #endif
