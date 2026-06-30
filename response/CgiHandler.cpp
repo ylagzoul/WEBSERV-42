@@ -51,9 +51,11 @@ void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &ind
 {
     if (method == "POST")
     {
-        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-        Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[0]] = "close";
-        Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[0]);
+        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
+        Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[2]] = "close";
+        Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[3]] = "close";
+        Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[2]);
+        Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[3]);
     }
     
     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
@@ -153,13 +155,20 @@ int createPipes(Webserv &Web, CgiHandler &cgiData, Request req, size_t &indexCln
     if (req.method == "POST")
     {
         int inputPipe[2];
-        cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY, 0644);
-        if (cgiData.bodyFd < 0)//
+        cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY, 0644); // boha wach close fd open
+        if (cgiData.bodyFd < 0)
+        {
+            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
+            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
             return (erorrCgi(cgiData));
+        }
 
         if (pipe(inputPipe) == -1)
+        {
+            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
+            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
             return (erorrCgi(cgiData));
-
+        }
         addFdPollfd(Web, indexClnt , inputPipe[0],POLLIN);
         addFdPollfd(Web, indexClnt , inputPipe[1],POLLOUT);
     }
@@ -178,22 +187,32 @@ void createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDa
 {
     cgiData.pid = fork();
     if (cgiData.pid == -1)
+    {
+        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
+        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
+        closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
         erorrCgi(cgiData);
+        throw std::exception();
+    }
     if (cgiData.pid == 0)
     {
         if (method == "POST")
         {
-            if (dup2(Web.recs[indexClnt].IndexPipe[2], STDIN_FILENO) < 0)
+            if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd, STDIN_FILENO) < 0)
             {
+                close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
+                close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
                 cgiData.cgStatusCode = 500; // prblm
                 throw std::exception();
             }
-            close(Web.recs[indexClnt].IndexPipe[2]);
+            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
         }
 
         if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, STDOUT_FILENO) < 0)
         {
+            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
+            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
             cgiData.cgStatusCode = 500;
             throw std::exception();
         }
@@ -214,7 +233,6 @@ void createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDa
 int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
 {
 
-    static size_t n;
     if (method == "POST")
     {
         if (Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].revents & POLLOUT)
@@ -223,11 +241,15 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
             if (bytes_r < 0)
+            {
+                createCgi(Web, cgiData, method, Web.recs[indexClnt].data, indexClnt);
                 return (erorrCgi(cgiData));
-            int k = 0;
-            if ((k = write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, buffer, bytes_r)) < 0)
+            }
+            if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, buffer, bytes_r)) < 0)
+            {
+                createCgi(Web, cgiData, method, Web.recs[indexClnt].data, indexClnt);
                 return (erorrCgi(cgiData));
-            n += k;
+            }
         }
     }
     if (Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].revents & (POLLIN | POLLHUP))
@@ -237,7 +259,10 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
         int bytes = read(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd, buffer, SIZESR - 1);
 
         if (bytes < 0)
+        {
+            createCgi(Web, cgiData, method, Web.recs[indexClnt].data, indexClnt);
             return (erorrCgi(cgiData));
+        }
         
         else if (bytes == 0)
         {

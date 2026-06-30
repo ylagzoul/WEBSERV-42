@@ -49,9 +49,11 @@ chunk("<body>\n")
 chunk("<h1>Chunked Transfer Encoding Test</h1>\n")
 chunk("<p>If you can read this, your server is parsing chunks.</p>\n")
 
-# Many small chunks
-for i in range(20):
-    chunk(f"<p>Small chunk #{i}</p>\n")
+print("<h2>STDIN</h2>")
+#data = sys.stdin.read()
+print("<pre>")
+# print(data if data else "(empty)")
+print("</pre>")
 
 # Medium chunk
 medium = (
