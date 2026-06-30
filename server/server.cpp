@@ -91,8 +91,8 @@ void Server::acceptNewCleint(Webserv &Web)
 
         if (client_fd < 0)
         {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                break;
+            // if (errno == EAGAIN || errno == EWOULDBLOCK)
+            //     break;
             perror("accept");
             break;
         }
@@ -131,6 +131,7 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
 {
 
     char buffer[SIZESR] = {0};
+
     int bytes = recv(Web.fds[indexClnt].fd, buffer, SIZESR, 0);
     if (bytes > 0)
     {
@@ -239,7 +240,7 @@ int main(int ac, char *arv[])
                             Web.server[Web.s].serverPort[Web.t].close_client(Web, indexClnt);
                             continue;
                         }
-
+                        cout << "fd" << Web.fds[indexClnt].fd << "\n";
                         if (Web.typeFd[indexClnt] == "server" && (Web.fds[indexClnt].revents & POLLIN)) // CHECK ALL SERVER FDS
                         {
                             Web.server[Web.s].serverPort[Web.t].acceptNewCleint(Web);

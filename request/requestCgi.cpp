@@ -166,7 +166,7 @@ void getHeadersCgi(CgiHandler &cgiData)
     return;
 }
 
-void getBody(CgiHandler &cgiData)
+void getBody(CgiHandler &cgiData,  Request req)
 {
     cgiData.lenRead += cgiData.fullLine.length();
 
@@ -179,7 +179,7 @@ void getBody(CgiHandler &cgiData)
             return(returnedInternalError(cgiData));
     }
     cgiData.bodyLen += cgiData.fullLine.length();
-    if (cgiData.bodyLen > DEFAULT_MAX_BODY_SIZE )
+    if (cgiData.bodyLen > req.maxBodySize )
         return(returnedBadError(cgiData));
     if (cgiData.endRead == false)
     {
@@ -193,7 +193,7 @@ void getBody(CgiHandler &cgiData)
     }
 }
 
-void getChunked(CgiHandler &cgiData)
+void getChunked(CgiHandler &cgiData, Request req)
 {
     size_t endTxt;
     size_t endNum;
@@ -215,7 +215,8 @@ void getChunked(CgiHandler &cgiData)
         std::string chunkData = cgiData.fullLine.substr(endNum + 2, endTxt - endNum - 2);
         cgiData.lenRead += cgiData.fullLine.substr(0, endTxt + 2).length();
         double chunkSize = std::strtol(chunkNum.c_str(), &end, 16);
-        if (errno == ERANGE || *end)
+        cgiData.bodyLen += chunkSize;
+        if (errno == ERANGE || *end || chunkSize < 0 || cgiData.bodyLen > req.maxBodySize)
             return(returnedBadError(cgiData));
         if (chunkSize == 0 && chunkData.empty())
         {
@@ -240,7 +241,7 @@ void getChunked(CgiHandler &cgiData)
 }
 
 
-int parseCgiResponse(CgiHandler &cgiData)
+int parseCgiResponse(CgiHandler &cgiData, Request req)
 {
     size_t pos;
     std::string tes;
@@ -265,12 +266,12 @@ int parseCgiResponse(CgiHandler &cgiData)
         }
         if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.bodyType == CHUNKED)
         {
-            getChunked(cgiData);
+            getChunked(cgiData, req);
             if (cgiData.getMove == 3)
                 break;
         }
         else if (cgiData.getEndHeaders && cgiData.getEndFile == false)
-            getBody(cgiData);
+            getBody(cgiData, req);
         cgiData.getMove = 4;
         if (cgiData.lenRead == cgiData.cgBuff.length())
         {

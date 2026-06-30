@@ -74,12 +74,11 @@ class CgiHandler
 
 // #include "../server/server.hpp"
 
-
-int cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listenPorts, size_t &i);
-int cgiProcess(Webserv &Web, Record &log, Request req, size_t &i);
-int parseCgiResponse(CgiHandler &cgiData);
-void    returnedInternalError(CgiHandler &cgiData);
-void    returnedBadError(CgiHandler &cgi);
+int         cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listenPorts, size_t &i);
+int         cgiProcess(Webserv &Web, Record &log, Request req, size_t &i);
+int         parseCgiResponse(CgiHandler &cgiData, Request req);
+void        returnedInternalError(CgiHandler &cgiData);
+void        returnedBadError(CgiHandler &cgi);
 std::string trim(const std::string& str);
 
 

@@ -26,8 +26,7 @@ void    SessionsList::createUnicId()
 
 void SessionsList::generateSession(Request &req)
 {
-
-    // std::cout << "---> " << req.cookies["session_id"] <<  std::endl;
+    bool newCreate = false;
     if (req.cookies.find("session_id") != req.cookies.end())
     {
         id = req.cookies["session_id"];
@@ -40,19 +39,11 @@ void SessionsList::generateSession(Request &req)
                 req.isLoggedCookie = true;
         }
         else
-        { // I will improve the code to evit the repetition
-            createUnicId();
-            Sessions tmpSession;
-            tmpSession.email = id;
-            tmpSession.lastLog = std::time(NULL);
-            sessionLis[id] = tmpSession;
-            req.cookies["session_id"] = id;
-
-            req.session = &sessionLis[id];
-            req.headers["cookie"] = "session_id=" + id + ";path=/";
-        }
+            newCreate = true;
     }
     else
+        newCreate = true;
+    if (newCreate)
     {
         createUnicId();
         Sessions tmpSession;
