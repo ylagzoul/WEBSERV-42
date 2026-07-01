@@ -10,11 +10,9 @@ SRC = server.cpp												\
 			../request/requestCgi.cpp							\
 			../response/Response.cpp							\
 			../config_file/config_file.cpp						\
-			../config_file/Helpful_functions/get_set_conf.cpp	\
-			../config_file/Helpful_functions/ft_ft.cpp			\
-			../config_file/line/listen.cpp						\
-			../config_file/line/server_name.cpp					\
-			../config_file/line/error_page.cpp Record.cpp		\
+			../config_file/listen.cpp						\
+			../config_file/server_name.cpp					\
+			../config_file/error_page.cpp Record.cpp		\
 			../response/CgiHandler.cpp
 
 SRC_H = server.hpp Record.hpp				\

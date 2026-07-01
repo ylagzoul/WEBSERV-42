@@ -124,7 +124,6 @@ void Server::acceptNewCleint(Webserv &Web)
         }
         fcntl(client_fd, F_SETFL, O_NONBLOCK);
     }
-
 }
 
 bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList)
@@ -215,7 +214,7 @@ int main(int ac, char *arv[])
                 ;
             for (Web.s = 0; Web.s < Web.server.size(); Web.s++)
             {
-                for (Web.t = 0;  Web.t < Web.server[Web.s].serverPort.size(); Web.t++)
+                for (Web.t = 0; Web.t < Web.server[Web.s].serverPort.size(); Web.t++)
                 {
                     for (Web.i = 0; Web.i < Web.server[Web.s].serverPort[Web.t].index_Client.size(); Web.i++)
                     {
@@ -225,8 +224,7 @@ int main(int ac, char *arv[])
                             continue;
                         if (sList.checkIfNotNull())
                             sList.checkLimitSessions();
-    
-    
+
                         if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.data[indexClnt].time > 60) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))
                         {
                             // if (Web.fds[indexClnt].revents & POLLERR)
@@ -235,7 +233,7 @@ int main(int ac, char *arv[])
                             //     cout << "POLLHUP\n";
                             // else if (Web.fds[indexClnt].revents & POLLRDHUP)
                             //     cout << "POLLRDHUP\n";
-                            // else 
+                            // else
                             //     cout << "time              time\n";
                             Web.server[Web.s].serverPort[Web.t].close_client(Web, indexClnt);
                             continue;
@@ -251,8 +249,13 @@ int main(int ac, char *arv[])
                         }
                         else if (Web.typeFd[indexClnt] == "client" && (Web.fds[indexClnt].revents & POLLOUT))
                         {
+                            // if (Web.recs[indexClnt].status == CGI_ACTIVE && ((Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].revents != POLLIN)))
+                            //     continue;
+                            // if (Web.recs[indexClnt].status == CGI_ACTIVE && ((Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].revents != POLLOUT)))
+                            //     continue;
                             Web.server[Web.s].serverPort[Web.t].sendRespond(Web, indexClnt, sList);
                         }
+                        // Web.fds[indexClnt].revents = 0;
                     }
                 }
             }

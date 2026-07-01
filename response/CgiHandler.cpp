@@ -190,7 +190,7 @@ void createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDa
     {
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
-        closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
+        // closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
         erorrCgi(cgiData);
         throw std::exception();
     }
@@ -242,12 +242,12 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
             if (bytes_r < 0)
             {
-                createCgi(Web, cgiData, method, Web.recs[indexClnt].data, indexClnt);
+                // closeCGI(Web, cgiData, method, indexClnt);
                 return (erorrCgi(cgiData));
             }
             if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, buffer, bytes_r)) < 0)
             {
-                createCgi(Web, cgiData, method, Web.recs[indexClnt].data, indexClnt);
+                // closeCGI(Web, cgiData, method, indexClnt);
                 return (erorrCgi(cgiData));
             }
         }
@@ -260,7 +260,7 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
 
         if (bytes < 0)
         {
-            createCgi(Web, cgiData, method, Web.recs[indexClnt].data, indexClnt);
+            // closeCGI(Web, cgiData, method, indexClnt);
             return (erorrCgi(cgiData));
         }
         
@@ -298,7 +298,7 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
         if (readFromCgi(Web, log.cgiData, req.method, indexClnt))
         {
             
-            closeCGI(Web, log.cgiData, req.method, indexClnt);
+            // closeCGI(Web, log.cgiData, req.method, indexClnt);
             return (1);
         }
         if (log.cgiData.canRead) /* CHEEEECK /!\*/
@@ -415,7 +415,7 @@ int cgiProcess(Webserv &Web, Record &log, Request req, size_t &i)
         }
         if (log.cgiData.dataReady)
         {
-            closeCGI(Web, log.cgiData, req.method, i);
+            // closeCGI(Web, log.cgiData, req.method, i);
         }
         if (cgiResponseHandler(log, log.cgiData, log.data))
             return 1;

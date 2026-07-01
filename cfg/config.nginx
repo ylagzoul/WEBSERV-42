@@ -1,6 +1,5 @@
 server {
     listen 127.0.2.1:1111;
-    server_name youssef;
     root /home/ylagzoul/Desktop/WEBSERV-42;
     methods GET;
     error_page 401 /errors/401.html;

@@ -1,15 +1,6 @@
 #ifndef CONFIG_FILE_HPP
 #define CONFIG_FILE_HPP
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <unistd.h>
-#include <fcntl.h>
-#include <map>
-#include <cstdlib>
-
 #define MAXPORT 65535
 #define MAXIP 256
 #define RDWR_SIZE 8192
@@ -30,7 +21,6 @@ class Config
 public:
     std::vector<std::string> listen_Ip;
     std::vector<int> listen_Port;
-    std::string server_name;
     std::string root;
     std::map<std::string, bool> methods;
     std::map<int, std::string> error_page;
@@ -54,7 +44,7 @@ public:
     std::vector<std::string> str;
     std::string line;
     std::vector<Location> location;
-
+    std::map<std::string, bool> someLocation;
 
     void splite();
     void function();
@@ -64,7 +54,6 @@ public:
     void ft_listen_prot_Ip(void);
     void ft_listen_prot(void);
     void ft_listen_Ip(void);
-    void ft_server_name(void);
     void ft_root(void);
     void ft_error_page(void);
     void ft_methods();
@@ -75,18 +64,8 @@ public:
     void ft_return();
     void ft_authInfo();
     void ft_cgi_data();
-
     void check_default();
 
-    // get
-    std::vector<std::string> get_listen_Ip(void);
-    // std::vector<std::string> get_listen_Port(void);
-    std::string get_server_name(void);
-    std::string get_root(void);
-    bool get_methods(std::string str);
-    std::string get_error_page(int num);
-    std::vector<std::string> get_index(void);
-    std::string get_autoindex();
 };
 
 class Location
@@ -97,7 +76,7 @@ public:
     Config conf;
 };
 
-
+std::string cleanPath(std::string fullPath);
 bool ft_str_char(const char *str, char c);
 
 #endif

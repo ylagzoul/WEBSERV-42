@@ -1,8 +1,22 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+// reqoust
+
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+
+
+#include <fstream>
+#include <sstream>
+#include <fcntl.h>
+#include <map>
+#include <cstdlib>
 #include <arpa/inet.h>
-#include <iostream>
 #include <iostream>
 #include <cstring>
 #include <time.h>

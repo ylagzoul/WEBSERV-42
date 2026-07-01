@@ -7,7 +7,6 @@ Config::Config()
     delet_data["index"] = false;
     delet_data["cgiExt"] = false;
     // emptyFile = false;
-    // server_name = "";
     root = "/home";
     autoIndex = 0;
     client_max_body_size = DEFAULT_MAX_BODY_SIZE;
@@ -43,14 +42,12 @@ void Config::ft_authInfo()
         loginToken.clear();
         redirectTokens.clear();
     }
-    if (str.size() < 3 || str[1][0] != '/' || str[str.size() - 1][str[str.size() - 1].size() - 1] != ';')
+    if (str.size() < 3 || str[str.size() - 1][str[str.size() - 1].size() - 1] != ';')
         throw std::runtime_error("loginToken");
-    loginToken = str[1];
+    loginToken = cleanPath(str[1]);
     for (size_t i = 2; i < str.size(); i++)
-    { 
-        if (str[i][0] != '/')
-            throw std::runtime_error("redirectTokens");
-        redirectTokens.push_back(str[i]);
+    {
+        redirectTokens.push_back(cleanPath(str[i]));
     }
     redirectTokens[redirectTokens.size() - 1].erase(redirectTokens[redirectTokens.size() - 1].size() - 1);
     delet_data["authInfo"] = false;
@@ -79,7 +76,7 @@ void Config::ft_cgi_data()
 
     str[2].erase(str[2].size() - 1);
     cgiExt.push_back(str[1]);
-    cgiPath.push_back(str[2]);
+    cgiPath.push_back(cleanPath(str[2]));
     delet_data["cgiExt"] = false;
 }
 
@@ -87,8 +84,6 @@ void Config::function()
 {
     if (str[0] == "listen" && blockName == "server")
         ft_listen();
-    else if (str[0] == "server_name" && blockName == "server")
-        ft_server_name();
     else if (str[0] == "client_max_body_size" && blockName == "server")
         ft_client_max_body_size();
     else if (str[0] == "upload_path")
@@ -167,12 +162,15 @@ void Webserv::config_file(std::string nameFielConfig)
                     else if (cnf.str[0] == "location")
                     {
                         count++;
-                        if (cnf.size != 3 || cnf.blockName == "location" || cnf.str[1][0] != '/' || cnf.str[2] != "{")
+                        if (cnf.size != 3 || cnf.blockName == "location" /*check boha linke with cleanpath*/ || cnf.str[2] != "{")
                             throw std::runtime_error("location start error");
                         Location obj;
                         obj.conf = cnf;
                         ft_function(obj);
-                        obj.location_name = cnf.str[1];
+                        obj.location_name = cleanPath(cnf.str[1]);
+                        if (cnf.someLocation[obj.location_name] == true)
+                            throw std::runtime_error("error : some name location");
+                        cnf.someLocation[obj.location_name] = true;
                         while (getline(file, sstr))
                         {
                             obj.conf.line = sstr;
@@ -216,7 +214,6 @@ void Webserv::config_file(std::string nameFielConfig)
             //     if (cnf.str.size() > 0)
             //         throw std::runtime_error("An error occurred after the server finished");
             // }
-
         }
         if (emptyFile == false || count != 0)
             throw std::runtime_error("empty config file or {}");

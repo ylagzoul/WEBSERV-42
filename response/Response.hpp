@@ -1,19 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include <iostream>
-#include <stdlib.h>
-#include <sstream>
-#include<cstring>
-#include <vector>
-#include <map>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
+
 #include "../server/state.h"
 #include "../request/request.hpp"
 

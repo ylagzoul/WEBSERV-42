@@ -1,4 +1,4 @@
-#include "../../server/server.hpp"
+#include "../server/server.hpp"
 
 void Config::ft_autoindex()
 {
@@ -59,11 +59,11 @@ void Config::ft_client_max_body_size()
 void Config::ft_upload_path()
 {
     int size_s = str[1].size();
-    if (size != 2 || str[1][0] != '/' || str[1][size_s - 1] != ';')
+    if (size != 2 || str[1][size_s - 1] != ';')
         throw std::runtime_error("upload_path");
 
     str[1].erase(size_s - 1);
-    uploadPath = str[1];
+    uploadPath = cleanPath(str[1]);
 }
 
 void Config::ft_error_page()
@@ -85,7 +85,7 @@ void Config::ft_error_page()
             throw std::runtime_error("error_page not digit");
     }
     str[2].erase(size_s - 1);
-    error_page[std::atoi(str[1].c_str())] = str[2];
+    error_page[std::atoi(str[1].c_str())] = cleanPath(str[2]);;
     delet_data["error_page"] = false;
 }
 
