@@ -39,7 +39,7 @@ void Config::ft_methods()
             methods["DELETE"] = true;
         }
         else
-            throw std::runtime_error("invalid method");
+            throw std::runtime_error("Erorr : Invalid Element in method");
         i++;
     }
     delet_data["methods"] = false;
@@ -49,9 +49,8 @@ void Config::ft_root()
 {
     int size_s = str[1].size();
     if (size != 2 || str[1][size_s - 1] != ';')
-        throw std::runtime_error("eroor in ./");
-    
+        throw std::runtime_error("Erorr : in root");
+
     str[1].erase(str[1].begin() + size_s - 1);
     root = cleanPath(str[1]);
 }
-
