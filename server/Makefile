@@ -1,6 +1,6 @@
 NAME = webserv
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98 -fsanitize=address -g3
+CFLAGS = -Wextra -Wall -Werror -std=c++98# -fsanitize=address -g3
 CC = c++
 
 SRC = server.cpp												\
