@@ -19,35 +19,19 @@ bool isHoldSpaceCgi(const std::string& str)
     return (true);
 }
 
-bool checkDigits(CgiHandler &cgi, std::string str)
-{
-    std::stringstream iss(str);
-    size_t value;
-    iss >> value;
+// bool checkDigits(CgiHandler &cgi, std::string str)
+// {
+//     std::stringstream iss(str);
+//     size_t value;
+//     iss >> value;
     
-    if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
-    {
-        cgi.contentLength = value;
-        return (true);
-    }
-    return (false);
-}
-
-std::string getRandomName()
-{
-    static size_t count;
-    std::stringstream ss;
-    time_t tStamp = std::time(NULL);
-    struct tm *currentTime = std::localtime(&tStamp);
-    char arr[9];
-
-    std::strftime(arr, sizeof(arr), "%H%M%S", currentTime);
-    std::string randName = arr;
-    ss << count++;
-    randName += '_';
-    randName += ss.str();
-    return randName;
-}
+//     if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
+//     {
+//         cgi.contentLength = value;
+//         return (true);
+//     }
+//     return (false);
+// }
 
 std::string trimCgi(const std::string& str)
 {
@@ -170,9 +154,9 @@ void getBody(CgiHandler &cgiData,  Request req)
 {
     cgiData.lenRead += cgiData.fullLine.length();
 
-    if (cgiData.fd == -1)
+    if (cgiData.fd == -1 && cgiData.fullLine.length() > 0)
     {
-        cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandomName();
+        cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandName();
         cgiData.bodyLen = 0;
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
@@ -197,9 +181,9 @@ void getChunked(CgiHandler &cgiData, Request req)
 {
     size_t endTxt;
     size_t endNum;
-    if (cgiData.fd == -1)
+    if (cgiData.fd == -1 && cgiData.fullLine.length() > 0)
     {
-        cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandomName();
+        cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandName();
         cgiData.bodyLen = 0;
         cgiData.fd = open(cgiData.cgBodyFileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
         if (cgiData.fd == -1)
@@ -207,34 +191,41 @@ void getChunked(CgiHandler &cgiData, Request req)
     }
     endNum = cgiData.fullLine.find("\r\n");
     if (endNum != std::string::npos)
+    {
+        std::string tmp = cgiData.fullLine.substr(0, endNum + 2);
+        if (!checkDigits(cgiData, tmp))
+            return (returnedBadError(cgiData));
         endTxt = cgiData.fullLine.find("\r\n", endNum + 2);
+    }
     while (endNum != std::string::npos && endTxt != std::string::npos)
     {
-        char *end = NULL;
         std::string chunkNum  = cgiData.fullLine.substr(0, endNum);
         std::string chunkData = cgiData.fullLine.substr(endNum + 2, endTxt - endNum - 2);
         cgiData.lenRead += cgiData.fullLine.substr(0, endTxt + 2).length();
-        double chunkSize = std::strtol(chunkNum.c_str(), &end, 16);
-        cgiData.bodyLen += chunkSize;
-        if (errno == ERANGE || *end || chunkSize < 0 || cgiData.bodyLen > req.maxBodySize)
+        cgiData.bodyLen += cgiData.chunkSize;
+        if (cgiData.bodyLen > req.maxBodySize)
             return(returnedBadError(cgiData));
-        if (chunkSize == 0 && chunkData.empty())
+        if (cgiData.chunkSize == 0 && chunkData.empty())
         {
-            // cout << "BOOYAH\n";
-            if (write(cgiData.fd, chunkData.c_str(), chunkSize) == -1)
+            if (write(cgiData.fd, chunkData.c_str(), cgiData.chunkSize) == -1)
                 return(returnedInternalError(cgiData));
             cgiData.fullLine.erase(0, endTxt + 2);
             cgiData.getEndFile = true;
             return ;
         }
-        if (chunkData.length() < chunkSize)
+        if (chunkData.length() < cgiData.chunkSize)
             return(returnedBadError(cgiData));
-        if (write(cgiData.fd, chunkData.c_str(), chunkSize) == -1)
+        if (write(cgiData.fd, chunkData.c_str(), cgiData.chunkSize) == -1)
                 return(returnedInternalError(cgiData));
         cgiData.fullLine.erase(0, endTxt + 2);
         endNum = cgiData.fullLine.find("\r\n");
         if (endNum != std::string::npos)
+        {
+            std::string tmp = cgiData.fullLine.substr(0, endNum + 2);
+            if (!checkDigits(cgiData, tmp))
+                return (returnedBadError(cgiData));
             endTxt = cgiData.fullLine.find("\r\n", endNum + 2);
+        }
     }
     if (cgiData.getMove == 4)
         cgiData.getMove = 3;
@@ -254,12 +245,11 @@ int parseCgiResponse(CgiHandler &cgiData, Request req)
         if (pos == std::string::npos && cgiData.getEndHeaders == false)
             break ;
         tes = cgiData.fullLine;
-        if (cgiData.getEndHeaders == false) // FIX the /r/n
+        if (cgiData.getEndHeaders == false)
         {
             getHeadersCgi(cgiData);
             if (cgiData.status == 500 || cgiData.status == 502)
                 cgiData.clientState = CLIENT_CGI_ON ;
-            // cout << cgiData.getMove << std::endl;
             if (cgiData.getMove == 3)
                 break ;
             cgiData.getMove = 2;

@@ -66,6 +66,7 @@ public:
 #include "CgiHandler.hpp"
 
 int getFile(Record &log);
+std::string getRandName();
 void findLongestMatch(playloadData &data, Config &conf, std::string reqPath);
 void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req);
 std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &i, SessionsList &sList);

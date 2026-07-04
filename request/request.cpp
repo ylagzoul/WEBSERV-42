@@ -6,6 +6,7 @@ Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(
     getMove = 0;
     countLenHead = 0;
     recLen = 0;
+    chunkSize = 0;
     isLoggedCookie = false;
 };
 
@@ -41,19 +42,6 @@ void Request::clean() // add youssef
 //         data.uri.insert(0, "/");
 // }
 
-bool checkDigits(Request &req, std::string str)
-{
-    std::stringstream iss(str);
-    size_t value;
-    iss >> value;
-    
-    if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
-    {
-        req.contentLength = value;
-        return (true);
-    }
-    return (false);
-}
 
 bool isHoldSpace(const std::string& str)
 {
@@ -189,13 +177,14 @@ bool checkPrecentEnc(std::string &pathSlice)
     {
         if (copyPath.at(i) == '%')
         {
-            if(!copyPath[i + 1] || !copyPath[i + 2])
+            std::cout << copyPath.length() << "\n";
+            if(!copyPath[i + 1] || !copyPath[i + 2]) // handel it
                 return (false);
             if (!isHex((char)copyPath.at(i+1)) || !isHex((char)copyPath.at(i+2)))
                 return(false);
             char res = hexToChar(copyPath.at(i+1), copyPath.at(i+2));
             if ((unsigned char)res > 127)
-                return false;
+                return false ;
             pathSlice += res;
             i += 2;
         }
@@ -240,8 +229,7 @@ bool checkPath(std::string &path)
     path.erase(0, 1);
     if (path.length() == 1 && path != "/")
         return (false);
-    else
-        return (true);
+    return (true);
 }
 
 bool isLfCr(const std::string &str)
@@ -275,7 +263,7 @@ void fillCheck(Request &req, std::string reqLine)
         return (returnedBadError(req));
     if (!checkMethod(req.method))
     {
-        req.status = 501;
+        req.status = 405;
         req.finFlag = true;
         return ;
     }
@@ -337,15 +325,15 @@ void getHeaders(Request &req)
             req.bodyType = CHUNKED;
         else if (req.headers.find("content-length") != req.headers.end())
             req.bodyType = FIXED;
-        else if (req.method != "GET" && req.method != "DELETE")
+        else if (req.method == "POST")
             return (returnedBadError(req));
         return ;
     }
-    size_t colon = line.find(':');
-    if (colon != std::string::npos)
+    size_t column = line.find(':');
+    if (column != std::string::npos)
     {
-        std::string key = tolowerStr(line.substr(0, colon));
-        std::string value = line.substr(colon + 1);
+        std::string key = tolowerStr(line.substr(0, column));
+        std::string value = line.substr(column + 1);
         if (key.length() >= MAX_LEN_HEADER_FEILD || value.length() >= MAX_LEN_HEADER_FEILD)
             return (returnedBadError(req));
         if (!isPrintable(key) || !isHoldSpace(key) || key.empty())
@@ -370,13 +358,13 @@ void getHeaders(Request &req)
 
 void getChunkedBody(Request &req)
 {
-    size_t endTxt;
-    size_t endNum;
-    if (req.bodyFd == -1)
+    size_t endTxt = 0;
+    size_t endNum = 0;
+    if (req.bodyFd == -1 && req.fullLine.length() > 0)
     {
         req.bodyLen = 0;
         req.generateRandomName(BODY_FILE_PATH + std::string("client"));
-        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR, 0644);
         if (req.bodyFd == -1)
         {
             req.getEndFile = true;
@@ -385,40 +373,46 @@ void getChunkedBody(Request &req)
     }
     endNum = req.fullLine.find("\r\n");
     if (endNum != std::string::npos)
+    {
+        std::string tmp = req.fullLine.substr(0, endNum + 2);
+        if (!checkDigits(req, tmp))
+            return(close(req.bodyFd), returnedBadError(req));
         endTxt = req.fullLine.find("\r\n", endNum + 2);
+    }
+    
     while (endNum != std::string::npos && endTxt != std::string::npos)
     {
-        char *end = NULL;
-        std::string chunkNum  = req.fullLine.substr(0, endNum);
         std::string chunkData = req.fullLine.substr(endNum + 2, endTxt - endNum - 2);
         req.lenRead += req.fullLine.substr(0, endTxt + 2).length();
-        double chunkSize = std::strtol(chunkNum.c_str(), &end, 16);
-        req.bodyLen += chunkSize;
-        if (errno == ERANGE || *end || chunkSize < 0 || req.bodyLen > req.maxBodySize)
+        req.bodyLen += req.chunkSize;
+        if (req.bodyLen > req.maxBodySize)
+            return(returnedBadError(req));
+        if (req.chunkSize == 0 && chunkData.empty())
         {
-            req.status = 400;
-            close(req.bodyFd);
-            return ;
-        }
-        if (chunkSize == 0 && chunkData.empty())
-        {
-            write(req.bodyFd, chunkData.c_str(), chunkSize);
+            if(write(req.bodyFd, chunkData.c_str(), req.chunkSize) == -1)
+                return (returnedInternalError(req));
             req.fullLine.erase(0, endTxt + 2);
             req.getEndFile = true;
             close(req.bodyFd);
             return ;
         }
-        if (chunkData.length() < (size_t)chunkSize)
+        if ( chunkData.length() < (size_t)req.chunkSize)//check - 
         {
             req.status = 400;
             close(req.bodyFd);
             return ;
         }
-        write(req.bodyFd, chunkData.c_str(), chunkSize);
+        if(write(req.bodyFd, chunkData.c_str(), req.chunkSize) == -1)
+                return (returnedInternalError(req));
         req.fullLine.erase(0, endTxt + 2);
         endNum = req.fullLine.find("\r\n");
         if (endNum != std::string::npos)
+        {
+            std::string tmp = req.fullLine.substr(0, endNum + 2);
+            if (!checkDigits(req, tmp))
+                return(close(req.bodyFd), returnedBadError(req));
             endTxt = req.fullLine.find("\r\n", endNum + 2);
+        }
     }
     if (req.getMove == 4)
         req.getMove = 3;
@@ -427,11 +421,11 @@ void getChunkedBody(Request &req)
 void getFixedBody(Request &req)
 {
     req.lenRead += req.fullLine.length();
-    if (req.bodyFd == -1)
+    if (req.bodyFd == -1 && req.fullLine.length() > 0)
     {
         req.bodyLen = 0;
-        req.generateRandomName(BODY_FILE_PATH + std::string("client"));
-        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+        req.bodyPath = BODY_FILE_PATH + std::string("client_") + getRandName(); // test
+        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR, 0644);
         if (req.bodyFd == -1)
         {
             req.getEndFile = true;
@@ -439,7 +433,6 @@ void getFixedBody(Request &req)
         }
     }
     req.bodyLen += req.fullLine.length();
-    cout << "--> " << req.bodyLen << std::endl;
     if (req.contentLength > req.maxBodySize)
     {
         req.getEndFile = true;
@@ -512,7 +505,6 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     std::string tes;
     req.fullLine.append(buffer, len);
     req.recLen += len;
-    // cout << "len " << len << std::endl;
     if (req.getMove == 3)
         req.getMove = 0;
     while (1)
@@ -521,7 +513,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
             getRequestLine(req, pdata, con);
         if (req.method.empty())
         {
-            if (req.status != 200 )
+            if (req.status != 200 ) // USELESS
                 req.clientState = CLIENT_ON;
             break ;
         }
@@ -534,7 +526,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
         if (req.getEndHeaders == false)
         {
             getHeaders(req);
-            if (req.status == 500 || req.status == 400 || req.status == 501)
+            if (req.status == 400 || req.status == 405) //
                 req.clientState = CLIENT_ON ;
             if (req.getMove == 3)
                 break ;
@@ -547,17 +539,17 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
             getChunkedBody(req);
             if (req.getMove == 3)
                 break ;
+            req.getMove = 4;
         }
-        req.getMove = 4;
         if (req.lenRead == req.recLen)
         {
-            if ((req.getEndFile) || (req.status == 500) || (req.status == 400) || (req.status == 501))
+            if ((req.getEndFile) || (req.status == 500) || (req.status == 400) || (req.status == 405))
                 req.clientState = CLIENT_ON;
             if (pos != std::string::npos && tes.length() > 2)
                 tes.erase(0, pos + 2);
             if (req.method == "GET" || req.method == "DELETE")
             {
-                if ((req.method != "POST" && pos != std::string::npos && tes.length() == 2))
+                if ((pos != std::string::npos && tes.length() == 2))
                     req.clientState = CLIENT_ON;
             }
             req.lenRead = 0;

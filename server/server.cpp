@@ -93,7 +93,7 @@ void Server::acceptNewCleint(Webserv &Web)
         {
             // if (errno == EAGAIN || errno == EWOULDBLOCK)
             //     break;
-            perror("accept");
+            // perror("accept");
             break;
         }
         pollfd client_poll;
@@ -240,7 +240,6 @@ int main(int ac, char *arv[])
                             Web.server[Web.s].serverPort[Web.t].close_client(Web, indexClnt);
                             continue;
                         }
-                        cout << "fd" << Web.fds[indexClnt].fd << "\n";
                         if (Web.typeFd[indexClnt] == "server" && (Web.fds[indexClnt].revents & POLLIN)) // CHECK ALL SERVER FDS
                         {
                             Web.server[Web.s].serverPort[Web.t].acceptNewCleint(Web);

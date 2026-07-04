@@ -65,6 +65,7 @@ class CgiHandler
     bool                getEndFile;
     size_t              contentLength;
     int                 countLenHead;
+    double              chunkSize;
     t_client_state_cgi  clientState;
     t_req_state_cgi     reqState;
     int bodyType;

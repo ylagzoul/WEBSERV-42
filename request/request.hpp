@@ -17,6 +17,8 @@
 #include <vector>
 #include "../config_file/config_file.hpp"
 #include "../response/Response.hpp"
+// #include "../response/"
+
 
 using std::cout;
 
@@ -60,9 +62,9 @@ class Request
         size_t      contentLength;
         size_t      recLen;
         int         getMove;
+        long      chunkSize;
         size_t      maxBodySize;
         bool        isLoggedCookie;
-        // size_t          countLenHead;
         t_client_state  clientState;
         Sessions    *session;
         std::map<std::string, std::string> cookies;
@@ -74,6 +76,38 @@ class Request
 
 void    readRequest(Request &req, char buffer[], size_t len, Config con, SessionsList &sList, playloadData &pdata);
 std::string tolowerStr(std::string str);
+
+template<typename T>
+bool checkDigits(T &obj, std::string str)
+       // tmp = dfd\r\n
+       // tmp = dfd
+{   
+    if (obj.bodyType == CHUNKED)
+    {
+        char *end = NULL;
+        if (str == "\r\n")
+            return (false);
+        // std::remove(str.begin(), str.end(), '\r');
+        // std::remove(str.begin(), str.end(), '\n');//test
+        size_t endNum = str.find("\r\n");
+        obj.chunkSize = std::strtol(str.substr(0, endNum).c_str(), &end, 16);
+        if (errno == ERANGE || *end || obj.chunkSize < 0)//errno remove and replace
+            return (false);
+        return (true);
+    }
+    else
+    {
+        std::stringstream iss(str);
+        size_t value;
+        iss >> value;
+        if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
+        {
+            obj.contentLength = value;
+            return (true);
+        }
+    }
+    return (false);
+}
 
 
 #endif

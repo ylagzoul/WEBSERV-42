@@ -9,7 +9,6 @@
 class Sessions
 {
     public:
-        // std::string userName;
         std::string email;
         bool        logged;
         time_t      lastLog;

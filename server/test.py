@@ -49,11 +49,12 @@ chunk("<body>\n")
 chunk("<h1>Chunked Transfer Encoding Test</h1>\n")
 chunk("<p>If you can read this, your server is parsing chunks.</p>\n")
 
-print("<h2>STDIN</h2>")
+chunk("<h2>STDIN</h2>\r")
+print("HDDH\r")
 #data = sys.stdin.read()
-print("<pre>")
-# print(data if data else "(empty)")
-print("</pre>")
+chunk("<pre>\n")
+# chunk(data if data else "(empty)")
+chunk("</pre>\n")
 
 # Medium chunk
 medium = (
