@@ -128,17 +128,20 @@ void Server::acceptNewCleint(Webserv &Web)
 }
 
 bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList)
-{
-
+{   
     char buffer[SIZESR] = {0};
-
     int bytes = recv(Web.fds[indexClnt].fd, buffer, SIZESR, 0);
     if (bytes > 0)
     {
         Web.data[indexClnt].time = ::time(NULL);
+        // std::cout << "dkhelt\n";
         readRequest(Web.req[indexClnt], buffer, bytes, Web.config[Web.s], sList, Web.recs[indexClnt].data);
+        // std::cout << "khrejt\n";
         if (Web.req[indexClnt].clientState == CLIENT_ON)
+        {
+            Web.fds[indexClnt].events &= ~POLLIN;
             Web.fds[indexClnt].events |= POLLOUT;
+        }
         return (true);
     }
     else
@@ -173,6 +176,7 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt, SessionsList &sList)
     if ((Web.data[indexClnt].sendNext && Web.recs[indexClnt].status == CLOSED_RS) || Web.recs[indexClnt].status == ERROR_RS)
     {
         Web.fds[indexClnt].events &= ~POLLOUT;
+        Web.fds[indexClnt].events |= POLLIN;
 
         if (Web.recs[indexClnt].clientState == DISCONNECTED)
         {
@@ -265,7 +269,7 @@ int main(int ac, char *arv[])
         {
             for (size_t t = 0; t < Web.server[s].serverPort.size(); t++)
             {
-                std::cout << "close server     ...\n";
+                std::cout << "close server     ...\n";//todo remove
                 close(Web.fds[Web.server[s].serverPort[t].index_Client[0]].fd);
             }
         }

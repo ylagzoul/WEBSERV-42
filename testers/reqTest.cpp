@@ -28,10 +28,9 @@ int main() {
         "POST / HTTP/1.1\r\n"
         "Host: 127.0.0.1:3050\r\n"
         "User-Agent: Go-http-client/1.1\r\n"
-        "Transfer-Encoding: chunked\r\n"
-        "Content-Type: test/file\r\n"
+        "Content-Type: test/fil\r\n"
+        "content-length: 15\r\n"
         "Accept-Encoding:gzip\r\n"
-        "content-length: 10\r\n"
         "\r\n"
         "hellohellohello";
 

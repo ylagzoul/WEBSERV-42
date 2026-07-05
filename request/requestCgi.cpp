@@ -170,7 +170,7 @@ void getBody(CgiHandler &cgiData,  Request req)
 {
     cgiData.lenRead += cgiData.fullLine.length();
 
-    if (cgiData.fd == -1)
+    if (cgiData.fd == -1 && cgiData.fullLine.length() > 0)
     {
         cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandomName();
         cgiData.bodyLen = 0;

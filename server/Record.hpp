@@ -19,7 +19,6 @@ public:
     std::string fileName;
     std::string buffer;
     CgiHandler cgiData;
-    bool isItCgi;
     std::vector<int> IndexPipe;
     std::vector<int> IndexFdsPipe;
     // int cont; //why?
