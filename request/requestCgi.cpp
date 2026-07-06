@@ -125,7 +125,7 @@ bool getHeadersCgi(CgiHandler &cgiData)
             if (parseLine(cgiData.cgHeaders["status"], cgiData) == false)
                 return(returnedBadError(cgiData), true);
         }
-        cout << cgiData.bodyType << std::endl;
+        // cout << cgiData.bodyType << std::endl;
         return (true);
     }
     size_t colon = line.find(':');
@@ -133,7 +133,6 @@ bool getHeadersCgi(CgiHandler &cgiData)
     {
         std::string key = line.substr(0, colon);
         std::string value = line.substr(colon + 1);
-        cout << key.length() << "--" << value.length() << std::endl;
         if (!isPrintableC(key) || !isHoldSpaceCgi(key) || key.empty() || !isLfCrCgi(key) || !isLfCrCgi(value))
             return(returnedBadError(cgiData), true);
         value = trimCgi(value);
