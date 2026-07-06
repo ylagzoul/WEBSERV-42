@@ -1,4 +1,4 @@
- listen 127.0.2.1:1111;
+listen 127.0.2.1:1111;
 listen 127.30.20.10:5050;
 listen 127.0.23.1:3060;
 are these Servers or one server has more ips and ports
