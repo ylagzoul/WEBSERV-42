@@ -134,9 +134,10 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
     if (bytes > 0)
     {
         Web.data[indexClnt].time = ::time(NULL);
-        // std::cout << "dkhelt\n";
+        cout << "ENTERED\n";
         readRequest(Web.req[indexClnt], buffer, bytes, Web.config[Web.s], sList, Web.recs[indexClnt].data);
-        // std::cout << "khrejt\n";
+        cout << "EXITED\n";
+
         if (Web.req[indexClnt].clientState == CLIENT_ON)
         {
             Web.fds[indexClnt].events &= ~POLLIN;

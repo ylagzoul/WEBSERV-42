@@ -6,12 +6,12 @@ void    SessionsList::createUnicId()
     std::string alphaU = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string digits = "0123456789";
 
-    id = "";
+    // id = "";
     for (size_t i = 0; i < 3; i++)
     {
         for (size_t j = 0; j < 4; j++)
         {
-            int random = rand();
+            int random = std::rand();
             if (j == 0 && i != 0)
                 id += '-';
             if (random % 3 == 1)
@@ -34,7 +34,7 @@ void SessionsList::generateSession(Request &req)
         {
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
-            req.headers["cookie"] = "session_id=" + id + " ;path=/";
+            req.headers["cookie"] = "session_id=" + id;
             if (req.session->logged == true)
                 req.isLoggedCookie = true;
         }
@@ -53,7 +53,7 @@ void SessionsList::generateSession(Request &req)
         req.cookies["session_id"] = id;
 
         req.session = &sessionLis[id];
-        req.headers["cookie"] = "session_id=" + id + ";path=/";
+        req.headers["cookie"] = "session_id=" + id;
     }
     
 }
@@ -88,17 +88,16 @@ SessionsList::SessionsList()
 
 void    SessionsList::checkLimitSessions()
 {
-    time_t now = std::time(NULL);
-
     for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end();)
     {
-        if ( now - it->second.lastLog > 10 )
+        time_t now = std::time(NULL);
+        if ( now - it->second.lastLog > 30 )
         {
             sessionLis.erase(it++);
             // cout << "DKHELT\n";
         }
         else
-            ++it;
+            it++;//
     }
     // cout << "FROM CHEKING : ";
     // this->printSesions();

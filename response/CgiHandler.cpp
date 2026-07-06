@@ -88,11 +88,13 @@ int erorrCgi(CgiHandler &cgiData)
 CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false), count(0)
 {
     status = 200;
+    bodyType = 0;
     dataReady = false;
     cgiValid = false;
     canRead = false;
     getMove = 0;
     countLenHead = 0;
+    chunkSize = 0;
 };
 
 std::string normalizeKey(std::string key)
