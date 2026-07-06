@@ -47,6 +47,9 @@ public:
     int listFd;
     int uploadOn;
     int cgiDataPos;
+
+
+
     std::map<std::string, std::string> mime;
     std::map<int, std::string> table;
 };

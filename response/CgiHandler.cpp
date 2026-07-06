@@ -2,11 +2,9 @@
 #include "../server/server.hpp"
 #include "Response.hpp"
 
-int cvb;
 
 void createExecResources(CgiHandler &cgiData, playloadData &data)
 {
-    cvb++;
     cgiData.env = NULL;
     cgiData.env = new char *[cgiData.headers.size() + 1];
     for (size_t i = 0; i < cgiData.headers.size() + 1; i++)
@@ -22,8 +20,6 @@ void createExecResources(CgiHandler &cgiData, playloadData &data)
     cgiData.cgiArgs[1] = NULL;
     cgiData.cgiArgs[2] = NULL;
     cgiData.cgiArgs[0] = new char[data.cgiExecutePath.length() + 1];
-    // if (cvb > 50)
-    //     throw std::bad_alloc();
     cgiData.cgiArgs[1] = new char[data.cgiScriptFile.length() + 1];
     std::strcpy(cgiData.cgiArgs[0], data.cgiExecutePath.c_str());
     std::strcpy(cgiData.cgiArgs[1], data.cgiScriptFile.c_str());
@@ -49,22 +45,22 @@ void releaseExecResources(CgiHandler &cgiData)
 
 void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
 {
+    if (Web.recs[indexClnt].status == CGI_ACTIVE)
+        kill(cgiData.pid, SIGKILL);
     if (method == "POST")
     {
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
         Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[2]] = "close";
         Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[3]] = "close";
-        Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[2]);
-        Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[3]);
+        Web.server[Web.s].serverPort[Web.t].reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[2]);
+        Web.server[Web.s].serverPort[Web.t].reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[3]);
     }
-    
     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
     Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[0]] = "close";
     Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[1]] = "close";
-    Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[0]);
-    Web.reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[1]);
-
-    kill(cgiData.pid, SIGKILL);
+    Web.server[Web.s].serverPort[Web.t].reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[0]);
+    Web.server[Web.s].serverPort[Web.t].reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[1]);
+    
 }
 
 void returnedInternalError(CgiHandler &cgi)
@@ -85,11 +81,7 @@ std::string toStrC(int nb)
     return (ss.str());
 }
 
-int erorrCgi(CgiHandler &cgiData)
-{
-    cgiData.status = 500;
-    return 1;
-}
+
 CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false), count(0)
 {
     status = 200;
@@ -118,7 +110,8 @@ void addFdPollfd(Webserv &Web, size_t &indexClnt, size_t fdPipe, int poll)
     client_poll.fd = fdPipe;
     client_poll.events = poll;
     client_poll.revents = 0;
-    if (Web.reuseFd.size() == 0)
+    
+    if (Web.server[Web.s].serverPort[Web.t].reuseFd.size() == 0)
     {
         Web.fds.push_back(client_poll);
         Web.typeFd[Web.fds.size() - 1] = "pipe";
@@ -126,19 +119,17 @@ void addFdPollfd(Webserv &Web, size_t &indexClnt, size_t fdPipe, int poll)
         Web.server[Web.s].serverPort[Web.t].index_Client.push_back(Web.fds.size() - 1);
         Web.recs.push_back(Record());
         Web.req.push_back(Request());
-        Web.data.push_back(Data());
         Web.recs[indexClnt].IndexFdsPipe.push_back(Web.fds.size() - 1);
     }
     else
     {
-        Web.fds[Web.reuseFd[0]] = client_poll;
-        Web.typeFd[Web.reuseFd[0]] = "pipe";
-        Web.statusFd[Web.reuseFd[0]] = "active";
-        Web.req[Web.reuseFd[0]]  = Request();
-        Web.recs[Web.reuseFd[0]] = Record();
-        Web.data[Web.reuseFd[0]] = Data();
-        Web.recs[indexClnt].IndexFdsPipe.push_back(Web.reuseFd[0]);
-        Web.reuseFd.erase(Web.reuseFd.begin() + 0);
+        Web.fds[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = client_poll;
+        Web.typeFd[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = "pipe";
+        Web.statusFd[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = "active";
+        Web.req[Web.server[Web.s].serverPort[Web.t].reuseFd[0]]  = Request();
+        Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = Record();
+        Web.recs[indexClnt].IndexFdsPipe.push_back(Web.server[Web.s].serverPort[Web.t].reuseFd[0]);
+        Web.server[Web.s].serverPort[Web.t].reuseFd.erase(Web.server[Web.s].serverPort[Web.t].reuseFd.begin() + 0);
     }
     fcntl(fdPipe, F_SETFL, O_NONBLOCK);
 }
@@ -147,7 +138,7 @@ int createPipes(Webserv &Web, CgiHandler &cgiData, Request req, size_t &indexCln
 {
     int outputPipe[2];
     if (pipe(outputPipe) == -1)
-        return (erorrCgi(cgiData));
+        return (1);
 
     addFdPollfd(Web, indexClnt , outputPipe[0],POLLIN);
     addFdPollfd(Web, indexClnt , outputPipe[1],POLLOUT);
@@ -160,14 +151,14 @@ int createPipes(Webserv &Web, CgiHandler &cgiData, Request req, size_t &indexCln
         {
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-            return (erorrCgi(cgiData));
+            return (1);
         }
 
         if (pipe(inputPipe) == -1)
         {
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-            return (erorrCgi(cgiData));
+            return (1);
         }
         addFdPollfd(Web, indexClnt , inputPipe[0],POLLIN);
         addFdPollfd(Web, indexClnt , inputPipe[1],POLLOUT);
@@ -183,16 +174,17 @@ std::string switchData(std::string path)
     return (path.substr(0, l));
 }
 
-void createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadData &data, size_t &indexClnt)
+int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadData &data, size_t &indexClnt)
 {
     cgiData.pid = fork();
+
     if (cgiData.pid == -1)
     {
+        if (method == "POST")
+            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
-        // closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
-        erorrCgi(cgiData);
-        throw std::exception();
+        closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
+        return (1);
     }
     if (cgiData.pid == 0)
     {
@@ -200,9 +192,9 @@ void createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDa
         {
             if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd, STDIN_FILENO) < 0)
             {
-                close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
                 close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
-                cgiData.cgStatusCode = 500; // prblm
+                close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
+                closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
                 throw std::exception();
             }
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
@@ -213,21 +205,23 @@ void createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDa
         {
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-            cgiData.cgStatusCode = 500;
             throw std::exception();
         }
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
+
         if (chdir(switchData(data.realPath).c_str()) == -1)
             throw std::exception();
+
         execve(cgiData.cgiArgs[0], cgiData.cgiArgs, cgiData.env);
         releaseExecResources(cgiData);
-        perror("error");
         throw std::exception();
     }
+
     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
     if (method == "POST")
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
+    return (0);
 }
 
 int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
@@ -241,15 +235,9 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
             if (bytes_r < 0)
-            {
-                // closeCGI(Web, cgiData, method, indexClnt);
-                return (erorrCgi(cgiData));
-            }
+                return (1);
             if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, buffer, bytes_r)) < 0)
-            {
-                // closeCGI(Web, cgiData, method, indexClnt);
-                return (erorrCgi(cgiData));
-            }
+                return (1);
         }
     }
     if (Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].revents & (POLLIN | POLLHUP))
@@ -259,10 +247,7 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
         int bytes = read(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd, buffer, SIZESR - 1);
 
         if (bytes < 0)
-        {
-            // closeCGI(Web, cgiData, method, indexClnt);
-            return (erorrCgi(cgiData));
-        }
+            return (1);
         
         else if (bytes == 0)
         {
@@ -289,16 +274,15 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
             return (1);
         log.status = CGI_ACTIVE;
         log.method = CGI_RDWR;
-        createCgi(Web, log.cgiData, req.method, log.data, indexClnt);
-
+        if (createCgi(Web, log.cgiData, req.method, log.data, indexClnt))
+            return (1);
         releaseExecResources(log.cgiData);
     }
     else
     {
         if (readFromCgi(Web, log.cgiData, req.method, indexClnt))
         {
-            
-            // closeCGI(Web, log.cgiData, req.method, indexClnt);
+            closeCGI(Web, log.cgiData, req.method, indexClnt);
             return (1);
         }
         if (log.cgiData.canRead) /* CHEEEECK /!\*/
@@ -405,6 +389,7 @@ int cgiProcess(Webserv &Web, Record &log, Request req, size_t &i)
 {
     if (runCgi(Web, log, req, i))
     {
+        log.cgiData.status = 500;
         log.status = ERROR_RS;
     }
     if (log.cgiData.dataReady == true || log.status == ERROR_RS)
@@ -415,7 +400,7 @@ int cgiProcess(Webserv &Web, Record &log, Request req, size_t &i)
         }
         if (log.cgiData.dataReady)
         {
-            // closeCGI(Web, log.cgiData, req.method, i);
+            closeCGI(Web, log.cgiData, req.method, i);
         }
         if (cgiResponseHandler(log, log.cgiData, log.data))
             return 1;

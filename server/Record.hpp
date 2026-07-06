@@ -24,6 +24,10 @@ public:
     std::vector<int> IndexPipe;
     std::vector<int> IndexFdsPipe;
     int cont;
+
+    time_t time;
+    std::string response;
+    bool sendNext;
 };
 
 #endif

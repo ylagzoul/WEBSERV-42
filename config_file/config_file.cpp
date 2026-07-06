@@ -122,12 +122,12 @@ void ft_function(Location &obj)
     obj.conf.delet_data["authInfo"] = true;
 }
 
-void Webserv::config_file(std::string nameFielConfig)
+void Webserv::config_file(std::string configNameFile)
 {
     count = 0;
     try
     {
-        std::ifstream file((nameFielConfig).c_str());
+        std::ifstream file((configNameFile).c_str());
         if (!file)
             throw std::runtime_error("Error : opening config file");
 
