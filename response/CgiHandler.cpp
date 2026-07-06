@@ -93,6 +93,7 @@ int erorrCgi(CgiHandler &cgiData)
 CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false), count(0)
 {
     status = 200;
+    bodyType = 0;
     dataReady = false;
     cgiValid = false;
     canRead = false;
@@ -384,6 +385,11 @@ int cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
         return 1;
     }
     //if no body
+    if (cgiData.cgBodyFileName.empty())
+    {
+        log.status = CLOSED_RS;
+        return false;
+    }
     log.fd = open(cgiData.cgBodyFileName.c_str(), O_RDONLY);
     struct stat info;
     if (log.fd == -1 || stat(cgiData.cgBodyFileName.c_str(), &info) == -1)

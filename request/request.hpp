@@ -61,7 +61,6 @@ class Request
         int         bodyType;
         size_t      contentLength;
         size_t      recLen;
-        int         getMove;
         long      chunkSize;
         size_t      maxBodySize;
         bool        isLoggedCookie;
@@ -79,19 +78,16 @@ std::string tolowerStr(std::string str);
 
 template<typename T>
 bool checkDigits(T &obj, std::string str)
-       // tmp = dfd\r\n
-       // tmp = dfd
 {   
     if (obj.bodyType == CHUNKED)
     {
         char *end = NULL;
+        int lenStr = str.length();
         if (str == "\r\n")
             return (false);
-        // std::remove(str.begin(), str.end(), '\r');
-        // std::remove(str.begin(), str.end(), '\n');//test
         size_t endNum = str.find("\r\n");
         obj.chunkSize = std::strtol(str.substr(0, endNum).c_str(), &end, 16);
-        if (errno == ERANGE || *end || obj.chunkSize < 0)//errno remove and replace
+        if (lenStr > 15 || *end || obj.chunkSize < 0)
             return (false);
         return (true);
     }

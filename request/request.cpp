@@ -3,7 +3,6 @@
 Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(200), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_OF)
 {
     bodyType = 0;
-    getMove = 0;
     countLenHead = 0;
     recLen = 0;
     chunkSize = 0;
@@ -124,7 +123,7 @@ bool isPrintable(const std::string &str)
 {
     for (size_t i = 0; i < str.size(); i++)
     {
-        if (!isprint(static_cast<unsigned char>(str[i])))
+        if (!isprint((unsigned char)(str[i])))
             return false;
     }
     return true;
@@ -143,11 +142,21 @@ int    count_space(std::string str)
     return (count);
 }
 
+bool isLfCr(const std::string str)
+{
+    for (size_t i = 0; i < str.size(); i++)
+    {
+        if (str.at(i) == '\r' || str.at(i) == '\n')
+            return false;
+    }
+    return (true);
+}
+
 bool isHex(char h)
 {
     return ( h >= '0' && h <= '9' ) ||
            ( h >= 'a' && h <= 'f' ) ||
-           ( h >= 'A' && h <= 'F' ); 
+           ( h >= 'A' && h <= 'F' );
 }
 
 int hexValue(char c)
@@ -166,7 +175,7 @@ char hexToChar(char a, char b)
     int high = hexValue(a);
     int low  = hexValue(b);
 
-    return ((high << 4) | low);
+    return (high * 16 + low);
 }
 
 bool checkPrecentEnc(std::string &pathSlice)
@@ -177,8 +186,7 @@ bool checkPrecentEnc(std::string &pathSlice)
     {
         if (copyPath.at(i) == '%')
         {
-            std::cout << copyPath.length() << "\n";
-            if(!copyPath[i + 1] || !copyPath[i + 2]) // handel it
+            if (!(i + 2 < copyPath.size()))
                 return (false);
             if (!isHex((char)copyPath.at(i+1)) || !isHex((char)copyPath.at(i+2)))
                 return(false);
@@ -232,16 +240,6 @@ bool checkPath(std::string &path)
     return (true);
 }
 
-bool isLfCr(const std::string &str)
-{
-    for (size_t i = 0; i < str.size(); i++)
-    {
-        if (isspace(static_cast<unsigned char>(str[i])))
-            return false;
-    }
-    return (true);
-}
-
 void fillCheck(Request &req, std::string reqLine)
 {
     std::stringstream splitReq(reqLine);
@@ -263,7 +261,7 @@ void fillCheck(Request &req, std::string reqLine)
         return (returnedBadError(req));
     if (!checkMethod(req.method))
     {
-        req.status = 405;
+        req.status = 501;
         req.finFlag = true;
         return ;
     }
@@ -277,7 +275,6 @@ void getRequestLine(Request &req, playloadData &pdata, Config &conf)
     fillCheck(req, req.fullLine.substr(0, pos));
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
-    req.getMove = 1;
     if (req.status == 200)
     {
         findLongestMatch(pdata, conf, req.path);
@@ -300,15 +297,11 @@ void getRequestLine(Request &req, playloadData &pdata, Config &conf)
     
 }
 
-void getHeaders(Request &req)
+bool getHeaders(Request &req)
 {
     size_t endLine = req.fullLine.find("\r\n");
     if (endLine == std::string::npos)
-    {
-        if (req.getMove == 2)
-            req.getMove = 3;
-        return ;
-    }
+        return (false);
     std::string line = req.fullLine.substr(0, endLine);
     if (line.empty())
     {
@@ -326,8 +319,8 @@ void getHeaders(Request &req)
         else if (req.headers.find("content-length") != req.headers.end())
             req.bodyType = FIXED;
         else if (req.method == "POST")
-            return (returnedBadError(req));
-        return ;
+            return (returnedBadError(req), true);
+        return (true);
     }
     size_t column = line.find(':');
     if (column != std::string::npos)
@@ -335,28 +328,28 @@ void getHeaders(Request &req)
         std::string key = tolowerStr(line.substr(0, column));
         std::string value = line.substr(column + 1);
         if (key.length() >= MAX_LEN_HEADER_FEILD || value.length() >= MAX_LEN_HEADER_FEILD)
-            return (returnedBadError(req));
-        if (!isPrintable(key) || !isHoldSpace(key) || key.empty())
-            return (returnedBadError(req));
+            return (returnedBadError(req), true);
+        if (!isPrintable(key) || !isHoldSpace(key) || key.empty() || !isLfCr(key) || !isLfCr(value))
+            return (returnedBadError(req), true);
         value = trim(value);
         if (req.headers.find(key) != req.headers.end() && key == "content-length")
-            return (returnedBadError(req));
+            return (returnedBadError(req), true);
         req.headers[key] = value;
         if (req.headers.find("content-length") != req.headers.end() && !checkDigits(req, req.headers["content-length"]))
-            return (returnedBadError(req));
+            return (returnedBadError(req), true);
     }
     else
-        return (returnedBadError(req));
+        return (returnedBadError(req), true);
     req.lenRead += req.fullLine.substr(0, endLine + 2).length();
     req.countLenHead += req.fullLine.substr(0, endLine + 2).length();    
     req.fullLine.erase(0, endLine + 2);
     if (req.countLenHead >= MAX_LEN_HEADERS_FEILD)
-        return (returnedBadError(req));
-    return ;
+        return (returnedBadError(req), true);
+    return (true);
 }
 
 
-void getChunkedBody(Request &req)
+bool getChunkedBody(Request &req)
 {
     size_t endTxt = 0;
     size_t endNum = 0;
@@ -368,7 +361,7 @@ void getChunkedBody(Request &req)
         if (req.bodyFd == -1)
         {
             req.getEndFile = true;
-            return (returnedInternalError(req));
+            return (returnedInternalError(req), true);
         }
     }
     endNum = req.fullLine.find("\r\n");
@@ -376,7 +369,7 @@ void getChunkedBody(Request &req)
     {
         std::string tmp = req.fullLine.substr(0, endNum + 2);
         if (!checkDigits(req, tmp))
-            return(close(req.bodyFd), returnedBadError(req));
+            return (close(req.bodyFd), returnedBadError(req), true);
         endTxt = req.fullLine.find("\r\n", endNum + 2);
     }
     
@@ -386,36 +379,35 @@ void getChunkedBody(Request &req)
         req.lenRead += req.fullLine.substr(0, endTxt + 2).length();
         req.bodyLen += req.chunkSize;
         if (req.bodyLen > req.maxBodySize)
-            return(returnedBadError(req));
+            return (returnedBadError(req), true);
         if (req.chunkSize == 0 && chunkData.empty())
         {
-            if(write(req.bodyFd, chunkData.c_str(), req.chunkSize) == -1)
-                return (returnedInternalError(req));
+            if (write(req.bodyFd, chunkData.c_str(), req.chunkSize) == -1)
+                return (returnedInternalError(req), true);
             req.fullLine.erase(0, endTxt + 2);
             req.getEndFile = true;
             close(req.bodyFd);
-            return ;
+            return (true);
         }
-        if ( chunkData.length() < (size_t)req.chunkSize)//check - 
+        if (chunkData.length() < (size_t)req.chunkSize)
         {
             req.status = 400;
             close(req.bodyFd);
-            return ;
+            return (true);
         }
-        if(write(req.bodyFd, chunkData.c_str(), req.chunkSize) == -1)
-                return (returnedInternalError(req));
+        if (write(req.bodyFd, chunkData.c_str(), req.chunkSize) == -1)
+                return (returnedInternalError(req), true);
         req.fullLine.erase(0, endTxt + 2);
         endNum = req.fullLine.find("\r\n");
         if (endNum != std::string::npos)
         {
             std::string tmp = req.fullLine.substr(0, endNum + 2);
             if (!checkDigits(req, tmp))
-                return(close(req.bodyFd), returnedBadError(req));
+                return (close(req.bodyFd), returnedBadError(req), true);
             endTxt = req.fullLine.find("\r\n", endNum + 2);
         }
     }
-    if (req.getMove == 4)
-        req.getMove = 3;
+    return (false);
 }
 
 void getFixedBody(Request &req)
@@ -424,7 +416,7 @@ void getFixedBody(Request &req)
     if (req.bodyFd == -1 && req.fullLine.length() > 0)
     {
         req.bodyLen = 0;
-        req.bodyPath = BODY_FILE_PATH + std::string("client_") + getRandName(); // test
+        req.bodyPath = BODY_FILE_PATH + std::string("client_") + getRandName(); // has been tested
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR, 0644);
         if (req.bodyFd == -1)
         {
@@ -505,15 +497,14 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     std::string tes;
     req.fullLine.append(buffer, len);
     req.recLen += len;
-    if (req.getMove == 3)
-        req.getMove = 0;
+
     while (1)
     {
         if (req.method.empty())
             getRequestLine(req, pdata, con);
         if (req.method.empty())
         {
-            if (req.status != 200 ) // USELESS
+            if (req.status != 200)
                 req.clientState = CLIENT_ON;
             break ;
         }
@@ -523,27 +514,23 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
             tes = req.fullLine;
         }
 
-        if (req.getEndHeaders == false)
+        if (req.getEndHeaders == false && req.status == 200)
         {
-            getHeaders(req);
-            if (req.status == 400 || req.status == 405) //
-                req.clientState = CLIENT_ON ;
-            if (req.getMove == 3)
+            if (getHeaders(req) == false)
                 break ;
-            req.getMove = 2;
+            if (req.status == 400 || req.status == 501)
+                req.clientState = CLIENT_ON ;
         }
         if (req.method == "POST" && req.getEndFile == false && req.bodyType == FIXED)
             getFixedBody(req);
         else if (req.method == "POST" && req.getEndFile == false && req.bodyType == CHUNKED)
         {
-            getChunkedBody(req);
-            if (req.getMove == 3)
+            if (getChunkedBody(req) == false)
                 break ;
-            req.getMove = 4;
         }
         if (req.lenRead == req.recLen)
         {
-            if ((req.getEndFile) || (req.status == 500) || (req.status == 400) || (req.status == 405))
+            if ((req.getEndFile) || (req.status == 500) || (req.status == 400) || (req.status == 501))
                 req.clientState = CLIENT_ON;
             if (pos != std::string::npos && tes.length() > 2)
                 tes.erase(0, pos + 2);

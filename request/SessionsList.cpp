@@ -34,7 +34,7 @@ void SessionsList::generateSession(Request &req)
         {
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
-            req.headers["cookie"] = "session_id=" + id + " ;path=/";
+            req.headers["cookie"] = "session_id=" + id;
             if (req.session->logged == true)
                 req.isLoggedCookie = true;
         }
@@ -53,7 +53,7 @@ void SessionsList::generateSession(Request &req)
         req.cookies["session_id"] = id;
 
         req.session = &sessionLis[id];
-        req.headers["cookie"] = "session_id=" + id + ";path=/";//;path=/ need more under
+        req.headers["cookie"] = "session_id=" + id;
     }
     
 }
