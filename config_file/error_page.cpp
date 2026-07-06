@@ -1,10 +1,10 @@
-#include "../../server/server.hpp"
+#include "../server/server.hpp"
 
 void Config::ft_autoindex()
 {
     int size_s = str[1].size();
     if (size != 2 || (str[1] != "off;" && str[1] != "on;"))
-        throw std::runtime_error("autoindex");
+        throw std::runtime_error("Error : in autoindex");
     str[1].erase(size_s - 1);
     autoindex = str[1];
     if (autoindex == "on")
@@ -39,12 +39,12 @@ void Config::ft_client_max_body_size()
     size_t i = 0;
     char c = str[1][size_a - 2];
     if (size != 2 || !ft_str_char("mMgGkKbB", str[1][size_a - 2]) || str[1][size_a - 1] != ';')
-        throw std::runtime_error("client_max_body_size");
+        throw std::runtime_error("Error : in client max body size");
     str[1].erase(size_a - 2, 2);
     while (i < str[1].size())
     {
         if (!isdigit(str[1][i]))
-            throw std::runtime_error("client_max_body_size");
+            throw std::runtime_error("Error : Element is not a number in client max body size");
         i++;
     }
     client_max_body_size = atoi(str[1].c_str());
@@ -59,11 +59,11 @@ void Config::ft_client_max_body_size()
 void Config::ft_upload_path()
 {
     int size_s = str[1].size();
-    if (size != 2 || str[1][0] != '/' || str[1][size_s - 1] != ';')
-        throw std::runtime_error("upload_path");
+    if (size != 2 || str[1][size_s - 1] != ';')
+        throw std::runtime_error("Error : in upload path");
 
     str[1].erase(size_s - 1);
-    uploadPath = str[1];
+    uploadPath = cleanPath(str[1]);
 }
 
 void Config::ft_error_page()
@@ -71,7 +71,7 @@ void Config::ft_error_page()
     char c;
     int size_s = str[2].size();
     if (size != 3 || str[2][size_s - 1] != ';')
-        throw std::runtime_error("error in pa"); //
+        throw std::runtime_error("Error : in error page");
 
     if (delet_data["error_page"] == true)
     {
@@ -82,10 +82,10 @@ void Config::ft_error_page()
     {
         c = str[1][i];
         if (!isdigit(c))
-            throw std::runtime_error("error_page not digit");
+            throw std::runtime_error("Error : Element is not a number in error page");
     }
     str[2].erase(size_s - 1);
-    error_page[std::atoi(str[1].c_str())] = str[2];
+    error_page[std::atoi(str[1].c_str())] = cleanPath(str[2]);;
     delet_data["error_page"] = false;
 }
 
@@ -94,13 +94,13 @@ void Config::ft_return()
     char c;
     int size_s = str[2].size();
     if (size != 3 || str[2][size_s - 1] != ';')
-        throw std::runtime_error("error in return");
+        throw std::runtime_error("Error : in return");
 
     for (size_t i = 0; i < str[1].size(); i++)
     {
         c = str[1][i];
         if (!isdigit(c))
-            throw std::runtime_error("not digit in return");
+            throw std::runtime_error("Error : Element is not a number in return");
     }
     str[2].erase(size_s - 1);
     retCode = std::atoi(str[1].c_str());

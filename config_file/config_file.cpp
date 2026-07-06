@@ -7,7 +7,6 @@ Config::Config()
     delet_data["index"] = false;
     delet_data["cgiExt"] = false;
     // emptyFile = false;
-    // server_name = "";
     root = "/home";
     autoIndex = 0;
     client_max_body_size = DEFAULT_MAX_BODY_SIZE;
@@ -43,14 +42,12 @@ void Config::ft_authInfo()
         loginToken.clear();
         redirectTokens.clear();
     }
-    if (str.size() < 3 || str[1][0] != '/' || str[str.size() - 1][str[str.size() - 1].size() - 1] != ';')
-        throw std::runtime_error("loginToken");
-    loginToken = str[1];
+    if (str.size() < 3 || str[str.size() - 1][str[str.size() - 1].size() - 1] != ';')
+        throw std::runtime_error("Error : in loginToken");
+    loginToken = cleanPath(str[1]);
     for (size_t i = 2; i < str.size(); i++)
-    { 
-        if (str[i][0] != '/')
-            throw std::runtime_error("redirectTokens");
-        redirectTokens.push_back(str[i]);
+    {
+        redirectTokens.push_back(cleanPath(str[i]));
     }
     redirectTokens[redirectTokens.size() - 1].erase(redirectTokens[redirectTokens.size() - 1].size() - 1);
     delet_data["authInfo"] = false;
@@ -66,10 +63,10 @@ void Config::ft_cgi_data()
     for (size_t i = 0; i < cgiExt.size(); i++)
     {
         if (cgiExt[i] == str[1])
-            throw std::runtime_error("error in cgi_ data " + str[1]);
+            throw std::runtime_error("Error : in cgiExt = " + str[1]);
     }
     if (str.size() != 3 || str[1][0] != '.' || str[2][str[2].size() - 1] != ';')
-        throw std::runtime_error("ft_cgi_data");
+        throw std::runtime_error("Error : in cgi data");
 
     if (delet_data["cgiExt"] == true)
     {
@@ -79,7 +76,7 @@ void Config::ft_cgi_data()
 
     str[2].erase(str[2].size() - 1);
     cgiExt.push_back(str[1]);
-    cgiPath.push_back(str[2]);
+    cgiPath.push_back(cleanPath(str[2]));
     delet_data["cgiExt"] = false;
 }
 
@@ -87,8 +84,6 @@ void Config::function()
 {
     if (str[0] == "listen" && blockName == "server")
         ft_listen();
-    else if (str[0] == "server_name" && blockName == "server")
-        ft_server_name();
     else if (str[0] == "client_max_body_size" && blockName == "server")
         ft_client_max_body_size();
     else if (str[0] == "upload_path")
@@ -103,19 +98,19 @@ void Config::function()
         ft_index();
     else if (str[0] == "autoindex")
         ft_autoindex();
-    else if (str[0] == "}")
-    {
-        if (blockName == "location")
-            blockName = "server";
-    }
     else if (str[0] == "return")
         ft_return();
     else if (str[0] == "authInfo")
         ft_authInfo();
     else if (str[0] == "cgi_data")
         ft_cgi_data();
+    else if (str[0] == "}")
+    {
+        if (blockName == "location")
+            blockName = "server";
+    }
     else
-        throw std::runtime_error("erorr in element");
+        throw std::runtime_error("Erorr : Invalid Element");
 }
 
 void ft_function(Location &obj)
@@ -127,14 +122,14 @@ void ft_function(Location &obj)
     obj.conf.delet_data["authInfo"] = true;
 }
 
-void Webserv::config_file(std::string nameFielConfig)
+void Webserv::config_file(std::string configNameFile)
 {
     count = 0;
-    try
-    {
-        std::ifstream file((nameFielConfig).c_str());
+    // try
+    // {
+        std::ifstream file((configNameFile).c_str());
         if (!file)
-            throw std::runtime_error("Error opening file");
+            throw std::runtime_error("Error : opening config file");
 
         std::string sstr;
         bool emptyFile = false;
@@ -148,15 +143,15 @@ void Webserv::config_file(std::string nameFielConfig)
                 continue;
             if ((cnf.str.size() == 1 && cnf.str[0] == "server") || (cnf.str.size() == 2 && cnf.str[0] == "server" && cnf.str[1] == "{"))
             {
-                count++;
                 if (cnf.str.size() == 1)
                 {
                     getline(file, sstr);
                     cnf.line = sstr;
                     cnf.splite();
                     if (cnf.str.size() != 1 || cnf.str[0] != "{")
-                        throw std::runtime_error("error in opening curly brace in server");
+                        throw std::runtime_error("Error : In opening curly brace in server");
                 }
+                count++;
                 cnf.blockName = "server";
                 while (getline(file, sstr))
                 {
@@ -167,12 +162,15 @@ void Webserv::config_file(std::string nameFielConfig)
                     else if (cnf.str[0] == "location")
                     {
                         count++;
-                        if (cnf.size != 3 || cnf.blockName == "location" || cnf.str[1][0] != '/' || cnf.str[2] != "{")
-                            throw std::runtime_error("location start error");
+                        if (cnf.size != 3 || cnf.blockName == "location" /*check boha linke with cleanpath*/ || cnf.str[2] != "{")
+                            throw std::runtime_error("Error : Location start error");
                         Location obj;
                         obj.conf = cnf;
                         ft_function(obj);
-                        obj.location_name = cnf.str[1];
+                        obj.location_name = cleanPath(cnf.str[1]);
+                        if (cnf.someLocation[obj.location_name] == true)
+                            throw std::runtime_error("Error : Same location name");
+                        cnf.someLocation[obj.location_name] = true;
                         while (getline(file, sstr))
                         {
                             obj.conf.line = sstr;
@@ -182,7 +180,7 @@ void Webserv::config_file(std::string nameFielConfig)
                             if (obj.conf.str[0] == "}")
                             {
                                 if (obj.conf.str.size() > 1)
-                                    throw std::runtime_error("error in closing curly brace in location");
+                                    throw std::runtime_error("Error : in closing curly brace in location");
                                 count--;
                                 break;
                             }
@@ -196,7 +194,7 @@ void Webserv::config_file(std::string nameFielConfig)
                         if (cnf.str[0] == "}")
                         {
                             if (cnf.str.size() > 1)
-                                throw std::runtime_error("error in closing curly brace in server");
+                                throw std::runtime_error("Error : in closing curly brace in server");
                             cnf.check_default();
                             this->config.push_back(cnf);
                             count--;
@@ -216,14 +214,13 @@ void Webserv::config_file(std::string nameFielConfig)
             //     if (cnf.str.size() > 0)
             //         throw std::runtime_error("An error occurred after the server finished");
             // }
-
         }
         if (emptyFile == false || count != 0)
-            throw std::runtime_error("empty config file or {}");
-    }
-    catch (const std::exception &e)
-    {
-        std::cout << e.what() << std::endl;
-        exit(1);
-    }
+            throw std::runtime_error("Error : Empty config file Or {}");
+    // }
+    // catch (const std::exception &e)
+    // {
+    //     std::cout << e.what() << std::endl;
+    //     exit(1);
+    // }
 }

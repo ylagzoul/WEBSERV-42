@@ -827,6 +827,8 @@ void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret
 
 std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &indexClnt, SessionsList &sList)
 {
+    // static int k;
+    // std::cout << k++ << "\n";
     std::string ret_resp;
     t_state pastStatus = log.status;
     t_state pastMethod = log.method;

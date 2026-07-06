@@ -9,6 +9,9 @@ Record::Record()
     status = NEW_RS;
     method = NO_MD;
     clientState = DISCONNECTED;
+
+    sendNext = true;
+    time = std::time(NULL);
 }
 
 void Record::clean()
