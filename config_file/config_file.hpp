@@ -17,7 +17,7 @@
 // #define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
 // #define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
 
-# define LIST_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/server"
+# define LIST_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/server/"
 # define BODY_FILE_PATH "/home/mradouan/goinfre/"
 
 // # define LIST_FILE_PATH "/home/abouhki/goinfre/"
