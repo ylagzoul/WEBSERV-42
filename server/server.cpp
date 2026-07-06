@@ -116,7 +116,6 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
     {
         Web.recs[indexClnt].time = std::time(NULL);
         readRequest(Web.req[indexClnt], buffer, bytes, Web.config[Web.s], sList, Web.recs[indexClnt].data);
-        // cout << "EXITED\n";
 
         if (Web.req[indexClnt].clientState == CLIENT_ON)
         {

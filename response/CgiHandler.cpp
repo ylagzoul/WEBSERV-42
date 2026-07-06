@@ -261,7 +261,6 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
             cgiData.cgBuff.append(buffer, bytes);
         }
     }
-
     return (0);
 }
 
@@ -284,7 +283,7 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
             closeCGI(Web, log.cgiData, req.method, indexClnt);
             return (1);
         }
-        if (log.cgiData.canRead)
+        if (log.cgiData.canRead || log.cgiData.endRead)
         {
             parseCgiResponse(log.cgiData, req);
             log.cgiData.canRead = false;
