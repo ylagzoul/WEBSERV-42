@@ -777,8 +777,11 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
         res << iter->first << ": " << iter->second << "\r\n";
     }
     res << "Content-Length: " << data.bodySize << "\r\n";
-    if (req.headers.count("cookie"))
-        res << "Set-Cookie: " << req.headers["cookie"] << "\r\n";
+    if (req.firstTime == true)
+    {
+        res << "Set-Cookie: session_id=" << req.cookies["session_id"] << "; path=/" << "\r\n";
+        req.firstTime = false;
+    }
     res << "\r\n";
     ret_resp = res.str();
 }
@@ -788,8 +791,11 @@ void generateRetResponse(playloadData &data, std::string &ret_resp, Request &req
     std::stringstream res;
     res << "HTTP/1.0 " << data.retCode << " " << data.table[data.retCode] << "\r\n";
     res << "Location: " << data.retPath << "\r\n";
-    if (req.headers.count("cookie"))
-        res << "Set-Cookie: " << req.headers["cookie"] << "\r\n";
+    if (req.firstTime == true)
+    {
+        res << "Set-Cookie: session_id=" << req.cookies["session_id"] << "; path=/" << "\r\n";
+        req.firstTime = false;
+    }
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Length: 0\r\n";
     res << "\r\n";
@@ -819,8 +825,11 @@ void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret
     res << "Connection: " << data.connection << "\r\n";
     res << "Content-Type: " << data.contentType << "\r\n";
     res << "Content-Length: " << data.bodySize << "\r\n";
-    if (req.headers.count("cookie"))
-        res << "Set-Cookie: " << req.headers["cookie"] << "\r\n";
+    if (req.firstTime == true)
+    {
+        res << "Set-Cookie: session_id=" << req.cookies["session_id"] << "; path=/" << "\r\n";
+        req.firstTime = false;
+    }
     res << "\r\n";
     ret_resp = res.str();
 }

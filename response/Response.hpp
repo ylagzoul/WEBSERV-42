@@ -18,7 +18,7 @@
 #include "../request/request.hpp"
 
 class Config;
-class Record;
+class Record;   
 class Request;
 class Server;
 class Webserv;
