@@ -64,6 +64,7 @@ class Request
         long      chunkSize;
         size_t      maxBodySize;
         bool        isLoggedCookie;
+        bool        firstTime;
         t_client_state  clientState;
         Sessions    *session;
         std::map<std::string, std::string> cookies;

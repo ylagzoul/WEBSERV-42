@@ -1,12 +1,24 @@
 server {
     listen 127.0.0.1:3050;
-    root /home/mradouan/Desktop/WEBSERV-42;
-    methods GET;
+    root /home/mradouan/Desktop;
+    methods GET POST;
     error_page 400 /errors/400.html;
     error_page 403 /errors/403.html;
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
     autoindex on;
+
+
+      location /portf {
+        methods GET POST;
+        upload_path /html;
+        authInfo /portf/html/login.html /portf/html/index.html /portf/html/myProjects.html;
+        error_page 400 /errors/400.html;
+        error_page 404 /errors/404.html;
+        root /home/mradouan/Desktop/WEBSERV-42/portf;
+        cgi_data .py /usr/bin/python3;
+        autoindex on;
+    }
 
     location / {
         methods POST GET;

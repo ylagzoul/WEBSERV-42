@@ -6,7 +6,7 @@ void    SessionsList::createUnicId()
     std::string alphaU = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string digits = "0123456789";
 
-    // id = "";
+    id = "";
     for (size_t i = 0; i < 3; i++)
     {
         for (size_t j = 0; j < 4; j++)
@@ -26,7 +26,6 @@ void    SessionsList::createUnicId()
 
 void SessionsList::generateSession(Request &req)
 {
-    bool newCreate = false;
     if (req.cookies.find("session_id") != req.cookies.end())
     {
         id = req.cookies["session_id"];
@@ -34,41 +33,23 @@ void SessionsList::generateSession(Request &req)
         {
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
-            req.headers["cookie"] = "session_id=" + id;
             if (req.session->logged == true)
                 req.isLoggedCookie = true;
         }
-        else
-            newCreate = true;
     }
-    else
-        newCreate = true;
-    if (newCreate)
-    {
-        createUnicId();
-        Sessions tmpSession;
-        tmpSession.email = id;
-        tmpSession.lastLog = std::time(NULL);
-        sessionLis[id] = tmpSession;
-        req.cookies["session_id"] = id;
-
-        req.session = &sessionLis[id];
-        req.headers["cookie"] = "session_id=" + id;
-    }
-    
 }
 
 void SessionsList::storeInputs(Request &req, std::string email)
 {
-    for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end(); ++it)
-    {
-        if (req.cookies["session_id"] == (*it).first)
-        {
-            (*it).second.email = email; 
-            (*it).second.logged = true;
-            req.isLoggedCookie = true;
-        }
-    }
+        createUnicId();
+        Sessions tmpSession;
+        tmpSession.email = email;
+        tmpSession.lastLog = std::time(NULL);
+        tmpSession.logged = true;
+        req.isLoggedCookie = true;
+        sessionLis[id] = tmpSession;
+        req.cookies["session_id"] = id;
+        req.session = &sessionLis[id];
 }
 
 void SessionsList::printSesions()
@@ -76,7 +57,7 @@ void SessionsList::printSesions()
 
     for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end(); ++it)
     {
-        std::cout << it->first << " => " << it->second.lastLog << "\n";
+        std::cout << it->first << " => " << it->second.email << "\n";
     }
 
 }

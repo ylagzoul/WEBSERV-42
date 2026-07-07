@@ -7,6 +7,7 @@ Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(
     recLen = 0;
     chunkSize = 0;
     isLoggedCookie = false;
+    firstTime = false;
 };
 
 void Request::clean() // add youssef
@@ -363,7 +364,7 @@ bool getChunkedBody(Request &req)
             req.getEndFile = true;
             return (returnedInternalError(req), true);
         }
-    }
+    }   
     endNum = req.fullLine.find("\r\n");
     if (endNum != std::string::npos)
     {
@@ -485,6 +486,7 @@ void    generateCookies(Request &req, SessionsList &sList, playloadData &pdata)
             {
                 std::string email = getEmail(buff);
                 sList.storeInputs(req, email);
+                req.firstTime = true;
                 close(fd);
             }
         }
@@ -497,7 +499,6 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     std::string tes;
     req.fullLine.append(buffer, len);
     req.recLen += len;
-    (void)sList;
     while (1)
     {
         if (req.method.empty())
