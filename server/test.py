@@ -10,7 +10,7 @@ import sys
 
 print("Content-Type: text/html; charset=utf-8\r")
 # print("content-length: 5\r")
-print("location: 5\r")
+print("location: /5\r")
 print("\r")
 
 

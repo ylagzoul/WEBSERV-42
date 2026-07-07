@@ -127,96 +127,96 @@ void Webserv::config_file(std::string configNameFile)
     count = 0;
     // try
     // {
-        std::ifstream file((configNameFile).c_str());
-        if (!file)
-            throw std::runtime_error("Error : opening config file");
+    std::ifstream file((configNameFile).c_str());
+    if (!file)
+        throw std::runtime_error("Error : opening config file");
 
-        std::string sstr;
-        bool emptyFile = false;
-        while (getline(file, sstr))
+    std::string sstr;
+    bool emptyFile = false;
+    while (getline(file, sstr))
+    {
+        Config cnf;
+        emptyFile = true;
+        cnf.line = sstr;
+        cnf.splite();
+        if (cnf.size == 0)
+            continue;
+        if ((cnf.str.size() == 1 && cnf.str[0] == "server") || (cnf.str.size() == 2 && cnf.str[0] == "server" && cnf.str[1] == "{"))
         {
-            Config cnf;
-            emptyFile = true;
-            cnf.line = sstr;
-            cnf.splite();
-            if (cnf.size == 0)
-                continue;
-            if ((cnf.str.size() == 1 && cnf.str[0] == "server") || (cnf.str.size() == 2 && cnf.str[0] == "server" && cnf.str[1] == "{"))
+            if (cnf.str.size() == 1)
             {
-                if (cnf.str.size() == 1)
+                getline(file, sstr);
+                cnf.line = sstr;
+                cnf.splite();
+                if (cnf.str.size() != 1 || cnf.str[0] != "{")
+                    throw std::runtime_error("Error : In opening curly brace in server");
+            }
+            count++;
+            cnf.blockName = "server";
+            while (getline(file, sstr))
+            {
+                cnf.line = sstr;
+                cnf.splite();
+                if (cnf.size == 0) //|| str[0][0] == '#'
+                    continue;
+                else if (cnf.str[0] == "location")
                 {
-                    getline(file, sstr);
-                    cnf.line = sstr;
-                    cnf.splite();
-                    if (cnf.str.size() != 1 || cnf.str[0] != "{")
-                        throw std::runtime_error("Error : In opening curly brace in server");
-                }
-                count++;
-                cnf.blockName = "server";
-                while (getline(file, sstr))
-                {
-                    cnf.line = sstr;
-                    cnf.splite();
-                    if (cnf.size == 0) //|| str[0][0] == '#'
-                        continue;
-                    else if (cnf.str[0] == "location")
+                    count++;
+                    if (cnf.size != 3 || cnf.blockName == "location" /*check boha linke with cleanpath*/ || cnf.str[2] != "{")
+                        throw std::runtime_error("Error : Location start error");
+                    Location obj;
+                    obj.conf = cnf;
+                    ft_function(obj);
+                    obj.location_name = cleanPath(cnf.str[1]);
+                    if (cnf.someLocation[obj.location_name] == true)
+                        throw std::runtime_error("Error : Same location name");
+                    cnf.someLocation[obj.location_name] = true;
+                    while (getline(file, sstr))
                     {
-                        count++;
-                        if (cnf.size != 3 || cnf.blockName == "location" /*check boha linke with cleanpath*/ || cnf.str[2] != "{")
-                            throw std::runtime_error("Error : Location start error");
-                        Location obj;
-                        obj.conf = cnf;
-                        ft_function(obj);
-                        obj.location_name = cleanPath(cnf.str[1]);
-                        if (cnf.someLocation[obj.location_name] == true)
-                            throw std::runtime_error("Error : Same location name");
-                        cnf.someLocation[obj.location_name] = true;
-                        while (getline(file, sstr))
+                        obj.conf.line = sstr;
+                        obj.conf.splite();
+                        if (obj.conf.size == 0)
+                            continue;
+                        if (obj.conf.str[0] == "}")
                         {
-                            obj.conf.line = sstr;
-                            obj.conf.splite();
-                            if (obj.conf.size == 0)
-                                continue;
-                            if (obj.conf.str[0] == "}")
-                            {
-                                if (obj.conf.str.size() > 1)
-                                    throw std::runtime_error("Error : in closing curly brace in location");
-                                count--;
-                                break;
-                            }
-                            obj.conf.function();
-                            // obj.conf.delet_data = false;
-                        }
-                        cnf.location.push_back(obj);
-                    }
-                    else
-                    {
-                        if (cnf.str[0] == "}")
-                        {
-                            if (cnf.str.size() > 1)
-                                throw std::runtime_error("Error : in closing curly brace in server");
-                            cnf.check_default();
-                            this->config.push_back(cnf);
+                            if (obj.conf.str.size() > 1)
+                                throw std::runtime_error("Error : in closing curly brace in location");
                             count--;
                             break;
                         }
-                        cnf.function();
+                        obj.conf.function();
+                        // obj.conf.delet_data = false;
                     }
+                    cnf.location.push_back(obj);
+                }
+                else
+                {
+                    if (cnf.str[0] == "}")
+                    {
+                        if (cnf.str.size() > 1)
+                            throw std::runtime_error("Error : in closing curly brace in server");
+                        cnf.check_default();
+                        this->config.push_back(cnf);
+                        count--;
+                        break;
+                    }
+                    cnf.function();
                 }
             }
-            else
-                throw std::runtime_error("Server start error");
-            // cnf.check_default();
-            // while (getline(file, sstr))
-            // {
-            //     cnf.line = sstr;
-            //     cnf.splite();
-            //     if (cnf.str.size() > 0)
-            //         throw std::runtime_error("An error occurred after the server finished");
-            // }
         }
-        if (emptyFile == false || count != 0)
-            throw std::runtime_error("Error : Empty config file Or {}");
+        else
+            throw std::runtime_error("Server start error");
+        // cnf.check_default();
+        // while (getline(file, sstr))
+        // {
+        //     cnf.line = sstr;
+        //     cnf.splite();
+        //     if (cnf.str.size() > 0)
+        //         throw std::runtime_error("An error occurred after the server finished");
+        // }
+    }
+    if (emptyFile == false || count != 0)
+        throw std::runtime_error("Error : Empty config file Or {}");
     // }
     // catch (const std::exception &e)
     // {

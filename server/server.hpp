@@ -34,11 +34,10 @@
 #define MAX_LEN_PATH 8 * 1024
 #define MAX_LEN_HEADER_FEILD 2 * 1024
 
-#define DEFAULT_MAX_BODY_SIZE 100000000
+#define DEFAULT_MAX_BODY_SIZE 50000000
 #define SIZESR 8192
 
 void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i);
-
 
 class Webserv;
 
@@ -66,18 +65,19 @@ class Webserv
 public:
     Webserv(std::string configNameFile);
 
-    int                     count;
-    int                   indexC;
-    size_t                s;
-    size_t                t;
-    size_t                i;
-    size_t                n;
-    std::vector<Server>         server;
-    std::deque<Record>          recs;
-    std::vector<Request>        req;
-    std::vector<pollfd>         fds;
-    std::map<int, std::string>  typeFd;
-    std::map<int, std::string>  statusFd;
+    int count;
+    int indexC;
+    size_t s;
+    size_t t;
+    size_t i;
+    size_t n;
+    std::vector<Server> server;
+    std::deque<Record> recs;
+    std::vector<Request> req;
+    std::vector<pollfd> fds;
+
+    std::map<int, std::string> typeFd;
+    std::map<int, std::string> statusFd;
 
     std::vector<Config> config;
     void config_file(std::string configNameFile);

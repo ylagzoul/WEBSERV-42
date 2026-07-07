@@ -243,9 +243,10 @@ int parseCgiResponse(CgiHandler &cgiData, Request req)
             if (cgiData.endRead == true)
             {
                 cgiData.dataReady = true;
+                cout << "YOUSSEF MAKI#RAFCH IDIBAGI\n";
                 cgiData.status = 502;
             }
-            break ;
+            break;
         }
         tes = cgiData.fullLine;
         if (cgiData.getEndHeaders == false)

@@ -497,7 +497,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
     std::string tes;
     req.fullLine.append(buffer, len);
     req.recLen += len;
-
+    (void)sList;
     while (1)
     {
         if (req.method.empty())
@@ -552,7 +552,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
             break;
         }
     }
-    if (req.getEndHeaders)
-        generateCookies(req, sList, pdata);
+    // if (req.getEndHeaders)
+    //     generateCookies(req, sList, pdata);
     return;
 }
