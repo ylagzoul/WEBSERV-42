@@ -553,7 +553,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
             break;
         }
     }
-    // if (req.getEndHeaders)
-    //     generateCookies(req, sList, pdata);
+    if (req.getEndHeaders)
+        generateCookies(req, sList, pdata);
     return;
 }

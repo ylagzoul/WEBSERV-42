@@ -237,6 +237,7 @@ int main(int ac, char *arv[])
     }
     catch (const std::exception &e)
     {
+        cout << e.what();
         return 1;
 
         // for (size_t s = 0; s < Web.server.size(); s++)
