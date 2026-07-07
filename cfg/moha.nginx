@@ -1,5 +1,5 @@
 server {
-    listen 127.0.0.1:3050;
+    listen 0.0.0.0:3050;
     root /home/mradouan/Desktop;
     methods GET POST;
     error_page 400 /errors/400.html;

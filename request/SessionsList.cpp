@@ -72,7 +72,7 @@ void    SessionsList::checkLimitSessions()
     for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end();)
     {
         time_t now = std::time(NULL);
-        if ( now - it->second.lastLog > 30 )
+        if ( now - it->second.lastLog > 10 )
         {
             sessionLis.erase(it++);
             // cout << "DKHELT\n";
