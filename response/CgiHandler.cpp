@@ -42,9 +42,8 @@ void releaseExecResources(CgiHandler &cgiData)
     }
 }
 
-void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &indexClnt)
+void closeCGI(Webserv &Web, std::string method, size_t &indexClnt)
 {
-    (void)cgiData;
     if (method == "POST")
     {
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
@@ -143,15 +142,12 @@ int createPipes(Webserv &Web, CgiHandler &cgiData, Request req, size_t &indexCln
 
     if (req.method == "POST")
     {
-        cout << "post createPipes\n";
         int inputPipe[2];
-        cout << "cgiData.cgBodyFileName = " << req.bodyPath.c_str() << "\n";
-        cgiData.bodyFd = open(req.bodyPath.c_str(), O_RDONLY); // boha wach close fd open
+        cgiData.bodyFd = open(req.bodyPath.c_str(), O_RDONLY);
         if (cgiData.bodyFd < 0)
         {
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-            cout << "post createPipes111\n";
             return (1);
         }
 
@@ -183,19 +179,19 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDat
         if (method == "POST")
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-        closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
+        closeCGI(Web, Web.req[indexClnt].method, indexClnt);
         return (1);
     }
     if (cgiData.pid == 0)
     {
+        close(2); // youssef check not problem
         if (method == "POST")
         {
-            cout << "post creatcgi\n";
             if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd, STDIN_FILENO) < 0)
             {
                 close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
                 close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-                closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
+                closeCGI(Web, Web.req[indexClnt].method, indexClnt);
                 throw std::runtime_error("ERROR EXITED");
             }
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
@@ -207,7 +203,6 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDat
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
             throw std::runtime_error("ERROR EXITED");
         }
-
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
 
@@ -229,7 +224,6 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
 {
     if (method == "POST")
     {
-        cout << "post readFromCgi\n";
         if (Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].revents & POLLOUT)
         {
             int bytes_r;
@@ -246,7 +240,6 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
 
         char buffer[SIZESR];
         int bytes = read(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd, buffer, SIZESR - 1);
-
         if (bytes < 0)
             return (1);
 
@@ -306,6 +299,7 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
         }
         if (log.cgiData.status == 504 || log.cgiData.status == 500)
             return (1);
+
         if (readFromCgi(Web, log.cgiData, req.method, indexClnt))
         {
             Web.recs[indexClnt].cgiData.status = 500;
@@ -412,7 +406,7 @@ bool cgiProcess(Webserv &Web, Record &log, Request req, size_t &i)
 {
     if (runCgi(Web, log, req, i))
     {
-        closeCGI(Web, log.cgiData, req.method, i);
+        closeCGI(Web, req.method, i);
         log.status = ERROR_RS;
     }
     if (log.cgiData.dataReady == true || log.status == ERROR_RS)
@@ -423,7 +417,7 @@ bool cgiProcess(Webserv &Web, Record &log, Request req, size_t &i)
         }
         if (log.cgiData.dataReady)
         {
-            closeCGI(Web, log.cgiData, req.method, i);
+            closeCGI(Web, req.method, i);
         }
         if (cgiResponseHandler(log, log.cgiData, log.data))
             return true;
@@ -442,5 +436,4 @@ bool cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listen
         return true;
     return false;
 }
-
 

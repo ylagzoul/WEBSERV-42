@@ -37,7 +37,7 @@
 #define DEFAULT_MAX_BODY_SIZE 50000000
 #define SIZESR 8192
 
-void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i);
+void closeCGI(Webserv &Web, std::string method, size_t &i);
 
 class Webserv;
 

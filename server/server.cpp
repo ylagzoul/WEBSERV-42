@@ -62,7 +62,7 @@ Webserv::Webserv(std::string configNameFile)
 void Server::close_client(Webserv &Web, size_t &indexClnt)
 {
     if (Web.recs[indexClnt].status == CGI_ACTIVE_RS)
-        closeCGI(Web, Web.recs[indexClnt].cgiData, Web.req[indexClnt].method, indexClnt);
+        closeCGI(Web, Web.req[indexClnt].method, indexClnt);
     close(Web.fds[indexClnt].fd);
     Web.fds[indexClnt].fd = -1;
     Web.statusFd[indexClnt] = "close";
@@ -78,7 +78,7 @@ void Server::acceptNewClient(Webserv &Web)
         int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
 
         if (client_fd < 0)
-            break;
+            break ;
         pollfd client_poll;
         client_poll.fd = client_fd;
         client_poll.events = POLLIN;
@@ -173,22 +173,24 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt, SessionsList &sList)
 
 int main(int ac, char *arv[])
 {
-    if (ac != 2)
-    {
-        cout << "Error: you should enter the config file only\n";
-        return (1);
-    }
     try
     {
+        if (ac != 2)
+            throw std::runtime_error("Error: you should enter the config file only");
         Webserv Web(arv[1]);
         SessionsList sList;
         while (true)
         {
             if (poll(&Web.fds[0], Web.fds.size(), 30000) == -1)
             {
-                std::cout << "poll error\n";
-                continue;
+                for (size_t i = 0; i < Web.fds.size(); i++)
+                {
+                    if (Web.statusFd[i] == "active")
+                        close(Web.fds[i].fd);
+                }
+                throw std::runtime_error("Error: fail poll");
             }
+
             for (Web.s = 0; Web.s < Web.server.size(); Web.s++)
             {
                 for (Web.t = 0; Web.t < Web.server[Web.s].serverPort.size(); Web.t++)
@@ -198,7 +200,7 @@ int main(int ac, char *arv[])
                         size_t indexClnt = Web.server[Web.s].serverPort[Web.t].index_Client[Web.i];
 
                         if (Web.statusFd[indexClnt] == "close" || Web.typeFd[indexClnt] == "pipe")
-                            continue;
+                            continue ;
 
                         if (sList.checkIfNotNull())
                             sList.checkLimitSessions();
@@ -224,10 +226,6 @@ int main(int ac, char *arv[])
                         }
                         else if (Web.typeFd[indexClnt] == "client" && (Web.fds[indexClnt].revents & POLLOUT))
                         {
-                            // if (Web.recs[indexClnt].status == CGI_ACTIVE && ((Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].revents != POLLIN)))
-                            //     continue;
-                            // if (Web.recs[indexClnt].status == CGI_ACTIVE && ((Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].revents != POLLOUT)))
-                            //     continue;
                             Web.server[Web.s].serverPort[Web.t].sendRespond(Web, indexClnt, sList);
                         }
                     }
@@ -239,14 +237,5 @@ int main(int ac, char *arv[])
     {
         cout << e.what() << std::endl;
         return 1;
-
-        // for (size_t s = 0; s < Web.server.size(); s++)
-        // {
-        //     for (size_t t = 0; t < Web.server[s].serverPort.size(); t++)
-        //     {
-        //         std::cout << "close server     ...\n";
-        //         close(Web.fds[Web.server[s].serverPort[t].index_Client[0]].fd);
-        //     }
-        // }
     }
 }
