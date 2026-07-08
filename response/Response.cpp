@@ -114,7 +114,7 @@ std::string getRandName()
     std::stringstream ss;
     time_t tStamp = std::time(NULL);
     struct tm *currentTime = std::localtime(&tStamp);
-    char arr[9];
+    char arr[7];
     std::strftime(arr, sizeof(arr), "%H%M%S", currentTime);
     std::string randName = arr;
     ss << count++;
@@ -164,7 +164,7 @@ bool postHandler(Record &log, Request &req)
         {
             std::string randName = getRandName();
             std::string tmpStr = log.data.realPath + '/' + randName + ".txt";
-            log.fd = open(tmpStr.c_str(), O_WRONLY | O_CREAT, 0644);
+            log.fd = open(tmpStr.c_str(), O_WRONLY | O_CREAT | O_RDONLY, 0644);
             if (log.fd == -1)
             {
                 log.data.statusCode = 500;
@@ -311,7 +311,7 @@ bool postFilesList(Record &log)
         tmpPath.resize(tmpPath.length() - 1);
     tmpPath = cleanPath(tmpPath);
     while ((rdir = readdir(log.dir)))
-    {	
+    {
         tmp = rdir->d_name;
         if (tmp == ".")
             continue;
@@ -441,6 +441,7 @@ int validateFile(Record &log, playloadData &data)
         data.statusCode = 500;
         return 1;
     }
+
     if (S_ISDIR(info.st_mode))
     {
         if (tryIndex(log, data))
@@ -517,7 +518,7 @@ void getImportantData(Config &conf, playloadData &data)
         data.root = conf.root;
         data.index = conf.index;
         data.upload = conf.uploadPath;
-        data.autoIndex = conf.autoIndex;//?AUTOF
+        data.autoIndex = conf.autoIndex;
         data.errorPages = conf.error_page;
         data.retPath = conf.retPath;
         data.retCode = conf.retCode;
@@ -693,9 +694,8 @@ bool resolvePath(playloadData &data, Request &req)
     return false;
 }
 
-bool responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_t &i, SessionsList &sList)
+bool responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size_t &i)
 {
-    (void) sList;//! remove it if no need
     log.data.retValid = false;
     log.data.isCgi = false;
     log.data.statusCode = req.status;
@@ -769,10 +769,9 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
     res << "HTTP/1.0 " << data.statusCode << ' ' << data.table[data.statusCode] + "\r\n";
     res << "Connection: " << data.connection << "\r\n";
     std::map<std::string, std::string>::iterator iter;
-    // int ok = 0;
     for (iter = cgiData.cgHeaders.begin(); iter != cgiData.cgHeaders.end(); iter++)
     {
-        if (tolowerStr(iter->first) == "status" || tolowerStr(iter->first) == "set-cookie"
+        if (tolowerStr(iter->first) == "status"
             || tolowerStr(iter->first) == "connection" || tolowerStr(iter->first) == "content-length")
             continue;
         res << iter->first << ": " << iter->second << "\r\n";
@@ -835,7 +834,7 @@ void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret
     ret_resp = res.str();
 }
 
-std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &indexClnt, SessionsList &sList)
+std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &indexClnt)
 {
     std::string ret_resp;
     t_state pastStatus = log.status;
@@ -846,7 +845,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
         loadExtensions(log.data);
         loadStatusCode(log.data);
         log.data.connection = "Close";
-        if (responseHandler(Web, log, req, conf,indexClnt, sList))
+        if (responseHandler(Web, log, req, conf,indexClnt))
         {
             chooseErrorHandler(log.data);
             log.method = NONE_RS;

@@ -41,7 +41,7 @@ public:
     int retCode;
     size_t bodySize;
 
-    int autoIndex;
+    bool autoIndex;
     bool isCgi;
     bool retValid;
     bool uploadOn;
@@ -61,7 +61,7 @@ std::string getRandName();
 std::string cleanPath(std::string fullPath);
 void findLongestMatch(playloadData &data, Config &conf, std::string reqPath);
 void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req);
-std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &i, SessionsList &sList);
+std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &i);
 
 
 

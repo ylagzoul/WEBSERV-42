@@ -42,7 +42,7 @@ int main() {
             return 1;
         }
         std::cout << req [i] << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     // Read and print response

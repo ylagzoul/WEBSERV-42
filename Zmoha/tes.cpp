@@ -1,9 +1,6 @@
 #include "server/server.hpp"
 
 
-
-
-
 int main()
 {
     std::string chunkNum = "4F";

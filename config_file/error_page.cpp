@@ -8,9 +8,9 @@ void Config::ft_autoindex()
     str[1].erase(size_s - 1);
     autoindex = str[1];
     if (autoindex == "on")
-        autoIndex = 1;
+        autoIndex = true;
     else
-        autoIndex = 0;
+        autoIndex = false;
 }
 
 void Config::ft_index()

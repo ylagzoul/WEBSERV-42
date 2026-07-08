@@ -1,6 +1,6 @@
 server {
     listen 127.0.0.1:3050;
-    root /home/abouhki/Desktop/bowebserv;
+    root /home/abouhki/realWebserv;
     methods GET;
     error_page 400 /errors/400.html;
     error_page 404 /errors/404.html;
@@ -14,7 +14,7 @@ server {
         client_max_body_size 20m;
         methods GET POST DELETE;
         upload_path /upload;
-        root /home/abouhki/Desktop/bowebserv/;
+        root /home/abouhki/realWebserv/;
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }
@@ -23,7 +23,7 @@ server {
         client_max_body_size 20b;
         methods GET POST;
         upload_path /upload;
-        root /home/abouhki/Desktop/bowebserv/server;
+        root /home/abouhki/realWebserv/server;
         cgi_data .py /usr/bin/python3;
         cgi_data .php /usr/bin/php;
         autoindex on;
@@ -35,14 +35,14 @@ server {
         authInfo /portf/html/login.html /portf/html/index.html /portf/html/myProjects.html;
         error_page 400 /errors/400.html;
         error_page 404 /errors/404.html;
-        root /home/abouhki/Desktop/bowebserv/portf;
+        root /home/abouhki/realWebserv/portf;
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }
     location /img {
         client_max_body_size 50G;
         methods GET POST DELETE;
-        root /home/abouhki/Desktop/bowebserv/server/img;
+        root /home/abouhki/realWebserv/server/img;
         upload_path /;
         error_page 400 /errors/400.html;
         error_page 500 /errors/500.html;
