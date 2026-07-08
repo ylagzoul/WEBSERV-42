@@ -15,7 +15,7 @@ server {
         client_max_body_size 20m;
         methods GET POST DELETE;
         upload_path /upload;
-        root /home/abouhki/realWebserv/;
+        root /home/abouhki/;
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }

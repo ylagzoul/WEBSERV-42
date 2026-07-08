@@ -699,7 +699,7 @@ bool responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size
     log.data.retValid = false;
     log.data.isCgi = false;
     log.data.statusCode = req.status;
-    if (req.headers["connection"] == "Keep-Alive")
+    if (tolowerStr(req.headers["connection"]) == "keep-alive")
         log.data.connection = "keep-alive";
     getImportantData(conf, log.data);
     if (log.data.statusCode != 200)
@@ -807,7 +807,7 @@ void responseGenerator(CgiHandler &cgiData, PlayloadData &data, std::string &ret
 {
     if (data.statusCode != 200 && data.statusCode != 201)
         data.connection = "close";
-    if (tolowerStr(data.connection) == "keep-alive")
+    if (data.connection == "keep-alive")
         log.clientState = ALIVE;
     if (cgiData.cgiValid)
     {
