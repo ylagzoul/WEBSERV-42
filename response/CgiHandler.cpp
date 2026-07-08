@@ -1,8 +1,7 @@
 #include "CgiHandler.hpp"
 #include "../server/server.hpp"
-#include "Response.hpp"
 
-void createExecResources(CgiHandler &cgiData, playloadData &data)
+void createExecResources(CgiHandler &cgiData, PlayloadData &data)
 {
     cgiData.env = NULL;
     cgiData.env = new char *[cgiData.headers.size() + 1];
@@ -172,7 +171,7 @@ std::string switchData(std::string path)
     return (path.substr(0, l));
 }
 
-int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadData &data, size_t &indexClnt)
+int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadData &data, size_t &indexClnt)
 {
     cgiData.pid = fork();
     if (cgiData.pid == -1)
@@ -316,7 +315,7 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
     return 0;
 }
 
-void getCgiUtils(playloadData &data, Request req, CgiHandler &cgiData, std::vector<int> &listenPorts)
+void getCgiUtils(PlayloadData &data, Request req, CgiHandler &cgiData, std::vector<int> &listenPorts)
 {
     std::string pathInfo = "PATH_INFO=";
     std::string query = "QUERY_STRING=";
@@ -362,7 +361,7 @@ void getCgiUtils(playloadData &data, Request req, CgiHandler &cgiData, std::vect
     }
 }
 
-bool cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
+bool cgiResponseHandler(Record &log, CgiHandler &cgiData, PlayloadData &data)
 {
     if (cgiData.status == 500 || cgiData.status == 502 || cgiData.status == 504)
     {

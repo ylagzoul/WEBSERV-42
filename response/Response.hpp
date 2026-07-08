@@ -1,10 +1,6 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-
-#include "../server/state.h"
-#include "../request/request.hpp"
-
 class Config;
 class Record;   
 class Request;
@@ -12,9 +8,10 @@ class Server;
 class Webserv;
 class SessionsList;
 
-class playloadData
+class PlayloadData
 {
 public:
+
     int statusCode;
     std::string statusName;
     std::string connection;
@@ -35,9 +32,9 @@ public:
     std::string cgiScriptFile;
     std::string cgiFile;
     std::string cgiExecutePath;
-    std::string retPath;
     std::string loginToken;
     std::vector<std::string> redirectTokens;
+    std::string retPath;
     int retCode;
     size_t bodySize;
 
@@ -48,8 +45,6 @@ public:
     int listFd;
     int cgiDataPos;
 
-
-
     std::map<std::string, std::string> mime;
     std::map<int, std::string> table;
 };
@@ -59,8 +54,8 @@ public:
 bool getFile(Record &log);
 std::string getRandName();
 std::string cleanPath(std::string fullPath);
-void findLongestMatch(playloadData &data, Config &conf, std::string reqPath);
-void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req);
+void findLongestMatch(PlayloadData &data, Config &conf, std::string reqPath);
+void responseGenerator(CgiHandler &cgiData, PlayloadData &data, std::string &ret_resp, Record &log, Request &req);
 std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_t &i);
 
 

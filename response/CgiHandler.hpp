@@ -10,7 +10,7 @@ class Webserv;
 class Record;
 class Server;
 class Request;
-class playloadData;
+class PlayloadData;
 
 
 typedef enum e_client_state_cgi
@@ -70,7 +70,7 @@ class CgiHandler
     bool             endRead;
     size_t           count;
 };
-
+ 
 bool         cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listenPorts, size_t &i);
 bool        cgiProcess(Webserv &Web, Record &log, Request req, size_t &i);
 int         parseCgiResponse(CgiHandler &cgiData, Request req);

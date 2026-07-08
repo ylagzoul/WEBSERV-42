@@ -1,5 +1,4 @@
 #include "server.hpp"
-#include <iostream>
 
 Server::Server(Webserv &Web, int port, const std::string &IP)
 {
@@ -139,7 +138,6 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
             return (true);
     }
     int sent = send(Web.fds[indexClnt].fd, Web.recs[indexClnt].response.c_str(), Web.recs[indexClnt].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
-    Web.recs[indexClnt].number += sent;
     if (sent > 0)
     {
         Web.recs[indexClnt].response = Web.recs[indexClnt].response.substr(sent);

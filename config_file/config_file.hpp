@@ -11,6 +11,8 @@
 // # define LIST_FILE_PATH "/home/mradouan/Desktop/WEBSERV-42/server/"
 // # define BODY_FILE_PATH "/home/mradouan/goinfre/"
 
+#include "../server/server.hpp"
+
 # define LIST_FILE_PATH "/home/abouhki/goinfre/"
 # define BODY_FILE_PATH "/home/abouhki/goinfre/"
 

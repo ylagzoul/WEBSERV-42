@@ -1,6 +1,6 @@
 #include "../server/server.hpp"
 
-void defaultErrorPage(playloadData &data)
+void defaultErrorPage(PlayloadData &data)
 {
     std::stringstream ss;
     ss <<
@@ -18,7 +18,7 @@ void defaultErrorPage(playloadData &data)
     data.contentType = data.mime["html"];
 }
 
-void loadExtensions(playloadData &data)
+void loadExtensions(PlayloadData &data)
 {
     data.mime["html"] = "text/html";
     data.mime["css"] = "text/css";
@@ -47,7 +47,7 @@ void loadExtensions(playloadData &data)
     data.mime["mov"] = "video/quicktime";
 }
 
-void loadStatusCode(playloadData &data)
+void loadStatusCode(PlayloadData &data)
 {
     data.table[200] = "OK";
     data.table[201] = "Created";
@@ -63,7 +63,7 @@ void loadStatusCode(playloadData &data)
     data.table[504] = "Gateway Timeout";
 }
 
-void getContentType(playloadData &data, std::string path)
+void getContentType(PlayloadData &data, std::string path)
 {
     std::string extension;
     size_t pos = path.rfind('.');
@@ -345,7 +345,7 @@ bool postFilesList(Record &log)
     return false;
 }
 
-bool autoIndex(Record &log, playloadData &data)
+bool autoIndex(Record &log, PlayloadData &data)
 {
     log.fileName = LIST_FILE_PATH;
     log.fileName += "bodyList_" + getRandName();
@@ -383,7 +383,7 @@ bool autoIndex(Record &log, playloadData &data)
     return false;
 }
 
-bool tryIndex(Record &log, playloadData &data)
+bool tryIndex(Record &log, PlayloadData &data)
 {
     for (size_t i = 0; i < data.index.size(); i++)
     {
@@ -423,7 +423,7 @@ bool tryIndex(Record &log, playloadData &data)
     return true;
 }
 
-int validateFile(Record &log, playloadData &data)
+int validateFile(Record &log, PlayloadData &data)
 {
     if (access(data.realPath.c_str(), F_OK) == -1)
     {
@@ -465,7 +465,7 @@ int validateFile(Record &log, playloadData &data)
     return 0;
 }
 
-bool getHandler(Record &log, playloadData &data)
+bool getHandler(Record &log, PlayloadData &data)
 {
     int check;
     check = validateFile(log, data);
@@ -484,7 +484,7 @@ bool getHandler(Record &log, playloadData &data)
     return false;
 }
 
-void findLongestMatch(playloadData &data, Config &conf, std::string reqPath)
+void findLongestMatch(PlayloadData &data, Config &conf, std::string reqPath)
 {
     std::map<int, std::string> locs;
     if (reqPath.empty())
@@ -509,7 +509,7 @@ void findLongestMatch(playloadData &data, Config &conf, std::string reqPath)
         data.uri.insert(0, "/");
 }
 
-void getImportantData(Config &conf, playloadData &data)
+void getImportantData(Config &conf, PlayloadData &data)
 {
     if (data.location.empty())
     {
@@ -545,7 +545,7 @@ void getImportantData(Config &conf, playloadData &data)
     }
 }
 
-int checkErrorFile(playloadData &data)
+int checkErrorFile(PlayloadData &data)
 {
     std::string file = data.root;
     if (file[file.length() - 1] != '/')
@@ -580,7 +580,7 @@ int checkErrorFile(playloadData &data)
     return 0;
 }
 
-void chooseErrorHandler(playloadData &data)
+void chooseErrorHandler(PlayloadData &data)
 {
     if (data.errorPages.empty())
         defaultErrorPage(data);
@@ -588,7 +588,7 @@ void chooseErrorHandler(playloadData &data)
         defaultErrorPage(data);
 }
 
-int checkCgi(playloadData &data, std::string realNames, std::string &reqPath)
+int checkCgi(PlayloadData &data, std::string realNames, std::string &reqPath)
 {
     for (size_t i = 0; i < data.cgiExt.size(); i++)
     {
@@ -607,7 +607,7 @@ int checkCgi(playloadData &data, std::string realNames, std::string &reqPath)
     return 0;
 }
 
-int authenCheck(playloadData &data, Request &req)
+int authenCheck(PlayloadData &data, Request &req)
 {
     if (req.method != "GET" && req.method != "POST")
         return 0;
@@ -647,7 +647,7 @@ int authenCheck(playloadData &data, Request &req)
     return 0;
 }
 
-bool resolvePath(playloadData &data, Request &req)
+bool resolvePath(PlayloadData &data, Request &req)
 {
     struct stat info;
     std::stringstream ssPath(data.root + data.uri);
@@ -763,7 +763,7 @@ bool responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size
     return false;
 }
 
-void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Request &req)
+void generateCgiResponse(CgiHandler &cgiData, PlayloadData &data, std::string &ret_resp, Request &req)
 {
     std::stringstream res;
     res << "HTTP/1.0 " << data.statusCode << ' ' << data.table[data.statusCode] + "\r\n";
@@ -786,7 +786,7 @@ void generateCgiResponse(CgiHandler &cgiData, playloadData &data, std::string &r
     ret_resp = res.str();
 }
 
-void generateRetResponse(playloadData &data, std::string &ret_resp, Request &req)
+void generateRetResponse(PlayloadData &data, std::string &ret_resp, Request &req)
 {
     std::stringstream res;
     res << "HTTP/1.0 " << data.retCode << " " << data.table[data.retCode] << "\r\n";
@@ -803,7 +803,7 @@ void generateRetResponse(playloadData &data, std::string &ret_resp, Request &req
     return;
 }
 
-void responseGenerator(CgiHandler &cgiData, playloadData &data, std::string &ret_resp, Record &log, Request &req)
+void responseGenerator(CgiHandler &cgiData, PlayloadData &data, std::string &ret_resp, Record &log, Request &req)
 {
     if (data.statusCode != 200 && data.statusCode != 201)
         data.connection = "close";

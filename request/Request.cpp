@@ -10,38 +10,11 @@ Request::Request() : bodyLen(0), lenRead(0), countConLen(0), bodyFd(-1), status(
     firstTime = false;
 };
 
-void Request::clean() // add youssef
+void Request::clean()
 {
     if (access(bodyPath.c_str(), F_OK) != -1)
         std::remove(bodyPath.c_str());
 }
-
-// void findLongestMatchLocation(playloadData &data, Config &conf, std::string reqPath)
-// {
-//     std::map<int, std::string> locs;
-//     if (reqPath.empty())
-//         reqPath = "/";
-//     for (size_t i = 0; i < conf.location.size(); i++)
-//     {
-//         std::string name = conf.location[i].location_name;
-//         size_t f = reqPath.find(name);
-//         if (f == 0 && (reqPath.length() == name.length() || reqPath[name.length()] == '/' || name == "/"))
-//             locs[conf.location[i].location_name.length()] = conf.location[i].location_name;
-//     }
-//     if (locs.empty())
-//     {
-//         data.uri = reqPath.substr(1);
-//         if (data.uri[0] != '/')
-//             data.uri.insert(0, "/");
-//         return;
-//     }
-//     else
-//         data.location = locs.rbegin()->second;
-//     data.uri = reqPath.substr(data.location.length());
-//     if (data.uri[0] != '/')
-//         data.uri.insert(0, "/");
-// }
-
 
 bool isHoldSpace(const std::string& str)
 {
@@ -268,7 +241,7 @@ void fillCheck(Request &req, std::string reqLine)
     }
 }
 
-void getRequestLine(Request &req, playloadData &pdata, Config &conf)
+void getRequestLine(Request &req, PlayloadData &pdata, Config &conf)
 {
     size_t pos = req.fullLine.find("\r\n");
     if (pos == std::string::npos)
@@ -461,7 +434,7 @@ std::string getEmail(char *buff)
     return (email);
 }
 
-void    generateCookies(Request &req, SessionsList &sList, playloadData &pdata)
+void    generateCookies(Request &req, SessionsList &sList, PlayloadData &pdata)
 {
     sList.generateSession(req);
     for (size_t i = 0; i < pdata.redirectTokens.size(); i++)
@@ -493,7 +466,7 @@ void    generateCookies(Request &req, SessionsList &sList, playloadData &pdata)
     }
 }
 
-void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsList &sList, playloadData &pdata)
+void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsList &sList, PlayloadData &pdata)
 {
     size_t pos;
     std::string tes;

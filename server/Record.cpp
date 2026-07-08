@@ -1,8 +1,7 @@
-#include "Record.hpp"
+#include "server.hpp"
 
 Record::Record()
 {
-    number = 0;
     fileFd = -1;
     fd = -1;
     dir = NULL;

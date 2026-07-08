@@ -1,30 +1,27 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-// reqoust
-
-#include <stdlib.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
 
-#include <fstream>
-#include <sstream>
 #include <fcntl.h>
-#include <map>
+#include <dirent.h>
 #include <cstdlib>
 #include <arpa/inet.h>
-#include <iostream>
-#include <cstring>
 #include <time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
 #include <poll.h>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cstring>
 #include <vector>
 #include <deque>
-#include "../request/request.hpp"
+#include <map>
+
+#include "../request/Request.hpp"
 #include "../response/Response.hpp"
 #include "../config_file/config_file.hpp"
 #include "state.h"
@@ -37,9 +34,9 @@
 #define DEFAULT_MAX_BODY_SIZE 50000000
 #define SIZESR 8192
 
-void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i);
-
 class Webserv;
+
+void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i);
 
 class Server
 {
