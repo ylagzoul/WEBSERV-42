@@ -454,7 +454,7 @@ void    generateCookies(Request &req, SessionsList &sList, PlayloadData &pdata)
                 req.status = 500;
                 close(fd);
                 return ;
-            }//case0
+            }
             else if (bytes > 0)
             {
                 std::string email = getEmail(buff);
