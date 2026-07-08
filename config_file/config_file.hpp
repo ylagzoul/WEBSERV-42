@@ -49,7 +49,7 @@ public:
 
     int size;
     int ser_num;
-    int autoIndex;
+    bool autoIndex;
     std::map<std::string, bool> delet_data;
     std::vector<std::string> str;
     std::string line;

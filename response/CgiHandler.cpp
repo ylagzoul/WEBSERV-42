@@ -149,7 +149,7 @@ int createPipes(Webserv &Web, CgiHandler &cgiData, Request req, size_t &indexCln
     if (req.method == "POST")
     {
         int inputPipe[2];
-        cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY, 0644); // boha wach close fd open
+        cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY);
         if (cgiData.bodyFd < 0)
         {
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
@@ -347,6 +347,7 @@ void getCgiUtils(playloadData &data, Request req, CgiHandler &cgiData, std::vect
 
 bool cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
 {
+    std::cout << cgiData.status << "\n";
     if (cgiData.status == 500 || cgiData.status == 502)
     {
         data.statusCode = cgiData.status;
@@ -366,7 +367,6 @@ bool cgiResponseHandler(Record &log, CgiHandler &cgiData, playloadData &data)
         data.statusCode = 502;
         return true;
     }
-    //!if no body
     if (cgiData.cgBodyFileName.empty())
     {
         log.status = CLOSED_RS;

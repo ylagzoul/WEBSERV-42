@@ -151,12 +151,12 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
     }
 }
 
-bool Server::sendRespond(Webserv &Web, size_t &indexClnt, SessionsList &sList)
+bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
 {
     if (Web.data[indexClnt].sendNext)
     {
         Web.indexC = indexClnt;
-        Web.data[indexClnt].response = respond(Web, Web.recs[indexClnt], Web.config[Web.s], Web.req[indexClnt], indexClnt, sList);
+        Web.data[indexClnt].response = respond(Web, Web.recs[indexClnt], Web.config[Web.s], Web.req[indexClnt], indexClnt);
 
         if (Web.data[indexClnt].response.empty() && (Web.recs[indexClnt].status == ACTIVE_RS || Web.recs[indexClnt].status == CGI_ACTIVE_RS))
             return (true);
@@ -255,7 +255,7 @@ int main(int ac, char *arv[])
                         }
                         else if (Web.typeFd[indexClnt] == "client" && (Web.fds[indexClnt].revents & POLLOUT))
                         {
-                            Web.server[Web.s].serverPort[Web.t].sendRespond(Web, indexClnt, sList);
+                            Web.server[Web.s].serverPort[Web.t].sendRespond(Web, indexClnt);
                         }
                     }
                 }

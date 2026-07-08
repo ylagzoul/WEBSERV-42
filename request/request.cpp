@@ -349,7 +349,7 @@ void getChunkedBody(Request &req)
     {
         req.bodyLen = 0;
         req.generateRandomName(BODY_FILE_PATH + std::string("client"));
-        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 420);
         if (req.bodyFd == -1)
         {
             req.getEndFile = true;
@@ -404,7 +404,7 @@ void getFixedBody(Request &req)
     {
         req.bodyLen = 0;
         req.generateRandomName(BODY_FILE_PATH + std::string("client"));
-        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+        req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR | O_TRUNC, 420);
         if (req.bodyFd == -1)
         {
             req.getEndFile = true;

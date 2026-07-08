@@ -40,13 +40,11 @@ class CgiHandler
 
     pid_t pid;
     
-    // -------------------------------------------------- //
     size_t bodyLen;
     bool dataReady;
     bool cgiValid;
     std::vector<std::string> headers;
     
-    // --------------attributes for parsing-------------- //
     int status;
     int fd;
     std::string cgBuff;
@@ -71,8 +69,6 @@ class CgiHandler
     bool             endRead;
     size_t           count;
 };
-
-// #include "../server/server.hpp"
 
 bool         cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listenPorts, size_t &i);
 bool        cgiProcess(Webserv &Web, Record &log, Request req, size_t &i);
