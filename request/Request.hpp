@@ -5,8 +5,6 @@
 #include "SessionsList.hpp"
 #include "../config_file/config_file.hpp"
 
-using std::cout;
-
 #define FIXED   1
 #define CHUNKED 2
 
