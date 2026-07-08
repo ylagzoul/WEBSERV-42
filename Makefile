@@ -20,6 +20,7 @@ SRC_H = 	server/server.hpp				\
 			server/Record.hpp				\
 			request/SessionsList.hpp		\
 			request/Sessions.hpp			\
+			request/Request.hpp			\
 			response/Response.hpp			\
 			response/CgiHandler.hpp			\
 			config_file/config_file.hpp
