@@ -5,16 +5,17 @@
 #define MAXIP 256
 #define RDWR_SIZE 8192
 
+#include "../server/server.hpp"
+
 // #define LIST_FILE_PATH "/home/ylagzoul/goinfre/"
 // #define BODY_FILE_PATH "/home/ylagzoul/goinfre/"
 
-# define LIST_FILE_PATH "/home/mradouan/goinfre/"
-# define BODY_FILE_PATH "/home/mradouan/goinfre/"
+// # define LIST_FILE_PATH "/home/mradouan/goinfre/"
+// # define BODY_FILE_PATH "/home/mradouan/goinfre/"
 
-#include "../server/server.hpp"
+# define LIST_FILE_PATH "/home/abouhki/goinfre/"
+# define BODY_FILE_PATH "/home/abouhki/goinfre/"
 
-// # define LIST_FILE_PATH "/home/abouhki/goinfre/"
-// # define BODY_FILE_PATH "/home/abouhki/goinfre/"
 
 class Location;
 
