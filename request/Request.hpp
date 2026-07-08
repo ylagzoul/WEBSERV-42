@@ -89,5 +89,4 @@ bool checkDigits(T &obj, std::string str)
     return (false);
 }
 
-
 #endif

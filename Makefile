@@ -12,8 +12,7 @@ SRC = 		server/server.cpp						\
 			response/Response.cpp					\
 			config_file/config_file.cpp				\
 			config_file/listen.cpp					\
-			config_file/server_name.cpp				\
-			config_file/error_page.cpp				\
+			config_file/Directives.cpp				\
 			response/CgiHandler.cpp
 
 SRC_H = 	server/server.hpp				\

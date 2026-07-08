@@ -34,50 +34,48 @@
 #define DEFAULT_MAX_BODY_SIZE 50000000
 #define SIZESR 8192
 
-class Webserv;
+void closeCGI(Webserv &Web, std::string method, size_t &i);
 
-void closeCGI(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i);
+class Webserv;
 
 class Server
 {
+    public:
+        Server(Webserv &Web, int port, const std::string &IP);
 
-public:
-    Server(Webserv &Web, int port, const std::string &IP);
-    int server_fd;
+        int                 server_fd;
+        std::vector<Server> serverPort;
+        std::vector<int>    index_Client;
+        std::vector<int>    reuseFd;
+        sockaddr_in         addr;
+        socklen_t           len;
 
-    std::vector<Server> serverPort;
-    std::vector<int> index_Client;
-    std::vector<int> reuseFd;
-    sockaddr_in addr;
-    socklen_t len;
-
-    void acceptNewClient(Webserv &Web);
-    bool receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList);
-    bool sendRespond(Webserv &Web, size_t &indexClnt);
-    void close_client(Webserv &Web, size_t &indexClnt);
+        void acceptNewClient(Webserv &Web);
+        bool receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList);
+        bool sendRespond(Webserv &Web, size_t &indexClnt);
+        void close_client(Webserv &Web, size_t &indexClnt);
 };
 
 class Webserv
 {
-public:
-    Webserv(std::string configNameFile);
+    public:
+        Webserv(std::string configNameFile);
 
-    int count;
-    int indexC;
-    size_t s;
-    size_t t;
-    size_t i;
-    size_t n;
-    std::vector<Server> server;
-    std::deque<Record> recs;
-    std::vector<Request> req;
-    std::vector<pollfd> fds;
+        int                         count;
+        int                         indexC;
+        size_t                      s;
+        size_t                      t;
+        size_t                      i;
+        size_t                      n;
+        std::vector<Server>         server;
+        std::deque<Record>          recs;
+        std::vector<Request>        req;
+        std::vector<pollfd>         fds;
+        std::map<int, std::string>  typeFd;
+        std::map<int, std::string>  statusFd;
 
-    std::map<int, std::string> typeFd;
-    std::map<int, std::string> statusFd;
-
-    std::vector<Config> config;
-    void config_file(std::string configNameFile);
+        std::vector<Config>         config;
+        void config_file(std::string configNameFile);
 };
 
 #endif
