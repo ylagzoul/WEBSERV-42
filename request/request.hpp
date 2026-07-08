@@ -105,5 +105,12 @@ bool checkDigits(T &obj, std::string str)
     return (false);
 }
 
+// bool checkPath(std::string &path);
+// POST /server/test.py HTTP/1.1
+// Host: 0.0.0.0:8080
+// Content-Type: application/x-www-form-urlencoded
+// Content-Length: 4000
+
+// name=Youssef&age=22&city=NY
 
 #endif

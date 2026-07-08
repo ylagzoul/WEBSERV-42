@@ -143,12 +143,15 @@ int createPipes(Webserv &Web, CgiHandler &cgiData, Request req, size_t &indexCln
 
     if (req.method == "POST")
     {
+        cout << "post createPipes\n";
         int inputPipe[2];
-        cgiData.bodyFd = open(req.bodyFile.c_str(), O_RDONLY, 0644); // boha wach close fd open
+        cout << "cgiData.cgBodyFileName = " << req.bodyPath.c_str() << "\n";
+        cgiData.bodyFd = open(req.bodyPath.c_str(), O_RDONLY); // boha wach close fd open
         if (cgiData.bodyFd < 0)
         {
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
+            cout << "post createPipes111\n";
             return (1);
         }
 
@@ -187,6 +190,7 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, playloadDat
     {
         if (method == "POST")
         {
+            cout << "post creatcgi\n";
             if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd, STDIN_FILENO) < 0)
             {
                 close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
@@ -225,6 +229,7 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
 {
     if (method == "POST")
     {
+        cout << "post readFromCgi\n";
         if (Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].revents & POLLOUT)
         {
             int bytes_r;
@@ -292,7 +297,7 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
             }
         }
         status = 0;
-        if (time(NULL) - Web.recs[indexClnt].time > 5)
+        if (time(NULL) - Web.recs[indexClnt].time > 60)
         {
             kill(Web.recs[indexClnt].cgiData.pid, SIGKILL);
             ret = waitpid(Web.recs[indexClnt].cgiData.pid, &status, 0);
@@ -437,3 +442,5 @@ bool cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listen
         return true;
     return false;
 }
+
+

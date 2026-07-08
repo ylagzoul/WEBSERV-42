@@ -203,9 +203,9 @@ int main(int ac, char *arv[])
                         if (sList.checkIfNotNull())
                             sList.checkLimitSessions();
 
-                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > 5) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))
+                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > 60) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))
                         {
-                            if (Web.recs[indexClnt].status == CGI_ACTIVE_RS && time(NULL) - Web.recs[indexClnt].time > 5)
+                            if (Web.recs[indexClnt].status == CGI_ACTIVE_RS && time(NULL) - Web.recs[indexClnt].time > 60)
                                 Web.recs[indexClnt].cgiData.status = 504;
                             else
                             {
@@ -237,6 +237,7 @@ int main(int ac, char *arv[])
     }
     catch (const std::exception &e)
     {
+        cout << e.what() << std::endl;
         return 1;
 
         // for (size_t s = 0; s < Web.server.size(); s++)

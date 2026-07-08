@@ -1,13 +1,14 @@
 server {
-    listen 127.0.2.1:1111;
+    listen 0.0.0.0:8080;
     root /home/ylagzoul/Desktop/WEBSERV-42;
-    methods GET;
+    methods GET POST DELETE;
     error_page 401 /errors/401.html;
     error_page 403 /errors/403.html;
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
     error_page 404 /;
     cgi_data .py /usr/bin/python3;
+    client_max_body_size 10K;
 
     authInfo /loginpage /page1 /page2 /page3;
     autoindex on;
