@@ -19,20 +19,6 @@ bool isHoldSpaceCgi(const std::string &str)
     return (true);
 }
 
-// bool checkDigits(CgiHandler &cgi, std::string str)
-// {
-//     std::stringstream iss(str);
-//     size_t value;
-//     iss >> value;
-
-//     if (!str.empty() && str.at(0) != '-' && !iss.fail() && iss.eof())
-//     {
-//         cgi.contentLength = value;
-//         return (true);
-//     }
-//     return (false);
-// }
-
 std::string trimCgi(const std::string &str)
 {
     size_t start = 0;
@@ -243,7 +229,6 @@ int parseCgiResponse(CgiHandler &cgiData, Request req)
             if (cgiData.endRead == true)
             {
                 cgiData.dataReady = true;
-                cout << "YOUSSEF MAKI#RAFCH IDIBAGI\n";
                 cgiData.status = 502;
             }
             break;

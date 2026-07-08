@@ -390,7 +390,7 @@ void getFixedBody(Request &req)
     if (req.bodyFd == -1 && req.fullLine.length() > 0)
     {
         req.bodyLen = 0;
-        req.bodyPath = BODY_FILE_PATH + std::string("client_") + getRandName(); // has been tested
+        req.bodyPath = BODY_FILE_PATH + std::string("client_") + getRandName();
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR, 0644);
         if (req.bodyFd == -1)
         {
@@ -454,7 +454,7 @@ void    generateCookies(Request &req, SessionsList &sList, PlayloadData &pdata)
                 req.status = 500;
                 close(fd);
                 return ;
-            }//case0
+            }
             else if (bytes > 0)
             {
                 std::string email = getEmail(buff);

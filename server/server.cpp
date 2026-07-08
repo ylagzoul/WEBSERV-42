@@ -173,7 +173,7 @@ int main(int ac, char *arv[])
 {
     if (ac != 2)
     {
-        cout << "Error: you should enter the config file only\n";
+        std::cout << "Error: you should enter the config file only\n";
         return (1);
     }
     try
@@ -235,7 +235,7 @@ int main(int ac, char *arv[])
     }
     catch (const std::exception &e)
     {
-        cout << e.what();
+        std::cout << e.what();
         return 1;
 
         // for (size_t s = 0; s < Web.server.size(); s++)

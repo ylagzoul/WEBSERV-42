@@ -33,7 +33,7 @@ void SessionsList::generateSession(Request &req)
         {
             req.session = &sessionLis[id];
             req.session->lastLog = std::time(NULL);
-            if (req.session->logged == true)
+            if (req.session->logged == true && req.session->email == sessionLis[id].email)
                 req.isLoggedCookie = true;
         }
     }
@@ -52,17 +52,6 @@ void SessionsList::storeInputs(Request &req, std::string email)
         req.session = &sessionLis[id];
 }
 
-void SessionsList::printSesions()
-{
-
-    for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end(); ++it)
-    {
-        std::cout << it->first << " => " << it->second.email << "\n";
-    }
-
-}
-
-
 SessionsList::SessionsList()
 {
     std::srand(std::time(NULL));
@@ -74,17 +63,11 @@ void    SessionsList::checkLimitSessions()
     for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end();)
     {
         time_t now = std::time(NULL);
-        if ( now - it->second.lastLog > 10)
-        {
+        if ( now - it->second.lastLog > 30)
             sessionLis.erase(it++);
-            // cout << "DKHELT\n";
-        }
         else
-            it++;//
+            it++;
     }
-    // cout << "FROM CHEKING : ";
-    // this->printSesions();
-    // cout << std::endl;
 }
 bool    SessionsList::checkIfNotNull()
 {

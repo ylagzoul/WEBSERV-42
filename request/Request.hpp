@@ -20,8 +20,6 @@ class Config;
 class SessionsList;
 class PlayloadData;
 
-// class Sessions;
-
 class Request 
 {
     public:

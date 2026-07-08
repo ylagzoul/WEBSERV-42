@@ -15,10 +15,8 @@ class SessionsList
         std::map<std::string, Sessions> sessionLis;
         std::string id;
     public:
-        SessionsList(/* args */);
-        // ~SessionsList();
+        SessionsList();
         void    createUnicId();
-        void    printSesions();
         void    generateSession(Request &req);
         void    checkLimitSessions();
         void    storeInputs(Request &req, std::string email);

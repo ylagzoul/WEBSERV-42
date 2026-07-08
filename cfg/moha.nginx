@@ -1,6 +1,6 @@
 server {
     listen 127.0.0.1:3050;
-    root /home/mradouan/Desktop/;
+    root /home/mradouan/Desktop/WEBSERV-42;
     methods GET POST;
     error_page 400 /errors/400.html;
     error_page 403 /errors/403.html;

@@ -4,8 +4,6 @@
 #include <ctime>
 #include <string>
 
-// #include "Request.hpp"
-
 class Sessions
 {
     public:
