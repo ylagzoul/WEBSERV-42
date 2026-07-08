@@ -45,7 +45,7 @@ public:
     int listFd;
     int cgiDataPos;
 
-    std::map<std::string, std::string> mime;
+    std::map<std::string, std::string> types;
     std::map<int, std::string> table;
 };
 
