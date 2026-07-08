@@ -9,13 +9,14 @@ server {
     autoindex on;
     client_max_body_size 5K;
 
-    location / {
+    location /location {
         index index.html;
+        error_page 500 /errors/400.html;
         error_page 400 /errors/400.html;
         client_max_body_size 20m;
         methods GET POST DELETE;
         upload_path /upload;
-        root /home/abouhki/;
+        root /home/abouhki/realWebserv/;
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }

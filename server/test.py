@@ -1,16 +1,15 @@
 import os
 import sys
 # while True:
-#     a = 'a'
+#   a = 'a'
 
 # print("status: 502\r")
-# print("status: 400\r")
+print("status: 400\r")
 # print("Content-Type: text/plain; charset=utf-8\r")
 # print("content-length: 5")
 
 print("Content-Type: text/html; charset=utf-8\r")
 # print("content-length: 5\r")
-print("location: /5\r")
 print("\r")
 
 

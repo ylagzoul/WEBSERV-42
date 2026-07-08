@@ -545,14 +545,19 @@ void getImportantData(Config &conf, PlayloadData &data)
     }
 }
 
-int checkErrorFile(PlayloadData &data)
+int checkErrorFile(PlayloadData &data, Config &conf)
 {
     std::string file = data.root;
     if (file[file.length() - 1] != '/')
         file += '/';
     std::string page = data.errorPages[data.statusCode];
     if (page.empty())
-        return 1;
+    {
+        if (conf.error_page.count(data.statusCode))
+            page = conf.error_page[data.statusCode];
+        else
+            return 1;
+    }
     if (page[0] == '/')
         page = page.substr(1);
     file += page;
@@ -580,11 +585,11 @@ int checkErrorFile(PlayloadData &data)
     return 0;
 }
 
-void chooseErrorHandler(PlayloadData &data)
+void chooseErrorHandler(PlayloadData &data, Config &conf)
 {
     if (data.errorPages.empty())
         defaultErrorPage(data);
-    else if (checkErrorFile(data))
+    else if (checkErrorFile(data, conf))
         defaultErrorPage(data);
 }
 
@@ -847,7 +852,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
         log.data.connection = "Close";
         if (responseHandler(Web, log, req, conf,indexClnt))
         {
-            chooseErrorHandler(log.data);
+            chooseErrorHandler(log.data, conf);
             log.method = NONE_RS;
             log.status = ERROR_RS;
         }
@@ -858,7 +863,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
         {
             if (cgiProcess(Web, log, req,indexClnt))
             {
-                chooseErrorHandler(log.data);
+                chooseErrorHandler(log.data, conf);
                 log.status = ERROR_RS;
                 log.method = NONE_RS;
             }
@@ -892,7 +897,7 @@ std::string respond(Webserv &Web, Record &log, Config &conf, Request &req, size_
         {
             if (postBody(log))
             {
-                chooseErrorHandler(log.data);
+                chooseErrorHandler(log.data, conf);
                 log.method = NONE_RS;
                 log.status = ERROR_RS;
             }
