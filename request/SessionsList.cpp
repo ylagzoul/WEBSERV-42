@@ -62,17 +62,19 @@ void SessionsList::printSesions()
 
 }
 
+
 SessionsList::SessionsList()
 {
     std::srand(std::time(NULL));
 }
+
 
 void    SessionsList::checkLimitSessions()
 {
     for (std::map<std::string, Sessions>::iterator it = sessionLis.begin(); it != sessionLis.end();)
     {
         time_t now = std::time(NULL);
-        if ( now - it->second.lastLog > 10 )
+        if ( now - it->second.lastLog > 10)
         {
             sessionLis.erase(it++);
             // cout << "DKHELT\n";
@@ -87,7 +89,7 @@ void    SessionsList::checkLimitSessions()
 bool    SessionsList::checkIfNotNull()
 {
     if (!this->sessionLis.empty())
-        return (true);
+        return (true); 
     else
         return (false);
 }
