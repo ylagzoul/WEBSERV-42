@@ -5,6 +5,7 @@ server {
     error_page 400 /errors/400.html;
     error_page 404 /errors/404.html;
     error_page 500 /errors/500.html;
+    error_page 504 /errors/504.html;
     autoindex on;
     client_max_body_size 5K;
 
@@ -18,17 +19,6 @@ server {
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }
-
-    location /server {
-        client_max_body_size 20b;
-        methods GET POST;
-        upload_path /upload;
-        root /home/abouhki/realWebserv/server;
-        cgi_data .py /usr/bin/python3;
-        cgi_data .php /usr/bin/php;
-        autoindex on;
-    }
-
     location /portf {
         methods GET POST;
         upload_path /html;
@@ -39,15 +29,7 @@ server {
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }
-    location /img {
-        client_max_body_size 50G;
-        methods GET POST DELETE;
-        root /home/abouhki/realWebserv/server/img;
-        upload_path /;
-        error_page 400 /errors/400.html;
-        error_page 500 /errors/500.html;
-        autoindex on;
-    }
+
     location /google {
         root /;
         return 303 /google;   

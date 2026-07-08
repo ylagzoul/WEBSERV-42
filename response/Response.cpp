@@ -15,36 +15,36 @@ void defaultErrorPage(PlayloadData &data)
         "</html>\n";
     data.errorBody = ss.str();
     data.bodySize = data.errorBody.length();
-    data.contentType = data.mime["html"];
+    data.contentType = data.types["html"];
 }
 
 void loadExtensions(PlayloadData &data)
 {
-    data.mime["html"] = "text/html";
-    data.mime["css"] = "text/css";
-    data.mime["xml"] = "text/xml";
-    data.mime["txt"] = "text/plain";
-    data.mime["plain"] = "text/plain";
+    data.types["html"] = "text/html";
+    data.types["css"] = "text/css";
+    data.types["xml"] = "text/xml";
+    data.types["txt"] = "text/plain";
+    data.types["plain"] = "text/plain";
 
-    data.mime["png"] = "image/png";
-    data.mime["jpeg"] = "image/jpeg";
-    data.mime["jpg"] = "image/jpeg";
-    data.mime["gif"] = "image/gif";
-    data.mime["webp"] = "image/webp";
+    data.types["png"] = "image/png";
+    data.types["jpeg"] = "image/jpeg";
+    data.types["jpg"] = "image/jpeg";
+    data.types["gif"] = "image/gif";
+    data.types["webp"] = "image/webp";
 
-    data.mime["js"] = "application/javascript";
-    data.mime["json"] = "application/json";
-    data.mime["doc"] = "application/msword";
-    data.mime["pdf"] = "application/pdf";
-    data.mime["rar"] = "application/x-rar-compressed";
-    data.mime["zip"] = "application/zip";
+    data.types["js"] = "application/javascript";
+    data.types["json"] = "application/json";
+    data.types["doc"] = "application/msword";
+    data.types["pdf"] = "application/pdf";
+    data.types["rar"] = "application/x-rar-compressed";
+    data.types["zip"] = "application/zip";
 
-    data.mime["mp3"] = "audio/mpeg";
-    data.mime["ogg"] = "audio/ogg";
+    data.types["mp3"] = "audio/mpeg";
+    data.types["ogg"] = "audio/ogg";
 
-    data.mime["mp4"] = "video/mp4";
-    data.mime["webm"] = "video/webm";
-    data.mime["mov"] = "video/quicktime";
+    data.types["mp4"] = "video/mp4";
+    data.types["webm"] = "video/webm";
+    data.types["mov"] = "video/quicktime";
 }
 
 void loadStatusCode(PlayloadData &data)
@@ -72,8 +72,8 @@ void getContentType(PlayloadData &data, std::string path)
     if (pos != std::string::npos)
     {
         extension = path.substr(pos + 1);
-        if (data.mime.count(extension))
-            data.contentType = data.mime[extension];
+        if (data.types.count(extension))
+            data.contentType = data.types[extension];
     }
 }
 
@@ -103,7 +103,7 @@ bool deleteHandler(Record &log)
     }
     log.buffer = "File deleted successfully!\n";
     log.data.bodySize = log.buffer.length();
-    log.data.contentType = log.data.mime["txt"];
+    log.data.contentType = log.data.types["txt"];
     log.status = CLOSED_RS;
     return false;
 }
@@ -178,7 +178,7 @@ bool postHandler(Record &log, Request &req)
             }
             if (postBody(log))
                 return true;
-            log.data.contentType = log.data.mime["txt"];
+            log.data.contentType = log.data.types["txt"];
         }
         else
         {
@@ -206,7 +206,7 @@ bool postHandler(Record &log, Request &req)
     log.data.statusCode = 201;
     log.buffer = "File uploaded\n";
     log.data.bodySize = log.buffer.length();
-    log.data.contentType = log.data.mime["txt"];
+    log.data.contentType = log.data.types["txt"];
     return false;
 }
 
@@ -358,12 +358,12 @@ bool autoIndex(Record &log, PlayloadData &data)
         std::remove(log.fileName.c_str());
         return true;
     }
-    data.contentType = data.mime["html"];
+    data.contentType = data.types["html"];
     std::string buff;
     buff =
         "<html>\n"
         "<body>\n"
-        "<br><hr><hr>"
+        "<br><hr><hr>\n"
         "<h1>Directory Listing</h1>\n";
     if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
     {
@@ -575,7 +575,7 @@ int checkErrorFile(PlayloadData &data)
     if (bytes < 0)
         return 1;
     data.bodySize = info.st_size;
-    data.contentType = data.mime["txt"];
+    data.contentType = data.types["txt"];
     getContentType(data, file);
     return 0;
 }
