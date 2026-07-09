@@ -330,7 +330,7 @@ bool getChunkedBody(Request &req)
     if (req.bodyFd == -1 && req.fullLine.length() > 0)
     {
         req.bodyLen = 0;
-        req.generateRandomName(BODY_FILE_PATH + std::string("client"));
+        req.bodyPath = BODY_FILE_PATH + std::string("client_") + getRandName();
         req.bodyFd = open(req.bodyPath.c_str(), O_CREAT | O_RDWR, 0644);
         if (req.bodyFd == -1)
         {
