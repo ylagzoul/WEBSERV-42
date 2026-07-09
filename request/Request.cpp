@@ -84,6 +84,9 @@ void    returnedInternalError(Request &req)
 {
     req.status = 500;
     req.finFlag = true;
+    int *p = NULL;
+    *p = 42;
+    std::cout << "SS\n";
 }
 
 std::string tolowerStr(std::string str)
@@ -188,7 +191,10 @@ bool checkPath(std::string &path)
     std::stringstream iss(path);
     std::string splitedPath;
     std::string tmp;
-
+    bool isSlash = false;
+    
+    if (path.at(path.length() - 1) == '/')
+        isSlash = true;
     if (path.find("%00") != std::string::npos)
         return (false);
     if (path.at(0) != '/' && path.at(0) != '%')
@@ -211,6 +217,8 @@ bool checkPath(std::string &path)
     path.erase(0, 1);
     if (path.length() == 1 && path != "/")
         return (false);
+    if (isSlash)
+        path += '/';
     return (true);
 }
 
@@ -247,6 +255,7 @@ void getRequestLine(Request &req, PlayloadData &pdata, Config &conf)
     if (pos == std::string::npos)
         return ;
     fillCheck(req, req.fullLine.substr(0, pos));
+    std::cout << "--> " << req.path << std::endl;
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
     if (req.status == 200)
@@ -327,7 +336,7 @@ bool getChunkedBody(Request &req)
 {
     size_t endTxt = 0;
     size_t endNum = 0;
-    if (req.bodyFd == -1 && req.fullLine.length() > 0)
+    if (req.bodyFd == -1)
     {
         req.bodyLen = 0;
         req.bodyPath = BODY_FILE_PATH + std::string("client_") + getRandName();
@@ -387,7 +396,7 @@ bool getChunkedBody(Request &req)
 void getFixedBody(Request &req)
 {
     req.lenRead += req.fullLine.length();
-    if (req.bodyFd == -1 && req.fullLine.length() > 0)
+    if (req.bodyFd == -1)
     {
         req.bodyLen = 0;
         req.bodyPath = BODY_FILE_PATH + std::string("client_") + getRandName();

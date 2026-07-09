@@ -167,7 +167,10 @@ bool getChunked(CgiHandler &cgiData, Request req)
 {
     size_t endTxt;
     size_t endNum;
-    if (cgiData.fd == -1 && cgiData.fullLine.length() > 0)
+
+    if (cgiData.fullLine.length() <= 0)
+        return (true);
+    if (cgiData.fd == -1)
     {
         cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandName();
         cgiData.bodyLen = 0;
