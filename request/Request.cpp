@@ -46,14 +46,6 @@ std::string trim(const std::string& str)
     return str.substr(start, end - start);
 }
 
-void Request::generateRandomName(std::string value)
-{
-    static int i = 1;
-    if (access(value.c_str(), X_OK))
-        this->bodyPath = value + toStr(i + 1);
-    i++;
-}
-
 void    Request::storeCookies(std::string value)
 {
     std::stringstream iss(value);
