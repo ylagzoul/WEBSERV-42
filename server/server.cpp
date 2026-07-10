@@ -14,10 +14,10 @@ Server::Server(Webserv &Web, int port, const std::string &IP)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = inet_addr(IP.c_str());
-    std::cout << port << " ------ " << IP<< "\n";
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
     {
         close(server_fd);
+        // std::cout << port << " ------ " << IP<< "\n";
         throw std::runtime_error("Error: fail bind");
     }
     if (listen(server_fd, 400) < 0)
@@ -203,7 +203,7 @@ int main(int ac, char *arv[])
                         if (sList.checkIfNotNull())
                             sList.checkLimitSessions();
 
-                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > TIMEOUT) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))
+                        if ( (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))//(Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > TIMEOUT) ||
                         {
                                 Web.server[Web.s].serverPort[Web.t].close_client(Web, indexClnt);
                                 continue;
@@ -244,22 +244,39 @@ int main(int ac, char *arv[])
                 int ret = waitpid(Web.indexPid[i], &status, WNOHANG);
                 if (ret > 0)
                 {
-                    if (WIFEXITED(status) == 2)
+                    std::cout << ret << std::endl;
+                    Web.recs[Web.pipp[Web.indexPid[i]]].pi = true;
+                    if (WIFEXITED(status))
+                    {
+                        if (WEXITSTATUS(status) > 0)
+                            Web.recs[Web.pipp[Web.indexPid[i]]].cgiData.status = 500;
+                    }
+                    else if (WIFSIGNALED(status))
                     {
                         Web.recs[Web.pipp[Web.indexPid[i]]].cgiData.status = 500;
-                        std::cout << "ddddddddddddddddddddd\n";
-                        // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].killProsses = true;
-                        // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].cgiData.pid = -1;   // ⬅️ زيدها
-                        Web.indexPid.erase(Web.indexPid.begin()+ i);
                     }
-                    else
-                    {
-                         Web.recs[Web.pipp[Web.indexPid[i]]].cgiData.status = 502;
-                        std::cout << "ddddddddddddddddddddd1111111\n";
-                        // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].killProsses = true;
-                        // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].cgiData.pid = -1;   // ⬅️ زيدها
-                        Web.indexPid.erase(Web.indexPid.begin()+ i);
-                    }
+                    Web.indexPid.erase(Web.indexPid.begin()+ i);
+
+                    ////
+                    // if (WIFEXITED(status))
+                    // {
+                    //     if (WEXITSTATUS(status) == 1)
+                    //     {
+                    //         Web.recs[Web.pipp[Web.indexPid[i]]].cgiData.status = 500;
+                    //         std::cout << "ddddddddddddddddddddd\n";
+                    //         // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].killProsses = true;
+                    //         // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].cgiData.pid = -1;   // ⬅️ زيدها
+                    //         Web.indexPid.erase(Web.indexPid.begin()+ i);
+                    //     }
+                    //     else if (WEXITSTATUS(status) > 1)
+                    //     {
+                    //         Web.recs[Web.pipp[Web.indexPid[i]]].cgiData.status = 502;
+                    //         std::cout << "ddddddddddddddddddddd1111111\n";
+                    //         // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].killProsses = true;
+                    //         // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].cgiData.pid = -1;   // ⬅️ زيدها
+                    //         Web.indexPid.erase(Web.indexPid.begin()+ i);
+                    //     }
+                    // }
                 }
             }
         }

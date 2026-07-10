@@ -246,8 +246,10 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
         if (bytes < 0)
             return (1);
 
-        else if (bytes == 0)
+        else if (bytes == 0 && Web.recs[indexClnt].pi == true)
         {
+            if (Web.recs[indexClnt].cgiData.status == 500)
+                return 1;
             cgiData.endRead = true;
             cgiData.dataReady = true;
         }
@@ -263,8 +265,10 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
 
 int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
 {
+
     if (log.status == NEW_RS)
     {
+        std::cout << log.status << std::endl;
         if (createPipes(Web, log.cgiData, req, indexClnt))
         {
             Web.recs[indexClnt].cgiData.status = 500;

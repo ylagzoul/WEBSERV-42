@@ -1,6 +1,10 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include <unistd.h>
+#include <signal.h>
+
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -78,6 +82,7 @@ class Webserv
         std::map<int, int>  pipp;
         std::map<int, int>  pipi;
         std::vector<int>        indexPid;
+        
 
         std::vector<Config>         config;
         void config_file(std::string configNameFile);

@@ -19,6 +19,7 @@ public:
     CgiHandler cgiData;
     std::vector<int> IndexPipe;
     std::vector<int> IndexFdsPipe;
+    bool pi;
 
     time_t time;
     std::string response;

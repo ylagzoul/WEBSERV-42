@@ -3,6 +3,7 @@
 Record::Record()
 {
     fileFd = -1;
+    pi = false;
     fd = -1;
     dir = NULL;
     status = NEW_RS;
