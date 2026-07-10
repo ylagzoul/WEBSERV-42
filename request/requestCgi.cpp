@@ -95,10 +95,7 @@ bool getHeadersCgi(CgiHandler &cgiData)
         std::map<std::string, std::string>::iterator it;
         it = cgiData.cgHeaders.find("transfer-encoding");
         std::map<std::string, std::string>::iterator it2;
-        it2 = cgiData.cgHeaders.find("location");
         if (cgiData.cgHeaders.find("content-type") == cgiData.cgHeaders.end())
-            return (returnedBadError(cgiData), true);
-        if (it2 != cgiData.cgHeaders.end() && !it2->second.empty() && it2->second.at(0) != '/')
             return (returnedBadError(cgiData), true);
         if (it != cgiData.cgHeaders.end() && it->second == "chunked")
             cgiData.bodyType = CHUNKED;
