@@ -231,6 +231,7 @@ bool getFile(Record &log)
     }
     else if (log.status != ACTIVE_RS)
     {
+        
         log.status = ACTIVE_RS;
         log.method = GET_RS;
     }
@@ -335,6 +336,7 @@ bool postFilesList(Record &log)
     if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
         return true;
     log.method = GET_LIST_RS;
+    log.status = ACTIVE_RS;
     struct stat info;
     if (stat(log.fileName.c_str(), &info) == -1)
         return true;
@@ -383,11 +385,51 @@ bool autoIndex(Record &log, PlayloadData &data)
     return false;
 }
 
-bool tryIndex(Record &log, PlayloadData &data)
+int checkCgi(PlayloadData &data, std::string realPath , std::string &realNames, std::string reqPath, bool isIndex)
 {
+    size_t k = 0;
+    for (size_t i = 0; i < data.cgiExt.size(); i++)
+    {
+        if (isIndex)
+        {
+            k = realNames.rfind(data.cgiExt[i]);
+            if (k + data.cgiExt[i].size() < realNames.size())
+                return 0;
+        }
+
+        k = realPath.rfind(data.cgiExt[i]);
+        if (k == std::string::npos)
+            return 0;
+        if ((k + data.cgiExt[i].size() == realPath.size() || realPath[k + data.cgiExt[i].size()] == '?'))
+        {
+            data.cgiInfo = realPath.substr(k + data.cgiExt[i].size());
+            data.cgiScriptFile = realPath.substr(0, k + data.cgiExt[i].size());
+            data.cgiInfo += reqPath.substr(reqPath.find(realNames) + realNames.length());
+            data.cgiFile = cleanPath(reqPath.substr(0, reqPath.length() - data.cgiInfo.length()));
+            data.cgiExecutePath = data.cgiPath[i];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+bool tryIndex(Record &log, PlayloadData &data, Request &req)
+{
+    struct stat cgiInfo;
     for (size_t i = 0; i < data.index.size(); i++)
     {
         std::string pathIndex = data.realPath + '/' + data.index[i];
+        if (checkCgi(data, cleanPath(pathIndex), data.index[i], req.path + data.index[i], true))
+        {
+            if (stat(data.cgiScriptFile.c_str(), &cgiInfo) != -1)
+            {
+                if (!S_ISDIR(cgiInfo.st_mode))
+                {
+                    data.isCgi = true;
+                    return 0;
+                }
+            }
+        }
         if (access(pathIndex.c_str(), F_OK) == -1)
             continue;
         struct stat info;
@@ -423,7 +465,7 @@ bool tryIndex(Record &log, PlayloadData &data)
     return true;
 }
 
-int validateFile(Record &log, PlayloadData &data)
+int validateFile(Record &log, PlayloadData &data, Request &req)
 {
     if (access(data.realPath.c_str(), F_OK) == -1)
     {
@@ -441,11 +483,12 @@ int validateFile(Record &log, PlayloadData &data)
         data.statusCode = 500;
         return 1;
     }
-
     if (S_ISDIR(info.st_mode))
     {
-        if (tryIndex(log, data))
+        if (tryIndex(log, data, req))
             return 1;
+        if (data.isCgi)
+            return 0;
         if (data.autoIndex)
         {
             if (autoIndex(log, data))
@@ -465,10 +508,12 @@ int validateFile(Record &log, PlayloadData &data)
     return 0;
 }
 
-bool getHandler(Record &log, PlayloadData &data)
+bool getHandler(Record &log, PlayloadData &data, Request &req)
 {
     int check;
-    check = validateFile(log, data);
+    check = validateFile(log, data, req);
+    if (data.isCgi)
+        return 0;
     if (data.statusCode != 200)
         return true;
     if (check)
@@ -593,25 +638,6 @@ void chooseErrorHandler(PlayloadData &data, Config &conf)
         defaultErrorPage(data);
 }
 
-int checkCgi(PlayloadData &data, std::string realNames, std::string &reqPath)
-{
-    for (size_t i = 0; i < data.cgiExt.size(); i++)
-    {
-        size_t k = data.realPath.rfind(data.cgiExt[i]);
-        if (k != std::string::npos 
-            && (k + data.cgiExt[i].size() == data.realPath.size() || data.realPath[k + data.cgiExt[i].size()] == '?'))
-        {
-            data.cgiInfo = data.realPath.substr(k + data.cgiExt[i].size());
-            data.cgiScriptFile = data.realPath.substr(0, k + data.cgiExt[i].size());
-            data.cgiInfo += reqPath.substr(reqPath.find(realNames) + realNames.length());
-            data.cgiFile = cleanPath(reqPath.substr(0, reqPath.length() - data.cgiInfo.length()));
-            data.cgiExecutePath = data.cgiPath[i];
-            return 1;
-        }
-    }
-    return 0;
-}
-
 int authenCheck(PlayloadData &data, Request &req)
 {
     if (req.method != "GET" && req.method != "POST")
@@ -658,6 +684,7 @@ bool resolvePath(PlayloadData &data, Request &req)
     std::stringstream ssPath(data.root + data.uri);
     std::vector<std::string> realNames;
     std::string tmp;
+    data.uploadOn = false;
     while (std::getline(ssPath, tmp, '/'))
     {
         if (tmp == "" || tmp == ".")
@@ -675,27 +702,32 @@ bool resolvePath(PlayloadData &data, Request &req)
     for (size_t i = 0; i < realNames.size(); i++)
     {
         data.realPath += '/' + realNames[i];
-        if (!checkCgi(data, realNames[i], req.path))
+        if (!checkCgi(data, data.realPath, realNames[i], req.path, false))
             continue;
         if (stat(data.cgiScriptFile.c_str(), &info) != -1)
         {
-            if (S_ISDIR(info.st_mode))
-                continue;
+            if (!S_ISDIR(info.st_mode))
+            {
+                data.isCgi = true;
+                return false;
+            }
         }
-        data.isCgi = true;
-        return false;
+        if (req.method == "POST")
+            return false;
     }
-
-    if (realNames.empty())
-        data.realPath = "/";
-    data.uploadOn = false;
+    if (req.path[req.path.length() - 1] == '/')
+        data.realPath += '/';
+    // if (realNames.empty())
+    //     data.realPath = "/";
     if (req.method != "POST" || data.upload.empty())
         return false;
-        
     size_t find = data.uri.find(data.upload);
     if (find == 0
         && (data.uri.length() == data.upload.length() || data.uri[data.upload.length()] == '/'))
-        data.uploadOn = true;
+    {
+        if (stat(data.realPath.c_str(), &info) != -1 && S_ISDIR(info.st_mode))
+            data.uploadOn = true;
+    }
     return false;
 }
 
@@ -742,8 +774,17 @@ bool responseHandler(Webserv &Web, Record &log, Request &req, Config &conf, size
     }
     if (req.method == "GET")
     {
-        if (getHandler(log, log.data))
+        if (getHandler(log, log.data, req))
             return true;
+        if (log.data.isCgi)
+        {
+            if (cgiHandler(Web, log, req, conf.listen_Port,i))
+            {
+                log.cgiData.cgiValid = false;
+                return true;
+            }
+            return false;
+        }
     }
     else if (req.method == "POST")
     {
