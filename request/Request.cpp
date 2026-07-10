@@ -84,9 +84,6 @@ void    returnedInternalError(Request &req)
 {
     req.status = 500;
     req.finFlag = true;
-    int *p = NULL;
-    *p = 42;
-    std::cout << "SS\n";
 }
 
 std::string tolowerStr(std::string str)
@@ -255,7 +252,6 @@ void getRequestLine(Request &req, PlayloadData &pdata, Config &conf)
     if (pos == std::string::npos)
         return ;
     fillCheck(req, req.fullLine.substr(0, pos));
-    std::cout << "--> " << req.path << std::endl;
     req.lenRead += req.fullLine.substr(0, pos + 2).length();
     req.fullLine.erase(0, pos + 2);
     if (req.status == 200)
