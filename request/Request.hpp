@@ -52,7 +52,6 @@ class Request
         Sessions    *session;
         std::map<std::string, std::string> cookies;
         void storeCookies(std::string value);
-        void generateRandomName(std::string value);
         void clean();
 
 };
