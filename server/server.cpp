@@ -14,7 +14,7 @@ Server::Server(Webserv &Web, int port, const std::string &IP)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = inet_addr(IP.c_str());
-
+    std::cout << port << " ------ " << IP<< "\n";
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
     {
         close(server_fd);
@@ -203,15 +203,10 @@ int main(int ac, char *arv[])
                         if (sList.checkIfNotNull())
                             sList.checkLimitSessions();
 
-                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > 60) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))
+                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > TIMEOUT) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))
                         {
-                            if (Web.recs[indexClnt].status == CGI_ACTIVE_RS && time(NULL) - Web.recs[indexClnt].time > 60)
-                                Web.recs[indexClnt].cgiData.status = 504;
-                            else
-                            {
                                 Web.server[Web.s].serverPort[Web.t].close_client(Web, indexClnt);
                                 continue;
-                            }
                         }
 
                         if (Web.typeFd[indexClnt] == "server" && (Web.fds[indexClnt].revents & POLLIN))
@@ -226,6 +221,44 @@ int main(int ac, char *arv[])
                         {
                             Web.server[Web.s].serverPort[Web.t].sendRespond(Web, indexClnt);
                         }
+                        // if (time(NULL) - Web.recs[indexClnt].time > TIMEOUT)
+                        // {
+                        //     int status;
+                        //     kill(Web.pipi[indexClnt], SIGKILL);
+                        //     int ret = waitpid(Web.pipi[indexClnt], &status, 0);
+                        //     if (ret > 0)
+                        //     {
+                        //         Web.recs[indexClnt].cgiData.status = 504;
+                        //         // Web.recs[indexClnt].killProsses = true;
+                        //         // Web.recs[indexClnt].cgiData.pid = -1;   // ⬅️ زيدها
+                        //     }
+                        // }
+                    }
+                }
+            }
+            for (size_t i = 0; i < Web.indexPid.size();i++)
+            {
+                int status;
+                    // std::cout << "ddddddddddddddddddddddddsssss\n";
+
+                int ret = waitpid(Web.indexPid[i], &status, WNOHANG);
+                if (ret > 0)
+                {
+                    if (WIFEXITED(status) == 2)
+                    {
+                        Web.recs[Web.pipp[Web.indexPid[i]]].cgiData.status = 500;
+                        std::cout << "ddddddddddddddddddddd\n";
+                        // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].killProsses = true;
+                        // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].cgiData.pid = -1;   // ⬅️ زيدها
+                        Web.indexPid.erase(Web.indexPid.begin()+ i);
+                    }
+                    else
+                    {
+                         Web.recs[Web.pipp[Web.indexPid[i]]].cgiData.status = 502;
+                        std::cout << "ddddddddddddddddddddd1111111\n";
+                        // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].killProsses = true;
+                        // Web.recs[Web.server[Web.s].serverPort[Web.t].index_Client[Web.i]].cgiData.pid = -1;   // ⬅️ زيدها
+                        Web.indexPid.erase(Web.indexPid.begin()+ i);
                     }
                 }
             }
@@ -233,7 +266,7 @@ int main(int ac, char *arv[])
     }
     catch (const std::exception &e)
     {
-        std::cout << e.what() << std::endl;
-        return 1;
+        // std::cout << e.what() << std::endl;
+        return 10;
     }
 }

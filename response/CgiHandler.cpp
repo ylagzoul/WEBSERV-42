@@ -45,7 +45,7 @@ void closeCGI(Webserv &Web, std::string method, size_t &indexClnt)
 {
     if (method == "POST")
     {
-        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
+        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
         Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[2]] = "close";
         Web.statusFd[Web.recs[indexClnt].IndexFdsPipe[3]] = "close";
         Web.server[Web.s].serverPort[Web.t].reuseFd.push_back(Web.recs[indexClnt].IndexFdsPipe[2]);
@@ -78,6 +78,7 @@ std::string toStrC(int nb)
 
 CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), lenRead(0), getEndHeaders(false), finFlag(false), getEndFile(false), clientState(CLIENT_CGI_OF), reqState(DEFAULT_CGI_ST), endRead(false), count(0)
 {
+     pid = -1; 
     fullLine = "";
     status = 200;
     bodyType = 0;
@@ -173,6 +174,9 @@ std::string switchData(std::string path)
 int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadData &data, size_t &indexClnt)
 {
     cgiData.pid = fork();
+    Web.indexPid.push_back(cgiData.pid);
+    Web.pipp[cgiData.pid] = Web.indexPid.size();
+    Web.pipi[indexClnt] = cgiData.pid;
     if (cgiData.pid == -1)
     {
         if (method == "POST")
@@ -183,19 +187,19 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
     }
     if (cgiData.pid == 0)
     {
-        close(2); // youssef check not problem
-        if (method == "POST")
-        {
-            if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd, STDIN_FILENO) < 0)
-            {
-                close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
-                close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-                closeCGI(Web, Web.req[indexClnt].method, indexClnt);
-                throw std::runtime_error("ERROR EXITED");
-            }
-            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
-            close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
-        }
+        // close(2); // youssef check not problem
+        // if (method == "POST")
+        // {
+        //     if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd, STDIN_FILENO) < 0)
+        //     {
+        //         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
+        //         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
+        //         closeCGI(Web, Web.req[indexClnt].method, indexClnt);
+        //         throw std::runtime_error("ERROR EXITED");
+        //     }
+        //     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
+        //     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
+        // }
         if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, STDOUT_FILENO) < 0)
         {
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
@@ -214,8 +218,8 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
     }
 
     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-    if (method == "POST")
-        close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
+    // if (method == "POST")
+    //     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
     return (0);
 }
 
@@ -223,14 +227,14 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
 {
     if (method == "POST")
     {
-        if (Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].revents & POLLOUT)
+        if (Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].revents & POLLOUT)   // ✅
         {
             int bytes_r;
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
             if (bytes_r < 0)
                 return (1);
-            if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, buffer, bytes_r)) < 0)
+            if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, buffer, bytes_r)) < 0)  // ✅
                 return (1);
         }
     }
@@ -244,8 +248,8 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
 
         else if (bytes == 0)
         {
-            cgiData.dataReady = true;
             cgiData.endRead = true;
+            cgiData.dataReady = true;
         }
         else if (bytes > 0)
         {
@@ -277,28 +281,8 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
     }
     else
     {
-        int ret;
-        int status = 0;
-        ret = waitpid(Web.recs[indexClnt].cgiData.pid, &status, WNOHANG);
-        if (ret > 0)
-        {
-            if (WIFEXITED(status))
-            {
-                if (WEXITSTATUS(status) >= 1)
-                    Web.recs[indexClnt].cgiData.status = 500;
-            }
-        }
-        status = 0;
-        if (time(NULL) - Web.recs[indexClnt].time > 60)
-        {
-            kill(Web.recs[indexClnt].cgiData.pid, SIGKILL);
-            ret = waitpid(Web.recs[indexClnt].cgiData.pid, &status, 0);
-            if (ret > 0)
-                Web.recs[indexClnt].cgiData.status = 504;
-        }
-        if (log.cgiData.status == 504 || log.cgiData.status == 500)
+        if (Web.recs[indexClnt].cgiData.status == 500 || Web.recs[indexClnt].cgiData.status == 502)
             return (1);
-
         if (readFromCgi(Web, log.cgiData, req.method, indexClnt))
         {
             Web.recs[indexClnt].cgiData.status = 500;

@@ -8,6 +8,7 @@ public:
     void clean();
     int fd;
     int fileFd;
+    bool killProsses;
     DIR *dir;
     t_state status;
     t_state method;

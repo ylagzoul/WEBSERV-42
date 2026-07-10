@@ -8,6 +8,7 @@ Record::Record()
     status = NEW_RS;
     method = NO_MD;
     clientState = DISCONNECTED;
+    killProsses = false;
 
     sendNext = true;
     time = std::time(NULL);

@@ -31,6 +31,8 @@
 #define MAX_LEN_PATH 8 * 1024
 #define MAX_LEN_HEADER_FEILD 2 * 1024
 
+#define TIMEOUT 5
+
 #define DEFAULT_MAX_BODY_SIZE 50000000
 #define SIZESR 8192
 
@@ -73,6 +75,9 @@ class Webserv
         std::vector<pollfd>         fds;
         std::map<int, std::string>  typeFd;
         std::map<int, std::string>  statusFd;
+        std::map<int, int>  pipp;
+        std::map<int, int>  pipi;
+        std::vector<int>        indexPid;
 
         std::vector<Config>         config;
         void config_file(std::string configNameFile);
