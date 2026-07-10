@@ -3,7 +3,9 @@
 
 #include <unistd.h>
 #include <signal.h>
-
+#include <vector>
+#include <algorithm>
+#include <iostream>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -79,9 +81,10 @@ class Webserv
         std::vector<pollfd>         fds;
         std::map<int, std::string>  typeFd;
         std::map<int, std::string>  statusFd;
-        std::map<int, int>  pipp;
-        std::map<int, int>  pipi;
+        // std::map<int, int>  pipp;
+        // std::map<int, int>  pipi;
         std::vector<int>        indexPid;
+        std::vector<int>        yous;
         
 
         std::vector<Config>         config;
