@@ -183,7 +183,7 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
     }
     if (cgiData.pid == 0)
     {
-        close(2); // youssef check not problem
+        // close(2); //! youssef check if its not a problem
         if (method == "POST")
         {
             if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd, STDIN_FILENO) < 0)
@@ -209,6 +209,7 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
             throw std::runtime_error("ERROR EXITED");
 
         execve(cgiData.cgiArgs[0], cgiData.cgiArgs, cgiData.env);
+        std::cerr << "asdfdsfds\n";
         releaseExecResources(cgiData);
         throw std::runtime_error("ERROR EXITED");
     }
@@ -229,7 +230,9 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
             if (bytes_r < 0)
+            {
                 return (1);
+            }
             if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, buffer, bytes_r)) < 0)
                 return (1);
         }
@@ -280,11 +283,17 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
         int ret;
         int status = 0;
         ret = waitpid(Web.recs[indexClnt].cgiData.pid, &status, WNOHANG);
+        // if (ret == -1)
+        //     Web.recs[indexClnt].cgiData.status = 500;
         if (ret > 0)
         {
+            // if (WIFSIGNALED(status))
+            // {
+            //     Web.recs[indexClnt].cgiData.status = 500;
+            // }
             if (WIFEXITED(status))
             {
-                if (WEXITSTATUS(status) >= 1)
+                if (WEXITSTATUS(status) != 0)
                     Web.recs[indexClnt].cgiData.status = 500;
             }
         }
@@ -360,8 +369,13 @@ void getCgiUtils(PlayloadData &data, Request req, CgiHandler &cgiData, std::vect
     }
 }
 
-bool cgiResponseHandler(Record &log, CgiHandler &cgiData, PlayloadData &data)
+bool cgiResponseHandler(Record &log, CgiHandler &cgiData, PlayloadData &data, Request req)
 {
+    if (req.method == "POST")
+    {
+        if (access(req.bodyPath.c_str(), F_OK) != -1)
+            std::remove(req.bodyPath.c_str());
+    }
     if (cgiData.status == 500 || cgiData.status == 502 || cgiData.status == 504)
     {
         data.statusCode = cgiData.status;
@@ -417,8 +431,12 @@ bool cgiProcess(Webserv &Web, Record &log, Request req, size_t &i)
         {
             closeCGI(Web, req.method, i);
         }
-        if (cgiResponseHandler(log, log.cgiData, log.data))
+        if (cgiResponseHandler(log, log.cgiData, log.data, req))
+        {
+            if (access(log.cgiData.cgBodyFileName.c_str(), F_OK) != -1)
+                remove(log.cgiData.cgBodyFileName.c_str());
             return true;
+        }
         else
             log.cgiData.cgiValid = true;
     }

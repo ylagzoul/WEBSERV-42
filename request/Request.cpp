@@ -327,7 +327,6 @@ bool getHeaders(Request &req)
     return (true);
 }
 
-
 bool getChunkedBody(Request &req)
 {
     size_t endTxt = 0;

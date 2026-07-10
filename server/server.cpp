@@ -71,7 +71,6 @@ void Server::close_client(Webserv &Web, size_t &indexClnt)
 
 void Server::acceptNewClient(Webserv &Web)
 {
-
     while (true)
     {
         int client_fd = accept(server_fd, (sockaddr *)&addr, &len);

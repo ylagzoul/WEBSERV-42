@@ -59,7 +59,7 @@ void Config::ft_listen_prot()
     size_t  index = 0;
     int     sizePort = 0;
     int     port;
-    while (index < words[1].size() && words[1][index]) // why && words[1][index]
+    while (index < words[1].size())
     {
         if (!isdigit(words[1][index]))
             throw std::runtime_error("Error : Port is not a number.");
