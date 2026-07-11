@@ -25,8 +25,7 @@ void Config::check_default()
 
 std::string ft_check_Path(std::string fullPath)
 {
-    if (fullPath == "/")
-        return (fullPath);
+
     std::stringstream ssPath(fullPath);
     std::vector<std::string> realNames;
     std::string tmp;
@@ -43,6 +42,8 @@ std::string ft_check_Path(std::string fullPath)
     {
         path += '/' + realNames[i];
     }
+    if (path.empty())
+        path += '/';
     return path;
 }
 
