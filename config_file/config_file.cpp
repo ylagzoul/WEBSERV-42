@@ -19,7 +19,7 @@ void Config::check_default()
     if (listen_Port.size() == 0)
     {
         listen_Ip.push_back("0.0.0.0");
-        listen_Port.push_back(80);
+        listen_Port.push_back(8080);
     }
 }
 
@@ -42,7 +42,7 @@ std::string ft_check_Path(std::string fullPath)
         path += '/' + realNames[i];
     }
     if (path.empty())
-        path = "/";
+        path += '/';
     return path;
 }
 

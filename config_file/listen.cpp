@@ -28,7 +28,6 @@ void Config::ft_listen_Ip()
     int     sizeOctet = 0;
     int     numberPoints = 0;
     size_t  index    = 0;
-    
     while (index < words[1].size())
     {
         if (!isdigit(words[1][index]) && words[1][index] != '.')
@@ -85,7 +84,7 @@ void Config::ft_listen()
             ft_listen_prot_Ip();
         else if (words[1].find('.') != std::string::npos)
         {
-            listen_Port.push_back(80);
+            listen_Port.push_back(8080);
             ft_listen_Ip();
         }
         else

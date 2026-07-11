@@ -14,7 +14,6 @@ Server::Server(Webserv &Web, int port, const std::string &IP)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = inet_addr(IP.c_str());
-
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
     {
         close(server_fd);
@@ -202,10 +201,26 @@ int main(int ac, char *arv[])
                         if (sList.checkIfNotNull())
                             sList.checkLimitSessions();
 
-                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > 60) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))
+                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > TIMEOUT) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))//
                         {
-                            if (Web.recs[indexClnt].status == CGI_ACTIVE_RS && time(NULL) - Web.recs[indexClnt].time > 60)
-                                Web.recs[indexClnt].cgiData.status = 504;
+                            if (time(NULL) - Web.recs[indexClnt].time > TIMEOUT && Web.recs[indexClnt].status == CGI_ACTIVE_RS)
+                            {
+                                int status;
+                                kill(Web.recs[indexClnt].cgiData.pid, SIGKILL);
+                                int ret = waitpid(Web.recs[indexClnt].cgiData.pid, &status, 0);
+                                if (ret > 0)
+                                {
+                                    Web.recs[indexClnt].pi = true;
+                                    Web.recs[indexClnt].cgiData.status = 504;
+                                    
+                                    std::vector<int>::iterator it = std::find(Web.indexPid.begin(),Web.indexPid.end(),Web.recs[indexClnt].cgiData.pid);
+                                    int index = 0;
+                                    if (it != Web.indexPid.end())
+                                        index = std::distance(Web.indexPid.begin(), it);
+                                    Web.indexPid.erase(Web.indexPid.begin() + index);
+                                    Web.yous.erase(Web.yous.begin() + index);
+                                }
+                            }
                             else
                             {
                                 Web.server[Web.s].serverPort[Web.t].close_client(Web, indexClnt);
@@ -225,6 +240,27 @@ int main(int ac, char *arv[])
                         {
                             Web.server[Web.s].serverPort[Web.t].sendRespond(Web, indexClnt);
                         }
+                    }
+                    for (size_t i = 0; i < Web.indexPid.size();i++)
+                    {
+                        int status;
+                        int ret = waitpid(Web.indexPid[i], &status, WNOHANG);
+                        if (ret > 0)
+                        {
+                            Web.recs[Web.yous[i]].pi = true;
+                            if (WIFEXITED(status))
+                            {
+                                if (WEXITSTATUS(status) > 0)
+                                    Web.recs[Web.yous[i]].cgiData.status = 500;
+                            }
+                            else if (WIFSIGNALED(status))
+                            {
+                                Web.recs[Web.yous[i]].cgiData.status = 500;
+                            }
+                            Web.indexPid.erase(Web.indexPid.begin() + i);
+                            Web.yous.erase(Web.yous.begin() + i);
+                        }
+                        
                     }
                 }
             }

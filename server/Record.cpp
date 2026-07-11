@@ -3,11 +3,13 @@
 Record::Record()
 {
     fileFd = -1;
+    pi = false;
     fd = -1;
     dir = NULL;
     status = NEW_RS;
     method = NO_MD;
     clientState = DISCONNECTED;
+    killProsses = false;
 
     sendNext = true;
     time = std::time(NULL);

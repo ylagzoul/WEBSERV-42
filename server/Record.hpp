@@ -8,6 +8,7 @@ public:
     void clean();
     int fd;
     int fileFd;
+    bool killProsses;
     DIR *dir;
     t_state status;
     t_state method;
@@ -18,6 +19,7 @@ public:
     CgiHandler cgiData;
     std::vector<int> IndexPipe;
     std::vector<int> IndexFdsPipe;
+    bool pi;
 
     time_t time;
     std::string response;
