@@ -35,7 +35,7 @@ server {
         autoindex on;
 
         return 302 /jfdgdfkg;
-        index index.html djhfhdf/kdj kdfkjdkg;
+        index index.html djhfhdfkdj kdfkjdkg;
     }
 
 
