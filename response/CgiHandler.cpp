@@ -299,7 +299,7 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
 
         if (log.cgiData.canRead || log.cgiData.endRead)
         {
-            parseCgiResponse(log.cgiData, req);
+            parseCgiResponse(log.cgiData);
             log.cgiData.canRead = false;
         }
     }
