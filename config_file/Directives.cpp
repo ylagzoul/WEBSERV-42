@@ -162,7 +162,7 @@ void Config::ft_methods()
     methods["DELETE"] = false;
     int size_s = words[size - 1].size();
     if (words[size - 1][size_s-1] != ';')
-        throw std::runtime_error("Erorr : Invalid methods");
+        throw std::runtime_error("Error : Invalid methods");
     words[size - 1].erase(size_s - 1);
     int index = 1;
     while (index < size)
@@ -174,7 +174,7 @@ void Config::ft_methods()
         else if (words[index] == "DELETE")
             methods["DELETE"] = true;
         else
-            throw std::runtime_error("Erorr : Invalid methods");
+            throw std::runtime_error("Error : Invalid methods");
         index++;
     }
     delet_data["methods"] = false;
@@ -184,7 +184,7 @@ void Config::ft_root()
 {
     int sizePath = words[1].size();
     if (size != 2 || words[1][sizePath - 1] != ';')
-        throw std::runtime_error("Erorr : in root");
+        throw std::runtime_error("Error : in root");
 
     words[1].erase(words[1].begin() + sizePath - 1);
     root = ft_check_Path(words[1]);

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv Test Suite</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="container">
+            <h1>Webserv Test Suite</h1>
+            <p>HTTP/1.1 Custom Server Validation Dashboard</p>
+        </div>
+    </header>
+
+    <div class="container layout">
+        <main class="content">
+            
+           <section class="test-block">
+                <h2>1. GET & DELETE Methods</h2>
+                <p>Test static file retrieval (opens in new tab) and resource deletion.</p>
+                <div class="button-group">
+                    <a href="/assets/test.jpg" target="_blank" class="btn-primary btn-link">GET Image</a>
+                    <a href="/assets/video.mp4" target="_blank" class="btn-primary btn-link">GET Video</a>
+                    <a href="/files/" target="_blank" class="btn-primary btn-link">GET Directory /files</a>
+                    
+                    <button onclick="testFetch('DELETE', '/uploads/test.txt')" class="btn-danger">DELETE File</button>
+                </div>
+            </section>
+    
+            <section class="test-block">
+                <h2>2. POST & Payloads</h2>
+                <p>Test body parsing, chunked transfers, and large payload limits.</p>
+                <div class="button-group">
+                    <button onclick="testFetch('POST', '/api/upload', 'Simple text payload')" class="btn-primary">POST Raw Text</button>
+                    <button onclick="testMultipartAjax()" class="btn-primary">POST AJAX Multipart</button>
+                    <button onclick="sendMassivePayload()" class="btn-warning">POST 10MB Payload (Stress Test)</button>
+                </div>
+            </section>
+
+            <section class="test-block">
+                <h2>3. Advanced CGIs & Native Forms</h2>
+                <p>Test interpreter execution, environment variables, and <strong>STDIN piping</strong>.</p>
+                <div class="form-grid">
+                    <form action="/cgi-bin/multipart.pl" method="POST" enctype="multipart/form-data" class="native-form">
+                        <h3>Perl: File Upload</h3>
+                        <input type="file" name="file">
+                        <button type="submit" class="btn-secondary">Upload (Perl)</button>
+                    </form>
+                    <form action="/cgi-bin/env.sh" method="POST" class="native-form">
+                        <h3>Bash: Env & STDIN</h3>
+                        <input type="text" name="custom_data" placeholder="Type something to pipe...">
+                        <button type="submit" class="btn-secondary">POST to Bash</button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="test-block">
+                <h2>4. Cookies, Sessions & DELETE Edge Cases</h2>
+                <p>Test state management and robust file deletion.</p>
+                <div class="button-group">
+                    <button onclick="testFetch('GET', '/cgi-bin/session.py')" class="btn-primary">Create Session</button>
+                    <button onclick="testFetch('GET', '/cgi-bin/session.py', null, true)" class="btn-secondary">Verify Session</button>
+                    <button onclick="clearCookies()" class="btn-warning">Clear Cookies</button>
+                </div>
+                <div class="button-group" style="margin-top: 15px;">
+                    <button onclick="testRobustDelete()" class="btn-danger">1. Safe DELETE (Auto-creates then deletes)</button>
+                    <button onclick="testFetch('DELETE', '/does_not_exist.txt')" class="btn-danger">2. DELETE Missing (Expect 404)</button>
+                    <button onclick="testFetch('DELETE', '/app/')" class="btn-danger">3. DELETE Directory (Expect 403/409)</button>
+                </div>
+            </section>
+
+            <section class="test-block">
+                <h2>5. Errors, Chunking & HTTP/1.0</h2>
+                <p>Stress-test your parser with edge cases and mandatory HTTP codes.</p>
+                <div class="button-group">
+                    <button onclick="testFetch('POST', '/')" class="btn-warning">405 Method Not Allowed (POST to root)</button>
+                    <button onclick="testFetch('GET', '/not-found')" class="btn-warning">404 Not Found</button>
+                    <button onclick="testFetch('OPTIONS', '/')" class="btn-warning">501 Not Implemented (OPTIONS)</button>
+                    <button onclick="testFetch('GET', '/cgi-bin/timeout.py')" class="btn-danger">504 CGI Timeout (Hang)</button>
+                </div>
+                <div class="curl-box">
+                    <strong>Test Chunked Transfer Encoding (Run in terminal):</strong>
+                    <code>curl -H "Transfer-Encoding: chunked" -d "chunk1 chunk2 chunk3" http://localhost:8080/api/upload</code>
+                    <br>
+                    <strong>HTTP/1.0 Connection Close Test:</strong>
+                    <code>curl -0 -v http://localhost:8080/</code>
+                </div>
+            </section>
+
+        </main>
+
+        <aside class="logger">
+            <div class="logger-header">
+                <h3>Live Console</h3>
+                <button onclick="document.getElementById('log-output').innerHTML=''" class="btn-small">Clear</button>
+            </div>
+            <pre id="log-output"></pre>
+        </aside>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

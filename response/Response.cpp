@@ -51,12 +51,15 @@ void loadStatusCode(PlayloadData &data)
 {
     data.table[200] = "OK";
     data.table[201] = "Created";
+
     data.table[301] = "Moved Permanently";
     data.table[302] = "Moved Temporarily";
+
     data.table[400] = "Bad Request";
     data.table[403] = "Forbidden";
     data.table[404] = "Not Found";
     data.table[405] = "Method Not Allowed";
+
     data.table[500] = "Internal Server Error";
     data.table[501] = "Not Implemented";
     data.table[502] = "Bad Gateway";
@@ -396,11 +399,8 @@ int checkCgi(PlayloadData &data, std::string realPath , std::string &realNames, 
             if (k + data.cgiExt[i].size() < realNames.size())
                 return 0;
         }
-
         k = realPath.rfind(data.cgiExt[i]);
-        if (k == std::string::npos)
-            return 0;
-        if ((k + data.cgiExt[i].size() == realPath.size() || realPath[k + data.cgiExt[i].size()] == '?'))
+        if (k != std::string::npos && (k + data.cgiExt[i].size() == realPath.size() || realPath[k + data.cgiExt[i].size()] == '?'))
         {
             data.cgiInfo = realPath.substr(k + data.cgiExt[i].size());
             data.cgiScriptFile = realPath.substr(0, k + data.cgiExt[i].size());
@@ -416,6 +416,8 @@ int checkCgi(PlayloadData &data, std::string realPath , std::string &realNames, 
 bool tryIndex(Record &log, PlayloadData &data, Request &req)
 {
     struct stat cgiInfo;
+    (void) req;
+    (void) cgiInfo;
     for (size_t i = 0; i < data.index.size(); i++)
     {
         std::string pathIndex = data.realPath + '/' + data.index[i];
@@ -717,8 +719,6 @@ bool resolvePath(PlayloadData &data, Request &req)
     }
     if (req.path[req.path.length() - 1] == '/')
         data.realPath += '/';
-    // if (realNames.empty())
-    //     data.realPath = "/";
     if (req.method != "POST" || data.upload.empty())
         return false;
     size_t find = data.uri.find(data.upload);

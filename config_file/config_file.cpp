@@ -98,7 +98,7 @@ void Config::check_Directives()
             blockName = "server";
     }
     else
-        throw std::runtime_error("Erorr : Invalid Directives");
+        throw std::runtime_error("Error : Invalid Directives");
 }
 
 void ft_check_Directives(Location &obj)
