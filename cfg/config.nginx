@@ -1,5 +1,5 @@
 server {
-    listen 127.5.5.5:8081;
+    listen 127.0.0.1:3050;
     root /home/ylagzoul/Desktop/WEBSERV-42;
     methods GET POST DELETE;
     error_page 401 /errors/401.html;
