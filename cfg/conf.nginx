@@ -1,0 +1,36 @@
+server {
+    listen 127.0.0.1:8080;
+    
+    client_max_body_size 15M;
+    
+    root /home/abouhki/dashboard;
+    index index.html;
+
+    location / {
+        methods GET;
+        autoindex on;
+    }
+
+    location /api/ {
+        methods POST;
+        upload_path /uploads;
+    }
+
+    location /uploads/ {
+        root /home/abouhki/dashboard/uploads/;
+        methods GET DELETE;
+    }
+
+    location /cgi-bin/ {
+        root /home/abouhki/dashboard/cgi-bin/;
+
+        methods GET POST;
+        cgi_data .pl /usr/bin/perl;
+        cgi_data .py /usr/bin/python3;
+        cgi_data .sh /usr/bin/bash;
+    }
+    
+    location /redirect {
+        return 301 http://localhost:8080/index.html;
+    }
+}
