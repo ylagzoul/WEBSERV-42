@@ -70,12 +70,12 @@ void Server::close_client(Webserv &Web, size_t &indexClnt)
 
 void Server::acceptNewClient(Webserv &Web)
 {
-    while (true)
-    {
+    // while (true)
+    // {
         int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
 
         if (client_fd < 0)
-            break ;
+            return ;
         pollfd client_poll;
         client_poll.fd = client_fd;
         client_poll.events = POLLIN;
@@ -102,7 +102,7 @@ void Server::acceptNewClient(Webserv &Web)
             Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]].time = std::time(NULL);
         }
         fcntl(client_fd, F_SETFL, O_NONBLOCK);
-    }
+    // }
 }
 
 bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList)
@@ -135,7 +135,7 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
         if (Web.recs[indexClnt].response.empty() && (Web.recs[indexClnt].status == ACTIVE_RS || Web.recs[indexClnt].status == CGI_ACTIVE_RS))
             return (true);
     }
-    int sent = send(Web.fds[indexClnt].fd, Web.recs[indexClnt].response.c_str(), Web.recs[indexClnt].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
+    int sent = send(Web.fds[indexClnt].fd, Web.recs[indexClnt].response.c_str(), Web.recs[indexClnt].response.size(), MSG_NOSIGNAL);
     if (sent > 0)
     {
         Web.recs[indexClnt].response = Web.recs[indexClnt].response.substr(sent);
@@ -230,6 +230,7 @@ int main(int ac, char *arv[])
 
                         if (Web.typeFd[indexClnt] == "server" && (Web.fds[indexClnt].revents & POLLIN))
                         {
+                            std::cout  << "dddddddddddddd\n";
                             Web.server[Web.s].serverPort[Web.t].acceptNewClient(Web);
                         }
                         else if (Web.typeFd[indexClnt] == "client" && (Web.fds[indexClnt].revents & POLLIN))
