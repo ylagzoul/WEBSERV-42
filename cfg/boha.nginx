@@ -14,7 +14,6 @@ server {
         index index.html;
         error_page 500 /errors/500.html;
         error_page 400 /errors/400.html;
-        client_max_body_size 20m;
         upload_path /upload;
         root /home/abouhki/realWebserv;
         cgi_data .php /usr/bin/php-cgi;
@@ -28,7 +27,7 @@ server {
         index index.html;
         error_page 400 /errors/400.html;
         error_page 404 /errors/404.html;
-        root /home/abouhki/realWebserv/portf;
+        root /home/boha/realWebserv/portf;
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }
