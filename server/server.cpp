@@ -3,8 +3,8 @@
 Server::Server(Webserv &Web, int port, const std::string &IP)
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    int opt = 1;
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    int opt = -1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
     {
         close(server_fd);
         throw std::runtime_error("Error: fail setsockopt");
@@ -70,9 +70,7 @@ void Server::close_client(Webserv &Web, size_t &indexClnt)
 
 void Server::acceptNewClient(Webserv &Web)
 {
-    // while (true)
-    // {
-        int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
+        int client_fd = accept(server_fd, NULL, NULL);
 
         if (client_fd < 0)
             return ;
@@ -102,7 +100,6 @@ void Server::acceptNewClient(Webserv &Web)
             Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]].time = std::time(NULL);
         }
         fcntl(client_fd, F_SETFL, O_NONBLOCK);
-    // }
 }
 
 bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList)
@@ -230,7 +227,6 @@ int main(int ac, char *arv[])
 
                         if (Web.typeFd[indexClnt] == "server" && (Web.fds[indexClnt].revents & POLLIN))
                         {
-                            std::cout  << "dddddddddddddd\n";
                             Web.server[Web.s].serverPort[Web.t].acceptNewClient(Web);
                         }
                         else if (Web.typeFd[indexClnt] == "client" && (Web.fds[indexClnt].revents & POLLIN))
