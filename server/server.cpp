@@ -3,8 +3,6 @@
 Server::Server(Webserv &Web, int port, const std::string &IP)
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_fd == -1)
-        throw std::runtime_error("Error: fail socket");
     int opt = 1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
     {
@@ -72,10 +70,12 @@ void Server::close_client(Webserv &Web, size_t &indexClnt)
 
 void Server::acceptNewClient(Webserv &Web)
 {
+    // while (true)
+    // {
         int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
+
         if (client_fd < 0)
             return ;
-
         pollfd client_poll;
         client_poll.fd = client_fd;
         client_poll.events = POLLIN;
@@ -102,6 +102,7 @@ void Server::acceptNewClient(Webserv &Web)
             Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]].time = std::time(NULL);
         }
         fcntl(client_fd, F_SETFL, O_NONBLOCK);
+    // }
 }
 
 bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList)
