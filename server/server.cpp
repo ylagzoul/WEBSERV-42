@@ -3,8 +3,8 @@
 Server::Server(Webserv &Web, int port, const std::string &IP)
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    int opt = 1;
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    int opt = -1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
     {
         close(server_fd);
         throw std::runtime_error("Error: fail setsockopt");
@@ -70,12 +70,10 @@ void Server::close_client(Webserv &Web, size_t &indexClnt)
 
 void Server::acceptNewClient(Webserv &Web)
 {
-    while (true)
-    {
-        int client_fd = accept(server_fd, (sockaddr *)&addr, &len);
+        int client_fd = accept(server_fd, NULL, NULL);
 
         if (client_fd < 0)
-            break ;
+            return ;
         pollfd client_poll;
         client_poll.fd = client_fd;
         client_poll.events = POLLIN;
@@ -102,7 +100,6 @@ void Server::acceptNewClient(Webserv &Web)
             Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]].time = std::time(NULL);
         }
         fcntl(client_fd, F_SETFL, O_NONBLOCK);
-    }
 }
 
 bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList)
@@ -135,7 +132,7 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
         if (Web.recs[indexClnt].response.empty() && (Web.recs[indexClnt].status == ACTIVE_RS || Web.recs[indexClnt].status == CGI_ACTIVE_RS))
             return (true);
     }
-    int sent = send(Web.fds[indexClnt].fd, Web.recs[indexClnt].response.c_str(), Web.recs[indexClnt].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
+    int sent = send(Web.fds[indexClnt].fd, Web.recs[indexClnt].response.c_str(), Web.recs[indexClnt].response.size(), MSG_NOSIGNAL);
     if (sent > 0)
     {
         Web.recs[indexClnt].response = Web.recs[indexClnt].response.substr(sent);

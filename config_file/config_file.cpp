@@ -23,6 +23,25 @@ void Config::check_default()
     }
 }
 
+void checkValid(const std::string& str)
+{
+    for (size_t i = 0; i < str.size(); i++)
+    {
+        char c = str[i];
+
+        if (!((c >= '0' && c <= '9') ||
+              (c >= 'a' && c <= 'z') ||
+              (c >= 'A' && c <= 'Z') ||
+              c == '-' ||
+              c == '.' ||
+              c == '~' ||
+              c == '_'))
+        {
+            throw std::runtime_error("Invalid character in index");
+        }
+    }
+}
+
 std::string ft_check_Path(std::string fullPath)
 {
     std::stringstream ssPath(fullPath);
@@ -86,7 +105,7 @@ void Config::check_Directives()
         ft_index();
     else if (words[0] == "autoindex")
         ft_autoindex();
-    else if (words[0] == "return")
+    else if (words[0] == "return" &&  blockName == "location")
         ft_return();
     else if (words[0] == "authInfo")
         ft_authInfo();
@@ -158,6 +177,7 @@ void Webserv::config_file(std::string configNameFile)
                     if (configFile.sameLocation[obj.location_name] == true)
                         throw std::runtime_error("Error : Same location name");
                     configFile.sameLocation[obj.location_name] = true;
+                    obj.conf.blockName = "location";
                     while (getline(file, readLine))
                     {
                         obj.conf.line = readLine;

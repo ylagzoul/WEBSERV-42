@@ -237,7 +237,7 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
                 Web.recs[indexClnt].cgiData.status = 500;
                 return (1);
             }
-            if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, buffer, bytes_r)) < 0) // ✅
+            if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, buffer, bytes_r)) < 0) // ✅ borplem
             {
                 Web.recs[indexClnt].cgiData.status = 500;
                 return (1);
