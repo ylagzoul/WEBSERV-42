@@ -69,6 +69,8 @@ class CgiHandler
     int bodyType;
     bool             endRead;
     size_t           count;
+
+    int  writeNext;
 };
  
 bool         cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listenPorts, size_t &i);

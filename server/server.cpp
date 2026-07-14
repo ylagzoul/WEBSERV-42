@@ -3,9 +3,23 @@
 Server::Server(Webserv &Web, int port, const std::string &IP)
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0)
+    {
+        for (size_t i = 0; i < Web.fds.size(); i++)
+        {
+            if (Web.statusFd[i] == "active")
+                close(Web.fds[i].fd);
+        }
+        throw std::runtime_error("Error: fail socket");
+    }
     int opt = -1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
     {
+        for (size_t i = 0; i < Web.fds.size(); i++)
+        {
+            if (Web.statusFd[i] == "active")
+                close(Web.fds[i].fd);
+        }
         close(server_fd);
         throw std::runtime_error("Error: fail setsockopt");
     }
@@ -16,11 +30,21 @@ Server::Server(Webserv &Web, int port, const std::string &IP)
     addr.sin_addr.s_addr = inet_addr(IP.c_str());
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
     {
+        for (size_t i = 0; i < Web.fds.size(); i++)
+        {
+            if (Web.statusFd[i] == "active")
+                close(Web.fds[i].fd);
+        }
         close(server_fd);
         throw std::runtime_error("Error: fail bind");
     }
     if (listen(server_fd, 400) < 0)
     {
+        for (size_t i = 0; i < Web.fds.size(); i++)
+        {
+            if (Web.statusFd[i] == "active")
+                close(Web.fds[i].fd);
+        }
         close(server_fd);
         throw std::runtime_error("Error: fail listen");
     }
@@ -238,7 +262,7 @@ int main(int ac, char *arv[])
                             Web.server[Web.s].serverPort[Web.t].sendRespond(Web, indexClnt);
                         }
                     }
-                    for (size_t i = 0; i < Web.indexPid.size();i++)
+                    for (size_t i = 0; i < Web.indexPid.size(); )
                     {
                         int status;
                         int ret = waitpid(Web.indexPid[i], &status, WNOHANG);
@@ -251,13 +275,13 @@ int main(int ac, char *arv[])
                                     Web.recs[Web.yous[i]].cgiData.status = 500;
                             }
                             else if (WIFSIGNALED(status))
-                            {
                                 Web.recs[Web.yous[i]].cgiData.status = 500;
-                            }
+                                
                             Web.indexPid.erase(Web.indexPid.begin() + i);
                             Web.yous.erase(Web.yous.begin() + i);
                         }
-                        
+                        else
+                            i++;
                     }
                 }
             }
