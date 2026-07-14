@@ -37,9 +37,10 @@
 #define MAX_LEN_PATH 8 * 1024
 #define MAX_LEN_HEADER_FEILD 2 * 1024
 
-#define TIMEOUT 5
+#define TIMEOUT 60
 
-#define DEFAULT_MAX_BODY_SIZE 50000000
+
+#define DEFAULT_MAX_BODY_SIZE 500 * 1024
 #define SIZESR 8192
 
 void closeCGI(Webserv &Web, std::string method, size_t &i);

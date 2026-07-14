@@ -7,11 +7,10 @@ server {
     error_page 500 /errors/500.html;
     error_page 504 /errors/504.html;
     autoindex on;
-    client_max_body_size 5K;
 
     location / {
         methods GET POST DELETE;
-        index index.html;
+        index index.htm;
         error_page 500 /errors/500.html;
         error_page 400 /errors/400.html;
         upload_path /upload;

@@ -253,7 +253,7 @@ void getRequestLine(Request &req, PlayloadData &pdata, Config &conf)
         {
             if (conf.location[i].location_name == pdata.location)
             {
-                req.maxBodySize = conf.location[i].conf.client_max_body_size ;
+                req.maxBodySize = conf.location[i].conf.client_max_body_size;
                 pdata.loginToken = conf.location[i].conf.loginToken;
                 pdata.redirectTokens = conf.location[i].conf.redirectTokens;
             }
