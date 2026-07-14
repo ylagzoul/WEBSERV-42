@@ -232,17 +232,27 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
             int bytes_r;
             int bytes_write;
             char buffer[SIZESR];
-            bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
-            if (bytes_r < 0)
+            if (cgiData.writeNext == 0)
             {
-                Web.recs[indexClnt].cgiData.status = 500;
-                return (1);
+                bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
+                if (bytes_r < 0)
+                {
+                    Web.recs[indexClnt].cgiData.status = 500;
+                    return (1);
+                }
+                cgiData.writeNext = bytes_r;
             }
-            bytes_write = write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, buffer, bytes_r);
-            if (bytes_write < 0)
+            if (cgiData.writeNext == 0)
+                Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].events &= ~POLLOUT;
+            else 
             {
-                Web.recs[indexClnt].cgiData.status = 500;
-                return (1);
+                bytes_write = write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, buffer, cgiData.writeNext);
+                if (bytes_write < 0)
+                {
+                    Web.recs[indexClnt].cgiData.status = 500;
+                    return (1);
+                }
+                cgiData.writeNext = bytes_r - bytes_write;
             }
         }
     }

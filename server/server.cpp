@@ -70,7 +70,6 @@ Webserv::Webserv(std::string configNameFile)
 
     for (size_t i = 0; i < config.size(); i++)
     {
-        indexMltpleServer = i;
         Server obj(*this, config[i].listen_Port[0], config[i].listen_Ip[0]);
         server.push_back(obj);
         server[i].serverPort.push_back(obj);
