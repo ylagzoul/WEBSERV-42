@@ -135,7 +135,9 @@ bool postBody(Record &log)
         log.data.statusCode = 500;
         return true;
     }
-    if ((write(log.fd, buff, bytes)) == -1)
+    int wrBytes = write(log.fd, buff, bytes);
+    if (wrBytes >= 0);
+    else
     {
         log.data.statusCode = 500;
         return true;
@@ -234,7 +236,6 @@ bool getFile(Record &log)
     }
     else if (log.status != ACTIVE_RS)
     {
-        
         log.status = ACTIVE_RS;
         log.method = GET_RS;
     }
@@ -623,9 +624,12 @@ int checkErrorFile(PlayloadData &data, Config &conf)
     int bytes = 0;
     while ((bytes = read(fd, buff, sizeof(buff) - 1)) > 0)
         data.errorBody.append(buff, bytes);
-    close(fd);
-    if (bytes < 0)
-        return 1;
+    if (bytes < 0 || bytes == 0)
+    {
+        close(fd);
+        if (bytes < 0)
+            return 1;
+    }
     data.bodySize = info.st_size;
     data.contentType = data.types["txt"];
     getContentType(data, file);
@@ -725,7 +729,7 @@ bool resolvePath(PlayloadData &data, Request &req)
     if (find == 0
         && (data.uri.length() == data.upload.length() || data.uri[data.upload.length()] == '/'))
     {
-        if (stat(data.realPath.c_str(), &info) != -1 && S_ISDIR(info.st_mode))
+        if (stat((data.root + data.uri.substr(0, data.upload.length())).c_str(), &info) != -1 && S_ISDIR(info.st_mode))
             data.uploadOn = true;
     }
     return false;
