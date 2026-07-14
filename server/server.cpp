@@ -84,7 +84,7 @@ Webserv::Webserv(std::string configNameFile)
 void Server::close_client(Webserv &Web, size_t &indexClnt)
 {
     if (Web.recs[indexClnt].status == CGI_ACTIVE_RS)
-        closeCGI(Web, Web.req[indexClnt].method, indexClnt);
+        closeCGI(Web, indexClnt);
     close(Web.fds[indexClnt].fd);
     Web.fds[indexClnt].fd = -1;
     Web.statusFd[indexClnt] = "close";
@@ -192,7 +192,6 @@ int main(int ac, char *arv[])
 {
     try
     {
-        // static int db = 0;
         if (ac != 2)
             throw std::runtime_error("Error: you should enter the config file only");
         Webserv Web(arv[1]);
@@ -223,7 +222,7 @@ int main(int ac, char *arv[])
                         if (sList.checkIfNotNull())
                             sList.checkLimitSessions();
 
-                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > TIMEOUT) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))//
+                        if ((Web.typeFd[indexClnt] == "client" && time(NULL) - Web.recs[indexClnt].time > TIMEOUT) || (Web.fds[indexClnt].revents & (POLLERR | POLLHUP)))
                         {
                             if (time(NULL) - Web.recs[indexClnt].time > TIMEOUT && Web.recs[indexClnt].status == CGI_ACTIVE_RS)
                             {

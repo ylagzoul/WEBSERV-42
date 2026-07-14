@@ -43,7 +43,7 @@
 #define DEFAULT_MAX_BODY_SIZE 500 * 1024
 #define SIZESR 8192
 
-void closeCGI(Webserv &Web, std::string method, size_t &i);
+void closeCGI(Webserv &Web, size_t &i);
 
 class Webserv;
 
@@ -82,8 +82,6 @@ class Webserv
         std::vector<pollfd>         fds;
         std::map<int, std::string>  typeFd;
         std::map<int, std::string>  statusFd;
-        // std::map<int, int>  pipp;
-        // std::map<int, int>  pipi;
         std::vector<int>        indexPid;
         std::vector<int>        yous;
 
