@@ -98,7 +98,10 @@ bool getHeadersCgi(CgiHandler &cgiData)
         if (cgiData.cgHeaders.find("content-type") == cgiData.cgHeaders.end())
             return (returnedBadError(cgiData), true);
         if (it != cgiData.cgHeaders.end() && it->second == "chunked")
+        {
+            cgiData.contentLength = 0;
             cgiData.bodyType = CHUNKED;
+        }
         else
             cgiData.bodyType = FIXED;
         if (cgiData.cgHeaders.find("status") != cgiData.cgHeaders.end())
@@ -138,7 +141,10 @@ void getBody(CgiHandler &cgiData)
 
     cgiData.lenRead += cgiData.fullLine.length();
     if (cgiData.fullLine.length() <= 0)
+    {
+        cgiData.getEndFile = true;
         return ;
+    }
     if (cgiData.fd == -1)
     {
         cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandName();
@@ -176,8 +182,8 @@ bool getChunked(CgiHandler &cgiData)
     size_t endTxt;
     size_t endNum;
 
-    if (cgiData.fullLine.length() <= 0)
-        return (true);
+    // if (cgiData.fullLine.length() <= 0)
+    //     return (true);       
     if (cgiData.fd == -1)
     {
         cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandName();
@@ -254,11 +260,18 @@ int parseCgiResponse(CgiHandler &cgiData)
         if (cgiData.getEndHeaders && cgiData.getEndFile == false && cgiData.bodyType == CHUNKED)
         {
             if (getChunked(cgiData) == false)
+            {
+                if (cgiData.endRead == true && cgiData.getEndFile == false)
+                {
+                    cgiData.dataReady = true;
+                    cgiData.status = 502;
+                }
+            }
                 break;
         }
         else if (cgiData.getEndHeaders && cgiData.getEndFile == false)
             getBody(cgiData);
-        if (cgiData.endRead == true && cgiData.bodyLen < cgiData.contentLength)
+        if (cgiData.endRead == true && cgiData.contentLength > 0 && cgiData.bodyLen < cgiData.contentLength)
         {
             cgiData.dataReady = true;
             cgiData.status = 502;
