@@ -71,6 +71,7 @@ class CgiHandler
     size_t           count;
 
     int  writeNext;
+    std::string NextBuffer;
 };
  
 bool         cgiHandler(Webserv &Web, Record &log, Request req, std::vector<int> &listenPorts, size_t &i);
