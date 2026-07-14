@@ -230,6 +230,7 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
         if (Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].revents & POLLOUT) // ✅
         {
             int bytes_r;
+            int bytes_write;
             char buffer[SIZESR];
             bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
             if (bytes_r < 0)
@@ -237,7 +238,8 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
                 Web.recs[indexClnt].cgiData.status = 500;
                 return (1);
             }
-            if ((write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, buffer, bytes_r)) < 0) // ✅ borplem
+            bytes_write = write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, buffer, bytes_r);
+            if (bytes_write < 0)
             {
                 Web.recs[indexClnt].cgiData.status = 500;
                 return (1);
