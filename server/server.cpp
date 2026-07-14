@@ -128,7 +128,7 @@ void Server::acceptNewClient(Webserv &Web)
 
 bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList)
 {
-    char buffer[SIZESR] = {0};
+    char buffer[SIZESR];
     int bytes = recv(Web.fds[indexClnt].fd, buffer, SIZESR, 0);
     if (bytes > 0)
     {
