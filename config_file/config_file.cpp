@@ -50,6 +50,8 @@ std::string ft_check_Path(std::string fullPath)
     std::string path;
     while (std::getline(ssPath, tmp, '/'))
     {
+        if (tmp == ".." || tmp == ".")
+            throw std::runtime_error("Error: invalid Path");
         if (tmp == "")
             continue;
         else
