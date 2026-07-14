@@ -7,7 +7,7 @@ Server::Server(Webserv &Web, int port, const std::string &IP)
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
     {
         close(server_fd);
-        throw std::runtime_error("Error: fail setsockopt");
+        throw std::runtime_error("Error: setsockopt() failed");
     }
 
     len = sizeof(addr);
@@ -17,12 +17,12 @@ Server::Server(Webserv &Web, int port, const std::string &IP)
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
     {
         close(server_fd);
-        throw std::runtime_error("Error: fail bind");
+        throw std::runtime_error("Error: bind() failed");
     }
     if (listen(server_fd, 400) < 0)
     {
         close(server_fd);
-        throw std::runtime_error("Error: fail listen");
+        throw std::runtime_error("Error: listen() failed");
     }
 
     pollfd server_poll;
@@ -135,8 +135,8 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
         if (Web.recs[indexClnt].response.empty() && (Web.recs[indexClnt].status == ACTIVE_RS || Web.recs[indexClnt].status == CGI_ACTIVE_RS))
             return (true);
     }
-    int sent = send(Web.fds[indexClnt].fd, Web.recs[indexClnt].response.c_str(), Web.recs[indexClnt].response.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
-    if (sent > 0)
+    int sent = send(Web.fds[indexClnt].fd, Web.recs[indexClnt].response.c_str(), Web.recs[indexClnt].response.size(), MSG_NOSIGNAL);
+    if (sent >= 0)
     {
         Web.recs[indexClnt].response = Web.recs[indexClnt].response.substr(sent);
         Web.recs[indexClnt].sendNext = Web.recs[indexClnt].response.empty();
@@ -184,7 +184,7 @@ int main(int ac, char *arv[])
                     if (Web.statusFd[i] == "active")
                         close(Web.fds[i].fd);
                 }
-                throw std::runtime_error("Error: fail poll");
+                throw std::runtime_error("Error: poll() failed");
             }
 
             for (Web.s = 0; Web.s < Web.server.size(); Web.s++)

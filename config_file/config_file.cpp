@@ -78,7 +78,7 @@ void Config::check_Directives()
         ft_methods();
     else if (words[0] == "error_page")
         ft_error_page();
-    else if (words[0] == "client_max_body_size" && blockName == "server")
+    else if (words[0] == "client_max_body_size")
         ft_client_max_body_size();
     else if (words[0] == "upload_path")
         ft_upload_path();
