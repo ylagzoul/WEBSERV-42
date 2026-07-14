@@ -138,10 +138,10 @@ int hexValue(char c)
 
 char hexToChar(char a, char b)
 {
-    int high = hexValue(a);
-    int low  = hexValue(b);
+    int second = hexValue(a);
+    int first  = hexValue(b);
 
-    return (high * 16 + low);
+    return (second * 16 + first);
 }
 
 bool checkPrecentEnc(std::string &pathSlice)
@@ -408,7 +408,7 @@ void getFixedBody(Request &req)
                 return (returnedInternalError(req));
             req.fullLine.clear();
         }
-        return;
+        return ;
     }
     int sizePa = (req.contentLength + req.fullLine.length()) - req.bodyLen;
     std::string d = req.fullLine.substr(0, sizePa);
@@ -458,6 +458,8 @@ void    generateCookies(Request &req, SessionsList &sList, PlayloadData &pdata)
                 req.firstTime = true;
                 close(fd);
             }
+            else
+                break ;
         }
     }
 }
