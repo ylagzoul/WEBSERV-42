@@ -15,12 +15,6 @@ void Config::ft_cgi_data()
     if (words.size() != 3 || words[1][0] != '.' || words[2][words[2].size() - 1] != ';')
         throw std::runtime_error("Error : in cgi data");
 
-    if (delet_data["cgiExt"] == true)
-    {
-        cgiExt.clear();
-        cgiPath.clear();
-    }
-
     words[2].erase(words[2].size() - 1);
     cgiExt.push_back(words[1]);
     cgiPath.push_back(ft_check_Path(words[2]));
@@ -66,11 +60,9 @@ void Config::ft_return()
 
 void Config::ft_autoindex()
 {
-    int size_s = words[1].size();
     if (size != 2 || (words[1] != "off;" && words[1] != "on;"))
         throw std::runtime_error("Error : in autoindex");
-    words[1].erase(size_s - 1);
-    if (words[1] == "on")
+    if (words[1] == "on;")
         autoIndex = 1;
     else
         autoIndex = 0;
@@ -78,13 +70,9 @@ void Config::ft_autoindex()
 
 void Config::ft_index()
 {
-    if (index.size() > 1)
-        index.erase(index.begin(), index.end());
-
     if (delet_data["index"] == true)
-    {
         index.clear();
-    }
+    
     if (words[words.size()-1][words[words.size()-1].size() - 1] != ';')
         throw std::runtime_error("Error : in Index");
     size_t i = 1;
