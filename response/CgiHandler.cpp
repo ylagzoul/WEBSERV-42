@@ -232,7 +232,7 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
         {
             int bytes_r;
             int bytes_write;
-            char buffer[SIZESR];
+            char buffer[SIZESR] = {0};
             if (cgiData.writeNext == 0)
             {
                 bytes_r = read(cgiData.bodyFd, buffer, SIZESR);

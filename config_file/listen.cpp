@@ -56,19 +56,16 @@ void Config::ft_listen_Ip()
 void Config::ft_listen_prot()
 {
     size_t  index = 0;
-    int     sizePort = 0;
-    int     port;
+    int     port = 0;
     while (index < words[1].size())
     {
         if (!isdigit(words[1][index]))
             throw std::runtime_error("Error : Port is not a number.");
-        sizePort = sizePort * 10 + (words[1][index] - '0');
+        port = port * 10 + (words[1][index] - '0');
         index++;
     }
-    if (sizePort > MAXPORT)
-        throw std::runtime_error("Error : Exceeding the maximum post limit");
-    std::stringstream ss(words[1]);
-    ss >> port;       
+    if (port > MAXPORT)
+        throw std::runtime_error("Error : Exceeding the maximum post limit");    
     listen_Port.push_back(port);
 }
 

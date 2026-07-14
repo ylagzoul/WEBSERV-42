@@ -24,10 +24,10 @@ Server::Server(Webserv &Web, int port, const std::string &IP)
         throw std::runtime_error("Error: setsockopt() failed");
     }
 
-    len = sizeof(addr);
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = inet_addr(IP.c_str());
+    len = sizeof(addr);
     if (bind(server_fd, (sockaddr *)&addr, len) < 0)
     {
         for (size_t i = 0; i < Web.fds.size(); i++)
