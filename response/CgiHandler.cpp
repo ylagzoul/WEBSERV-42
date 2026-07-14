@@ -88,6 +88,7 @@ CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), lenRead(0), ge
     getMove = 0;
     countLenHead = 0;
     chunkSize = 0;
+    writeNext = 0;
 };
 
 std::string normalizeKey(std::string key)
@@ -235,6 +236,9 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
             if (cgiData.writeNext == 0)
             {
                 bytes_r = read(cgiData.bodyFd, buffer, SIZESR);
+                cgiData.NextBuffer = buffer;
+                if (bytes_r >= 0)
+                    cgiData.writeNext = bytes_r;
                 if (bytes_r < 0)
                 {
                     Web.recs[indexClnt].cgiData.status = 500;
@@ -246,13 +250,17 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
                 Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].events &= ~POLLOUT;
             else 
             {
-                bytes_write = write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, buffer, cgiData.writeNext);
+                bytes_write = write(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd, cgiData.NextBuffer.c_str(), cgiData.writeNext);
+                if (bytes_write >= 0)
+                {
+                    cgiData.NextBuffer = cgiData.NextBuffer.substr(bytes_write);
+                    cgiData.writeNext = bytes_r - bytes_write;
+                }
                 if (bytes_write < 0)
                 {
                     Web.recs[indexClnt].cgiData.status = 500;
                     return (1);
                 }
-                cgiData.writeNext = bytes_r - bytes_write;
             }
         }
     }
@@ -267,7 +275,7 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, std::string method, size_t &i
             Web.recs[indexClnt].cgiData.status = 500;
             return (1);
         }
-        else if ((bytes == 0 || time(NULL) - Web.recs[indexClnt].time > TIMEOUT)&& Web.recs[indexClnt].pi == true)
+        else if ((bytes == 0 || time(NULL) - Web.recs[indexClnt].time > TIMEOUT) && Web.recs[indexClnt].pi == true)
         {
             if (Web.recs[indexClnt].cgiData.status == 500 || Web.recs[indexClnt].cgiData.status == 504)
                 return 1;
