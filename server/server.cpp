@@ -133,8 +133,8 @@ bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList
     if (bytes > 0)
     {
         Web.recs[indexClnt].time = std::time(NULL);
-
         readRequest(Web.req[indexClnt], buffer, bytes, Web.config[Web.s], sList, Web.recs[indexClnt].data);
+
         if (Web.req[indexClnt].clientState == CLIENT_ON)
         {
             Web.fds[indexClnt].events &= ~POLLIN;
@@ -289,7 +289,7 @@ int main(int ac, char *arv[])
     }
     catch (const std::exception &e)
     {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         return 1;
     }
 }

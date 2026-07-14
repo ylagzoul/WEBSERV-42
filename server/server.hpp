@@ -37,7 +37,7 @@
 #define MAX_LEN_PATH 8 * 1024
 #define MAX_LEN_HEADER_FEILD 2 * 1024
 
-#define TIMEOUT 60
+#define TIMEOUT 40
 
 
 #define DEFAULT_MAX_BODY_SIZE 500 * 1024

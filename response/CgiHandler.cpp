@@ -188,7 +188,7 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
     Web.yous.push_back(indexClnt);
     if (cgiData.pid == 0)
     {
-        close(2); //! youssef check if its not a problem
+        // close(2); //! youssef check if its not a problem
         if (method == "POST")
         {
             if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd, STDIN_FILENO) < 0)
@@ -196,7 +196,7 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
                 close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
                 close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
                 closeCGI(Web, Web.req[indexClnt].method, indexClnt);
-                throw std::runtime_error("ERROR EXITED");
+                throw std::runtime_error("Error: dup2() failed!");
             }
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[2]].fd);
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[3]].fd);
@@ -205,18 +205,17 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
         {
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
             close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
-            throw std::runtime_error("ERROR EXITED");
+            throw std::runtime_error("Error: dup2() failed!");
         }
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd);
         close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
 
         if (chdir(switchData(data.realPath).c_str()) == -1)
-            throw std::runtime_error("ERROR EXITED");
+            throw std::runtime_error("Error: chdir() failed!");
 
         execve(cgiData.cgiArgs[0], cgiData.cgiArgs, cgiData.env);
-        std::cerr << "asdfdsfds\n";
         releaseExecResources(cgiData);
-        throw std::runtime_error("ERROR EXITED");
+        throw std::runtime_error("Error: execve() failed!");
     }
 
     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
