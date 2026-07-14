@@ -14,15 +14,65 @@ server {
         index index.htm;
         error_page 500 /errors/500.html;
         error_page 400 /errors/400.html;
-        upload_path /goinfre;
+        upload_path /upload;
         root /home/abouhki/realWebserv;
         cgi_data .php /usr/bin/php-cgi;
         cgi_data .py /usr/bin/python3;
         autoindex on;
     }
 
+    location /upload {
+        methods POST GET;
+        upload_path /;
+    }
+
     location /portf {
-        methods GET POST;
+        methods GET;
+        upload_path /html;
+        index index.html;
+        error_page 400 /errors/400.html;
+        error_page 404 /errors/404.html;
+        root /home/boha/realWebserv/portf;
+        cgi_data .py /usr/bin/python3;
+        autoindex on;
+    }
+
+    location /google {
+        root /;
+        return 302 /google;
+    }
+
+}
+server {
+    listen 127.0.0.1:3051;
+    root /home/abouhki/realWebserv;
+    methods GET;
+    error_page 400 /errors/400.html;
+    error_page 404 /errors/404.html;
+    error_page 500 /errors/500.html;
+    error_page 504 /errors/504.html;
+    autoindex on;
+
+    location / {
+        client_max_body_size 50m;
+        methods GET POST DELETE;
+        index index.htm;
+        error_page 500 /errors/500.html;
+        error_page 400 /errors/400.html;
+        upload_path /upload;
+        root /home/abouhki/realWebserv;
+        cgi_data .php /usr/bin/php-cgi;
+        cgi_data .py /usr/bin/python3;
+        autoindex on;
+    }
+
+    location /upload {
+        methods POST GET;
+        upload_path /;
+    }
+
+    location /portf {
+        methods GET;
         upload_path /html;
         index index.html;
         error_page 400 /errors/400.html;
