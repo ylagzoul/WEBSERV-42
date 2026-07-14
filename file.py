@@ -1,6 +1,16 @@
-import time
+#!/usr/bin/env python3
 
-end = time.time() + 11
+import os
+import sys
 
-while time.time() < end:
-    pass
+sys.stdout.write("Content-Type: text/html\r\n")
+sys.stdout.write("\r\n")
+
+print("<html>")
+print("<body>")
+print("<pre>")
+for key, value in sorted(os.environ.items()):
+    sys.stdout.write(f"{key}={value}\r\n")
+print("</pre>")
+print("</body>")
+print("</html>")

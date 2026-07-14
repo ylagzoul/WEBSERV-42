@@ -192,6 +192,7 @@ int main(int ac, char *arv[])
 {
     try
     {
+        // static int db = 0;
         if (ac != 2)
             throw std::runtime_error("Error: you should enter the config file only");
         Webserv Web(arv[1]);
@@ -200,6 +201,7 @@ int main(int ac, char *arv[])
         {
             if (poll(&Web.fds[0], Web.fds.size(), 30000) == -1)
             {
+               
                 for (size_t i = 0; i < Web.fds.size(); i++)
                 {
                     if (Web.statusFd[i] == "active")
@@ -207,7 +209,6 @@ int main(int ac, char *arv[])
                 }
                 throw std::runtime_error("Error: poll() failed");
             }
-
             for (Web.s = 0; Web.s < Web.server.size(); Web.s++)
             {
                 for (Web.t = 0; Web.t < Web.server[Web.s].serverPort.size(); Web.t++)

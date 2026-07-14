@@ -821,15 +821,14 @@ void generateCgiResponse(CgiHandler &cgiData, PlayloadData &data, std::string &r
     std::map<std::string, std::string>::iterator iter;
     for (iter = cgiData.cgHeaders.begin(); iter != cgiData.cgHeaders.end(); iter++)
     {
-        if (tolowerStr(iter->first) == "status"
-            || tolowerStr(iter->first) == "connection" || tolowerStr(iter->first) == "content-length")
-            continue;
+        if (iter->first == "status" || iter->first == "connection" || iter->first == "content-length")
+            continue ;
         res << iter->first << ": " << iter->second << "\r\n";
     }
-    res << "Content-Length: " << data.bodySize << "\r\n";
+    res << "content-length: " << data.bodySize << "\r\n";
     if (req.firstTime == true)
     {
-        res << "Set-Cookie: session_id=" << req.cookies["session_id"] << "; path=/" << "\r\n";
+        res << "Set-Cookie: session_id=" << req.cookies["session_id"] << "\r\n";
         req.firstTime = false;
     }
     res << "\r\n";

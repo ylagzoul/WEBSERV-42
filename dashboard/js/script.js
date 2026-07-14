@@ -51,7 +51,7 @@ async function testMultipartAjax() {
 function sendMassivePayload() {
     log(">> Generating 10MB payload (Testing chunking/limits)...");
     const chunk = "A".repeat(1024 * 1024 * 10); 
-    testFetch('POST', '/api/upload', chunk);
+    testFetch('POST', '/uploads', chunk);
 }
 
 function clearCookies() {

@@ -44,7 +44,6 @@ if ($ENV{'REQUEST_METHOD'} eq 'POST' && $content_length > 0) {
     if ($total_read == $content_length) {
         print "SUCCESS: Read exactly $total_read bytes from STDIN.\n\n";
         print "Raw Body Snippet (First 150 chars):\n";
-        print substr($buffer, 0, 150) . "...\n";
     } else {
         print "FAILED: Expected $content_length bytes, but only got $total_read.\n";
         print "Check your C++ waitpid() or epoll() loop. You aren't writing everything to the pipe.\n";

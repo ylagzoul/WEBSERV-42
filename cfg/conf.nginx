@@ -3,31 +3,23 @@ server {
     
     client_max_body_size 15M;
     
-    root /home/abouhki/dashboard;
+    root /home/abouhki/realWebserv/dashboard;
     index index.html;
 
     location / {
-        methods GET;
+        methods GET POST;
+        upload_path /uploads;
         autoindex on;
     }
 
-    location /api/ {
-        methods POST;
-        upload_path /uploads;
-    }
-
-    location /uploads/ {
-        root /home/abouhki/dashboard/uploads/;
-        methods GET DELETE;
-    }
 
     location /cgi-bin/ {
-        root /home/abouhki/dashboard/cgi-bin/;
+        root /home/abouhki/realWebserv/dashboard/cgi-bin/;
 
         methods GET POST;
         cgi_data .pl /usr/bin/perl;
         cgi_data .py /usr/bin/python3;
-        cgi_data .sh /usr/bin/bash;
+        cgi_data .php /usr/bin/php;
     }
     
     location /redirect {
