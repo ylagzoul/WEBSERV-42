@@ -515,8 +515,7 @@ void readRequest(Request &req, char buffer[], size_t len, Config con, SessionsLi
             req.recLen  = 0;
             break ;
         }
-        
-        if ((req.getEndFile))
+        if ((req.getEndFile) || (req.getEndHeaders && req.method == "GET"))
             req.finFlag = true;
         if (req.finFlag)
         {
