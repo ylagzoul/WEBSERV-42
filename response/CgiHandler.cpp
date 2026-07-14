@@ -89,6 +89,7 @@ CgiHandler::CgiHandler() : bodyLen(0), fd(-1), cgStatusCode(200), lenRead(0), ge
     countLenHead = 0;
     chunkSize = 0;
     writeNext = 0;
+    contentLength = 0;
 };
 
 std::string normalizeKey(std::string key)
