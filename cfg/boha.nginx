@@ -1,5 +1,6 @@
 server {
-    listen 127.0.0.1:3050;
+    listen 0.0.0.0:3050;
+
     root /home/abouhki/realWebserv;
     methods GET;
     error_page 400 /errors/400.html;
@@ -44,3 +45,6 @@ server {
     }
 
 }
+
+
+host 127.0.0.1

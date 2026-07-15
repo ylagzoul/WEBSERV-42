@@ -1,35 +1,52 @@
 #!/usr/bin/env python3
-
 import os
 import sys
+import cgi
 import html
-import urllib.parse
+import time
+import cgitb
 
-# 1. Parse incoming parameters safely (Handling both GET and POST)
-method = os.environ.get("REQUEST_METHOD", "GET").upper()
-query_string = os.environ.get("QUERY_STRING", "")
+# Enable browser-friendly traceback debugging
+cgitb.enable()
 
-# Read POST payload if applicable
-post_data = ""
-if method == "POST":
+# ==========================================
+# 1. CONFIGURATION & DIRECTORY SETUP
+# ==========================================
+# Relative or absolute directory where files will be saved
+UPLOAD_DIR = "./uploads"
+
+# Ensure the target directory exists and has write permissions
+if not os.path.exists(UPLOAD_DIR):
     try:
-        content_length = int(os.environ.get("CONTENT_LENGTH", 0))
-    except ValueError:
-        content_length = 0
-    if content_length > 0:
-        post_data = sys.stdin.read(content_length)
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+    except Exception as e:
+        # We will log this error gracefully in the UI if directory creation fails
+        pass
 
-# Combine GET & POST data into a single parameters dictionary
-get_params = urllib.parse.parse_qs(query_string)
-post_params = urllib.parse.parse_qs(post_data)
-combined_form = {**get_params, **post_params}
+# ==========================================
+# 2. PARSE INCOMING ENVELOPE / SIMULATIONS
+# ==========================================
+form = cgi.FieldStorage()
+error_type = form.getvalue("simulate_error", "normal")
 
-# Define CGI Environment variables to display
+# --- Gateway Simulation Sandbox ---
+if error_type == "502":
+    # Corrupt headers trigger an upstream 502 Bad Gateway
+    print("Corrupt-Header-No-Colon")
+    sys.exit(1)
+
+elif error_type == "504":
+    # 6-second delay to trigger upstream 504 Gateway Timeout
+    time.sleep(6)
+
+# --- Normal Execution (HTTP 200) ---
+print("Content-Type: text/html; charset=utf-8\r\n\r\n")
+
 env_info = [
-    ("REQUEST_METHOD", "HTTP method used (GET, POST, DELETE...)."),
+    ("REQUEST_METHOD", "HTTP method used (GET, POST...)."),
     ("REQUEST_URI", "Original requested URI."),
     ("SCRIPT_NAME", "Path of the CGI script."),
-    ("QUERY_STRING", "Everything after '?'._"),
+    ("QUERY_STRING", "Everything after '?''."),
     ("CONTENT_TYPE", "Type of submitted data."),
     ("CONTENT_LENGTH", "Size of the request body in bytes."),
     ("SERVER_PROTOCOL", "HTTP version used."),
@@ -38,201 +55,75 @@ env_info = [
     ("REMOTE_ADDR", "Client IP address."),
 ]
 
-# Send HTTP Headers
-print("Content-Type: text/html; charset=utf-8\r\n\r\n")
-
-# Send HTML Content
-print(f"""<!DOCTYPE html>
+# ==========================================
+# 3. HTML & CSS LAYOUT
+# ==========================================
+print("""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGI Environment Demo</title>
+    <title>Python CGI File Processor</title>
     <style>
-        :root {{
+        :root {
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #1e293b;
             --text-muted: #64748b;
             --primary: #0f172a;
-            --accent: #10b981;
             --border: #e2e8f0;
             --bg-code: #f1f5f9;
-        }}
-
-        * {{
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }}
-
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            line-height: 1.6;
             padding: 2rem 1rem;
-        }}
-
-        .container {{
-            max-width: 900px;
-            margin: 0 auto;
-        }}
-
-        header {{
-            margin-bottom: 2.5rem;
-            text-align: center;
-        }}
-
-        h1 {{
-            font-size: 2.25rem;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-        }}
-
-        .subtitle {{
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }}
-
-        .card {{
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.75rem;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-        }}
-
-        h2 {{
-            font-size: 1.4rem;
-            margin-bottom: 1.25rem;
-            color: var(--primary);
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 0.5rem;
-        }}
-
-        /* Badge design for Request Method */
-        .badge {{
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.85rem;
-            font-weight: 700;
-            border-radius: 9999px;
-            text-transform: uppercase;
-        }}
-        .badge-get {{ background-color: #dbeafe; color: #1e40af; }}
-        .badge-post {{ background-color: #d1fae5; color: #065f46; }}
-        .badge-other {{ background-color: #f1f5f9; color: #334155; }}
-
-        /* Table Design */
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 0.5rem;
-            font-size: 0.95rem;
-        }}
-
-        th, td {{
-            padding: 0.85rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }}
-
-        th {{
-            background-color: #f8fafc;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-        }}
-
-        tr:hover td {{
-            background-color: #fdfdfd;
-        }}
-
-        code {{
-            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
-            background-color: var(--bg-code);
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            color: #e11d48;
-        }}
-
-        .empty-state {{
-            color: var(--text-muted);
-            font-style: italic;
-            text-align: center;
-            padding: 1.5rem 0;
-        }}
-
-        /* Test Form Styles */
-        .form-grid {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }}
-
-        @media (max-width: 600px) {{
-            .form-grid {{ grid-template-columns: 1fr; }}
-        }}
-
-        input[type="text"] {{
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }}
-
-        input[type="text"]:focus {{
-            border-color: var(--text-muted);
-        }}
-
-        .btn-group {{
-            display: flex;
-            gap: 0.75rem;
-        }}
-
-        button {{
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            flex: 1;
-        }}
-
-        button:hover {{
-            opacity: 0.9;
-        }}
-
-        .btn-primary {{ background-color: #0284c7; color: white; }}
-        .btn-success {{ background-color: #059669; color: white; }}
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        h1 { color: #3776ab; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;}
+        h2 { font-size: 1.3rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.95rem; }
+        th, td { padding: 0.85rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        code { font-family: monospace; background-color: var(--bg-code); padding: 0.2rem 0.4rem; border-radius: 4px; color: #e11d48; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; font-weight: bold; border-radius: 9999px; font-size: 0.85rem; }
+        .badge-post { background: #d1fae5; color: #065f46; }
+        .badge-get { background: #dbeafe; color: #1e40af; }
+        
+        /* Custom file response notification alert style */
+        .upload-alert {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .upload-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
     </style>
 </head>
 <body>
-
 <div class="container">
-
-    <header>
-        <h1>🐍 Python CGI Environment</h1>
-        <p class="subtitle">A modern display of live environment variables and payload data.</p>
-    </header>
+    <h1>🐍 Python CGI File Processor</h1>
 
     <div class="card">
-        <h2>Environment Variables</h2>
+        <h2>CGI Environment Variables</h2>
         <table>
             <thead>
                 <tr>
@@ -244,24 +135,20 @@ print(f"""<!DOCTYPE html>
             <tbody>
 """)
 
-# Render variables
 for key, desc in env_info:
     raw_val = os.environ.get(key, "(not set)")
-    
-    # Stylize the request method variable specifically
     if key == "REQUEST_METHOD" and raw_val != "(not set)":
-        badge_class = f"badge-{raw_val.lower()}" if raw_val in ["GET", "POST"] else "badge-other"
+        badge_class = f"badge-{raw_val.lower()}" if raw_val in ["GET", "POST"] else ""
         value = f'<span class="badge {badge_class}">{raw_val}</span>'
     else:
-        value = f"<code>{html.escape(raw_val)}</code>" if raw_val != "(not set)" else f'<span style="color: var(--text-muted);">{raw_val}</span>'
+        value = f"<code>{html.escape(raw_val)}</code>" if raw_val != "(not set)" else f'<span style="color:var(--text-muted);">{raw_val}</span>'
 
     print(f"""
                 <tr>
                     <td><code>{key}</code></td>
                     <td>{value}</td>
                     <td>{desc}</td>
-                </tr>
-    """)
+                </tr>""")
 
 print("""
             </tbody>
@@ -269,58 +156,66 @@ print("""
     </div>
 
     <div class="card">
-        <h2>Submitted Form Data</h2>
+        <h2>Processed Form & File Data</h2>
 """)
 
-if combined_form:
-    print("""
-        <table>
-            <thead>
-                <tr>
-                    <th>Field</th>
-                    <th>Value(s)</th>
-                </tr>
-            </thead>
-            <tbody>
-""")
-    for key, values in combined_form.items():
-        escaped_key = html.escape(key)
-        escaped_value = html.escape(", ".join(values))
+# Process elements, capturing metadata and copying binary file streams to the upload directory
+has_payload = False
+for key in form.keys():
+    has_payload = True
+    form_item = form[key]
+    
+    # Identify binary file buffers inside the CGI packet
+    if isinstance(form_item, cgi.FieldStorage) and form_item.filename:
+        filename = os.path.basename(form_item.filename)
+        save_path = os.path.join(UPLOAD_DIR, filename)
+        content_type = form_item.headers.get('Content-Type', 'unknown type')
+        
+        try:
+            # Safe binary block-by-block writing mechanism
+            with open(save_path, 'wb') as f_out:
+                while True:
+                    chunk = form_item.file.read(65536)  # Read in 64KB blocks to optimize memory buffer
+                    if not chunk:
+                        break
+                    f_out.write(chunk)
+            
+            # File written successfully, calculate final disk size
+            saved_size = os.path.getsize(save_path)
+            
+            print(f"""
+            <div class="upload-alert">
+                <h3>📁 File Saved Successfully! (Field: <code>{html.escape(key)}</code>)</h3>
+                <p style="margin-top: 0.5rem;"><strong>File Name:</strong> {html.escape(filename)}</p>
+                <p><strong>MIME Type:</strong> {html.escape(content_type)}</p>
+                <p><strong>Final Saved Size:</strong> {saved_size:,} bytes</p>
+                <p><strong>Absolute Storage Target:</strong> <code>{html.escape(os.path.abspath(save_path))}</code></p>
+            </div>
+            """)
+        except Exception as write_err:
+            print(f"""
+            <div class="upload-error">
+                <h3>❌ Failed to Save Uploaded File: {html.escape(filename)}</h3>
+                <p style="margin-top: 0.5rem;"><strong>Error Details:</strong> {html.escape(str(write_err))}</p>
+                <p><em>Tip: Make sure the target directory <code>{html.escape(UPLOAD_DIR)}</code> exists on your server and has active write permissions.</em></p>
+            </div>
+            """)
+    else:
+        # Output ordinary text inputs (e.g. name, text inputs, error types)
+        val = form.getvalue(key)
         print(f"""
-                <tr>
-                    <td><strong>{escaped_key}</strong></td>
-                    <td>{escaped_value}</td>
-                </tr>
-        """)
-    print("""
-            </tbody>
-        </table>
-""")
-else:
-    print('        <p class="empty-state">No query parameters or form data submitted yet.</p>')
-
-print(f"""
-    </div>
-
-    <div class="card">
-        <h2>Interactive Sandbox</h2>
-        <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">
-            Use this tool to test how this CGI script receives and displays user-submitted inputs.
+        <p style="margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+            <strong>Input Name:</strong> <code>{html.escape(key)}</code><br>
+            <strong>Captured Value:</strong> <code>{html.escape(str(val))}</code>
         </p>
-        <form action="{os.environ.get('SCRIPT_NAME', '')}" method="GET" id="sandbox-form">
-            <div class="form-grid">
-                <input type="text" name="sample_user" placeholder="Your Name (e.g., Jane Doe)" required>
-                <input type="text" name="sample_message" placeholder="A brief message..." required>
-            </div>
-            <div class="btn-group">
-                <button type="submit" onclick="document.getElementById('sandbox-form').method='GET'" class="btn-primary">Submit via GET</button>
-                <button type="submit" onclick="document.getElementById('sandbox-form').method='POST'" class="btn-success">Submit via POST</button>
-            </div>
-        </form>
+        """)
+
+if not has_payload:
+    print("<p style='color: var(--text-muted); font-style: italic;'>No form values, metadata, or binary files were submitted inside this request envelope.</p>")
+
+print("""
     </div>
-
 </div>
-
 </body>
 </html>
 """)

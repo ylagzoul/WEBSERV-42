@@ -1,25 +1,33 @@
 server {
-    listen 8000;
-    
-    client_max_body_size 15M;
-    
+    listen 127.0.0.1:8080;
+    methods GET POST DELETE;
+    client_max_body_size 50M;
+    error_page 400 /errors/400.html;
+    error_page 403 /errors/403.html;  
+    error_page 404 /errors/404.html;
+    error_page 405 /errors/405.html;
     root /home/abouhki/realWebserv/dashboard;
     index index.html;
 
     location / {
+        error_page 400 /errors/400.html;
+        authInfo /website/login.html /website/dashboard.html /website/profile.html;
         methods GET POST;
         upload_path /uploads;
         autoindex on;
     }
 
-
     location /cgi-bin/ {
+        error_page 500 /errors/500.html;
+        error_page 501 /errors/501.html;
+        error_page 502 /errors/502.html;
+        error_page 504 /errors/504.html;
         root /home/abouhki/realWebserv/dashboard/cgi-bin/;
 
         methods GET POST;
         cgi_data .pl /usr/bin/perl;
         cgi_data .py /usr/bin/python3;
-        cgi_data .php /usr/bin/php;
+        cgi_data .php /home/abouhki/php/bin/php-cgi;
     }
     
     location /redirect {

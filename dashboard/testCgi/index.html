@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,7 @@
             --text-main: #0f172a;
             --text-muted: #475569;
             --border: #cbd5e1;
-            
+
             /* Action Colors */
             --py-color: #0284c7;
             --php-color: #7c3aed;
@@ -95,7 +96,9 @@
             font-size: 0.9rem;
         }
 
-        input[type="text"], input[type="file"], select {
+        input[type="text"],
+        input[type="file"],
+        select {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid var(--border);
@@ -132,10 +135,21 @@
             transform: scale(0.98);
         }
 
-        .btn-py { background-color: var(--py-color); }
-        .btn-php { background-color: var(--php-color); }
-        .btn-err { background-color: var(--err-color); }
-        .btn-warn { background-color: var(--warn-color); }
+        .btn-py {
+            background-color: var(--py-color);
+        }
+
+        .btn-php {
+            background-color: var(--php-color);
+        }
+
+        .btn-err {
+            background-color: var(--err-color);
+        }
+
+        .btn-warn {
+            background-color: var(--warn-color);
+        }
 
         .btn-span-2 {
             grid-column: span 2;
@@ -148,105 +162,112 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <header>
-        <h1>🛠️ CGI Sandbox Suite</h1>
-        <p class="subtitle">Execute targeted CGI functionality tests in Python and PHP environments.</p>
-    </header>
+        <header>
+            <h1>🛠️ CGI Sandbox Suite</h1>
+            <p class="subtitle">Execute targeted CGI functionality tests in Python and PHP environments.</p>
+        </header>
 
-    <div class="test-section">
-        <h2>📝 Test 1: Standard Payload (POST)</h2>
-        <span class="goal-badge">Goal: Validate key-value parsing of standard body parameters.</span>
-        <p class="test-desc">Sends structured textual fields to verify parameters are read, sanitized, and matched to their keys.</p>
-        
-        <form id="form-test-1" method="POST">
-            <label for="name">Your Name</label>
-            <input type="text" name="name" id="name" value="Alex Test" placeholder="Alex Test">
+        <div class="test-section">
+            <h2>📝 Test 1: Standard Payload (POST)</h2>
+            <span class="goal-badge">Goal: Validate key-value parsing of standard body parameters.</span>
+            <p class="test-desc">Sends structured textual fields to verify parameters are read, sanitized, and matched
+                to their keys.</p>
 
-            <div class="btn-group">
-                <button type="submit" class="btn-py" onclick="submitTo('form-test-1', '/cgi-bin/show-env.py')">
-                    Send to Python CGI
-                </button>
-                <button type="submit" class="btn-php" onclick="submitTo('form-test-1', '/cgi-bin/show-env.php')">
-                    Send to PHP CGI
-                </button>
-            </div>
-        </form>
-    </div>
+            <form id="form-test-1" method="POST">
+                <label for="name">Your Name</label>
+                <input type="text" name="name" id="name" value="Alex Test" placeholder="Alex Test">
 
-    <div class="test-section">
-        <h2>🎥 Test 2: File & Video Multipart Upload</h2>
-        <span class="goal-badge">Goal: Verify chunk-reading and file upload parsing (multipart/form-data).</span>
-        <p class="test-desc">Transmits binary video files, documents, or images to test raw request body buffer reading capabilities.</p>
-        
-        <form id="form-test-2" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="name" value="Multipart File Sender">
-            
-            <label for="media_file">Choose Video or File</label>
-            <input type="file" name="media_file" id="media_file" accept="video/*,image/*,.pdf,.txt" required>
+                <div class="btn-group">
+                    <button type="submit" class="btn-py" onclick="submitTo('form-test-1', '/cgi-bin/show-env.py')">
+                        Send to Python CGI
+                    </button>
+                    <button type="submit" class="btn-php" onclick="submitTo('form-test-1', '/cgi-bin/show-env.php')">
+                        Send to PHP CGI
+                    </button>
+                </div>
+            </form>
+        </div>
 
-            <div class="btn-group">
-                <button type="submit" class="btn-py" onclick="submitTo('form-test-2', '/cgi-bin/show-env.py')">
-                    Upload to Python
-                </button>
-                <button type="submit" class="btn-php" onclick="submitTo('form-test-2', '/cgi-bin/show-env.php')">
-                    Upload to PHP
-                </button>
-            </div>
-        </form>
-    </div>
+        <div class="test-section">
+            <h2>🎥 Test 2: File & Video Multipart Upload</h2>
+            <span class="goal-badge">Goal: Verify chunk-reading and file upload parsing (multipart/form-data).</span>
+            <p class="test-desc">Transmits binary video files, documents, or images to test raw request body buffer
+                reading capabilities.</p>
 
-    <div class="test-section">
-        <h2>⏳ Test 3: Simulate 504 Gateway Timeout</h2>
-        <span class="goal-badge">Goal: Verify proxy limits and timeout configurations.</span>
-        <p class="test-desc">Instructs the backend execution process to freeze for 6 seconds. If your webserver's gateway timeout limit (Nginx, Apache, or IIS) is configured below 6 seconds, this triggers a <strong>504 Gateway Timeout</strong>.</p>
-        
-        <form id="form-test-3" method="POST">
-            <input type="hidden" name="name" value="Timeout Tester">
-            <input type="hidden" name="simulate_error" value="504">
+            <form id="form-test-2" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="name" value="Multipart File Sender">
 
-            <div class="btn-group">
-                <button type="submit" class="btn-warn" onclick="submitTo('form-test-3', '/cgi-bin/show-env.py')">
-                    Test Python Timeout
-                </button>
-                <button type="submit" class="btn-warn" style="background-color: #c2410c;" onclick="submitTo('form-test-3', '/cgi-bin/show-env.php')">
-                    Test PHP Timeout
-                </button>
-            </div>
-        </form>
-    </div>
+                <label for="media_file">Choose Video or File</label>
+                <input type="file" name="media_file" id="media_file" accept="video/*,image/*,.pdf,.txt" required>
 
-    <div class="test-section">
-        <h2>💥 Test 4: Simulate 502 Bad Gateway</h2>
-        <span class="goal-badge">Goal: Observe server response when CGI returns unparseable or corrupt data.</span>
-        <p class="test-desc">Causes the CGI process to return faulty header streams (missing the colon divider or valid HTTP parameters) triggering an immediate <strong>502 Bad Gateway</strong> handler in upstream servers.</p>
-        
-        <form id="form-test-4" method="POST">
-            <input type="hidden" name="name" value="Fault Tester">
-            <input type="hidden" name="simulate_error" value="502">
+                <div class="btn-group">
+                    <button type="submit" class="btn-py" onclick="submitTo('form-test-2', '/cgi-bin/show-env.py')">
+                        Upload to Python
+                    </button>
+
+                </div>
+            </form>
+        </div>
+
+
+
+        <div class="test-section">
+            <h2>⏳ Dedicated 504 Gateway Timeout Tests</h2>
+            <span class="goal-badge">Goal: Test isolated 10-second delays to verify proxy timeouts.</span>
+            <p class="test-desc">These buttons call standalone, lightweight scripts that simply sleep for 10 seconds to
+                test your web server's threshold limits.</p>
 
             <div class="btn-group">
-                <button type="submit" class="btn-err" onclick="submitTo('form-test-4', '/cgi-bin/show-env.py')">
-                    Crash Python CGI
-                </button>
-                <button type="submit" class="btn-err" style="background-color: #b91c1c;" onclick="submitTo('form-test-4', '/cgi-bin/show-env.php')">
-                    Crash PHP CGI
-                </button>
+                <a href="/cgi-bin/timeout.py" target="_blank" style="text-decoration: none;">
+                    <button type="button" class="btn-warn" style="width: 100%;">
+                        Trigger Standalone Python Timeout
+                    </button>
+                </a>
+
+                <a href="/cgi-bin/timeout.php" target="_blank" style="text-decoration: none;">
+                    <button type="button" class="btn-warn" style="background-color: #c2410c; width: 100%;">
+                        Trigger Standalone PHP Timeout
+                    </button>
+                </a>
             </div>
-        </form>
+
+
+        </div>
+
+        <div class="test-section">
+            <h2>💥 Dedicated 502 Bad Gateway Tests</h2>
+            <span class="goal-badge">Goal: Verify proxy error handling when a CGI process crashes.</span>
+            <p class="test-desc">These buttons load dedicated, lightweight scripts that return malformed header streams
+                or exit abruptly to force a <strong>502 Bad Gateway</strong> response from your web server.</p>
+
+            <div class="btn-group">
+                <a href="/cgi-bin/bad.py" target="_blank" style="text-decoration: none;">
+                    <button type="button" class="btn-err" style="width: 100%;">
+                        Trigger Standalone Python 502
+                    </button>
+                </a>
+
+                <a href="/cgi-bin/bad.php" target="_blank" style="text-decoration: none;">
+                    <button type="button" class="btn-err" style="background-color: #b91c1c; width: 100%;">
+                        Trigger Standalone PHP 502
+                    </button>
+                </a>
+            </div>
+        </div>
     </div>
 
-</div>
-
-<script>
-    // Helper function to update action URL and dispatch submissions instantly
-    function submitTo(formId, actionUrl) {
-        const form = document.getElementById(formId);
-        form.action = actionUrl;
-    }
-</script>
+    <script>
+        // Helper function to update action URL and dispatch submissions instantly
+        function submitTo(formId, actionUrl) {
+            const form = document.getElementById(formId);
+            form.action = actionUrl;
+        }
+    </script>
 </body>
+
 </html>

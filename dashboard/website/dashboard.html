@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #f7fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .dashboard-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #718096;
+            margin-bottom: 30px;
+        }
+        .user-email {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #5a6fd6;
+        }
+        .btn-secondary {
+            background-color: #edf2f7;
+            color: #4a5568;
+        }
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-card">
+        <h1>Dashboard</h1>
+        <p>Logged in as: <span id="displayEmail" class="user-email">Guest</span></p>
+        
+        <div class="btn-container">
+            <button class="btn btn-primary" onclick="goToProfile()">View Profile Settings</button>
+            <button class="btn btn-secondary" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const email = localStorage.getItem('userEmail');
+        if (!email) {
+            // No email found? Redirect back to login
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('displayEmail').textContent = email;
+        }
+
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        function logout() {
+        // Remove the user's email from localStorage
+        localStorage.removeItem('userEmail');
+        
+        // Remove the session ID (choose the one that matches where you stored it)
+        localStorage.removeItem('sessionId'); 
+        // sessionStorage.removeItem('sessionId'); // Use this if it was stored in sessionStorage instead
+        
+        // Redirect the user to the login page
+        window.location.href = 'login.html';
+    }
+    </script>
+</body>
+</html>
