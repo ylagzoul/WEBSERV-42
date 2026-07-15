@@ -164,8 +164,8 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
         closeCGI(Web, indexClnt);
         return (1);
     }
-    Web.indexPid.push_back(cgiData.pid);
-    Web.yous.push_back(indexClnt);
+    Web.cgiPid.push_back(cgiData.pid);
+    Web.indexPid.push_back(indexClnt);
     if (cgiData.pid == 0)
     {
         if (method == "POST")
@@ -203,7 +203,7 @@ int readFromCgi(Webserv &Web, CgiHandler &cgiData, size_t &indexClnt)
     {
 
         char buffer[SIZESR];
-        
+
         int bytes = read(Web.fds[Web.recs[indexClnt].IndexFdsPipe[0]].fd, buffer, SIZESR - 1);
         if (bytes < 0)
         {
@@ -244,7 +244,6 @@ int runCgi(Webserv &Web, Record &log, Request req, size_t &indexClnt)
             return (1);
         }
         releaseExecResources(log.cgiData);
-
     }
     else
     {

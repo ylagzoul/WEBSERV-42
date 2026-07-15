@@ -55,7 +55,7 @@ void Config::ft_return()
     }
     words[2].erase(size_s - 1);
     retCode = std::atoi(words[1].c_str());
-    retPath = ft_check_Path(words[2]);
+    retPath = words[2];
 }
 
 void Config::ft_autoindex()
