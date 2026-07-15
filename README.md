@@ -33,7 +33,7 @@ make
 ### Run server
 
 ```bash
-./webserv cfg/config.nginx
+./webserv cfg/conf.nginx
 ```
 
 ### Test server

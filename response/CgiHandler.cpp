@@ -176,6 +176,7 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
                 closeCGI(Web, indexClnt);
                 throw std::runtime_error("Error: dup2() failed!");
             }
+            close(cgiData.bodyFd);
         }
         if (dup2(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd, STDOUT_FILENO) < 0)
         {
@@ -193,6 +194,7 @@ int createCgi(Webserv &Web, CgiHandler &cgiData, std::string method, PlayloadDat
         releaseExecResources(cgiData);
         throw std::runtime_error("Error: execve() failed!");
     }
+    close(cgiData.bodyFd);
     close(Web.fds[Web.recs[indexClnt].IndexFdsPipe[1]].fd);
     return (0);
 }

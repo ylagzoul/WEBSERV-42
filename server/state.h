@@ -22,7 +22,7 @@ typedef enum e_state
     POST_RS,
     CGI_RDWR,
     NO_MD
-    
+
 
 } t_state;
 

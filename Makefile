@@ -16,6 +16,7 @@ SRC = 		server/server.cpp						\
 			response/CgiHandler.cpp
 
 SRC_H = 	server/server.hpp				\
+			server/state.h					\
 			server/Record.hpp				\
 			request/SessionsList.hpp		\
 			request/Sessions.hpp			\

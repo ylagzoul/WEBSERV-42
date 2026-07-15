@@ -182,8 +182,6 @@ bool getChunked(CgiHandler &cgiData)
     size_t endTxt;
     size_t endNum;
 
-    // if (cgiData.fullLine.length() <= 0)
-    //     return (true);       
     if (cgiData.fd == -1)
     {
         cgiData.cgBodyFileName = BODY_FILE_PATH + std::string("clientCgi_") + getRandName();
