@@ -34,7 +34,6 @@
                 <p>Test body parsing, chunked transfers, and large payload limits.</p>
                 <div class="button-group">
                     <button onclick="testFetch('POST', '/uploads', 'Simple text payload')" class="btn-primary">POST Raw Text</button>
-                    <button onclick="testMultipartAjax()" class="btn-primary">POST AJAX Multipart</button>
                     <button onclick="sendMassivePayload()" class="btn-warning">POST 10MB Payload (Stress Test)</button>
                 </div>
             </section>
@@ -60,39 +59,28 @@
             </div>
         </section>
 
+        <section class="test-block">
+            <h2>4. Cookie & Session ID Suite</h2>
+            <p>
+                Explore client-state persistence demonstrations including secure storage, 
+                state lifecycle, and simulated POST-only form submissions to test cookie 
+                attributes and session generation.
+            </p>
 
-            <section class="test-block">
-                <h2>4. Cookies, Sessions & DELETE Edge Cases</h2>
-                <p>Test state management and robust file deletion.</p>
-                <div class="button-group">
-                    <button onclick="testFetch('GET', '/cgi-bin/session.py')" class="btn-primary">Create Session</button>
-                    <button onclick="testFetch('GET', '/cgi-bin/session.py', null, true)" class="btn-secondary">Verify Session</button>
-                    <button onclick="clearCookies()" class="btn-warning">Clear Cookies</button>
-                </div>
-                <div class="button-group" style="margin-top: 15px;">
-                    <button onclick="testRobustDelete()" class="btn-danger">1. Safe DELETE (Auto-creates then deletes)</button>
-                    <button onclick="testFetch('DELETE', '/does_not_exist.txt')" class="btn-danger">2. DELETE Missing (Expect 404)</button>
-                    <button onclick="testFetch('DELETE', '/app/')" class="btn-danger">3. DELETE Directory (Expect 403/409)</button>
-                </div>
-            </section>
+            <div class="cgi-suite"> <h3>Interactive Cookie Tests</h3>
+                <p>
+                    Launch the Cookie and Session ID tester to experiment with simulated 
+                    POST requests, session lifetimes, and manual storage clearing.
+                </p>
 
-            <section class="test-block">
-                <h2>5. Errors, Chunking & HTTP/1.0</h2>
-                <p>Stress-test your parser with edge cases and mandatory HTTP codes.</p>
-                <div class="button-group">
-                    <button onclick="testFetch('POST', '/')" class="btn-warning">405 Method Not Allowed (POST to root)</button>
-                    <button onclick="testFetch('GET', '/not-found')" class="btn-warning">404 Not Found</button>
-                    <button onclick="testFetch('OPTIONS', '/')" class="btn-warning">501 Not Implemented (OPTIONS)</button>
-                    <button onclick="testFetch('GET', '/cgi-bin/timeout.py')" class="btn-danger">504 CGI Timeout (Hang)</button>
-                </div>
-                <div class="curl-box">
-                    <strong>Test Chunked Transfer Encoding (Run in terminal):</strong>
-                    <code>curl -H "Transfer-Encoding: chunked" -d "chunk1 chunk2 chunk3" http://localhost:8080/upload</code>
-                    <br>
-                    <strong>HTTP/1.0 Connection Close Test:</strong>
-                    <code>curl -0 -v http://localhost:8080/</code>
-                </div>
-            </section>
+                <a href="/website/index.html" class="cgi-suite btn-secondary cookie-btn">
+                    Open Cookie & Session Tester
+                </a>
+            </div>
+        </section>
+
+
+            
 
         </main>
 
