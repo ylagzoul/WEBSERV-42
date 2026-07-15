@@ -234,7 +234,7 @@ int main(int ac, char *arv[])
                                     std::vector<int>::iterator it = std::find(Web.cgiPid.begin(), Web.cgiPid.end(), Web.recs[indexClnt].cgiData.pid);
                                     int index = 0;
                                     if (it != Web.cgiPid.end())
-                                        index = std::distance(Web.cgiPid.begin(), it);
+                                        index = it - Web.cgiPid.begin();
                                     Web.cgiPid.erase(Web.cgiPid.begin() + index);
                                     Web.indexPid.erase(Web.indexPid.begin() + index);
                                 }
