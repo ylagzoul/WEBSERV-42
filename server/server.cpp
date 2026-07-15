@@ -60,7 +60,6 @@ Server::Server(Webserv &Web, int port, const std::string &IP)
     index_Client.push_back(Web.fds.size() - 1);
     Web.recs.push_back(Record());
     Web.req.push_back(Request());
-    Web.recs[Web.recs.size() - 1].time = time(NULL);
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
 }
 
@@ -94,36 +93,35 @@ void Server::close_client(Webserv &Web, size_t &indexClnt)
 
 void Server::acceptNewClient(Webserv &Web)
 {
-        int client_fd = accept(server_fd, NULL, NULL);
+    int client_fd = accept(server_fd, NULL, NULL);
+    if (client_fd < 0)
+        return;
+    pollfd client_poll;
+    client_poll.fd = client_fd;
+    client_poll.events = POLLIN;
+    client_poll.revents = 0;
 
-        if (client_fd < 0)
-            return ;
-        pollfd client_poll;
-        client_poll.fd = client_fd;
-        client_poll.events = POLLIN;
-        client_poll.revents = 0;
-
-        if (Web.server[Web.s].serverPort[Web.t].reuseFd.size() == 0)
-        {
-            Web.fds.push_back(client_poll);
-            Web.typeFd[Web.fds.size() - 1] = "client";
-            Web.statusFd[Web.fds.size() - 1] = "active";
-            index_Client.push_back(Web.fds.size() - 1);
-            Web.req.push_back(Request());
-            Web.recs.push_back(Record());
-            Web.recs[Web.recs.size() - 1].time = std::time(NULL);
-        }
-        else
-        {
-            Web.fds[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = client_poll;
-            Web.typeFd[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = "client";
-            Web.statusFd[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = "active";
-            Web.req[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = Request();
-            Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = Record();
-            Web.server[Web.s].serverPort[Web.t].reuseFd.erase(Web.server[Web.s].serverPort[Web.t].reuseFd.begin());
-            Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]].time = std::time(NULL);
-        }
-        fcntl(client_fd, F_SETFL, O_NONBLOCK);
+    if (Web.server[Web.s].serverPort[Web.t].reuseFd.size() == 0)
+    {
+        Web.fds.push_back(client_poll);
+        Web.typeFd[Web.fds.size() - 1] = "client";
+        Web.statusFd[Web.fds.size() - 1] = "active";
+        index_Client.push_back(Web.fds.size() - 1);
+        Web.req.push_back(Request());
+        Web.recs.push_back(Record());
+        Web.recs[Web.recs.size() - 1].time = std::time(NULL);
+    }
+    else
+    {
+        Web.fds[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = client_poll;
+        Web.typeFd[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = "client";
+        Web.statusFd[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = "active";
+        Web.req[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = Request();
+        Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]] = Record();
+        Web.server[Web.s].serverPort[Web.t].reuseFd.erase(Web.server[Web.s].serverPort[Web.t].reuseFd.begin());
+        Web.recs[Web.server[Web.s].serverPort[Web.t].reuseFd[0]].time = std::time(NULL);
+    }
+    fcntl(client_fd, F_SETFL, O_NONBLOCK);
 }
 
 bool Server::receiveRequest(Webserv &Web, size_t &indexClnt, SessionsList &sList)
@@ -151,7 +149,7 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
 {
     if (Web.recs[indexClnt].sendNext)
     {
-        Web.indexC = indexClnt;
+
         Web.recs[indexClnt].response = respond(Web, Web.recs[indexClnt], Web.config[Web.s], Web.req[indexClnt], indexClnt);
         if (Web.recs[indexClnt].response.empty() && (Web.recs[indexClnt].status == ACTIVE_RS || Web.recs[indexClnt].status == CGI_ACTIVE_RS))
             return (true);
@@ -180,8 +178,8 @@ bool Server::sendRespond(Webserv &Web, size_t &indexClnt)
         else
         {
             Web.recs[indexClnt].clean();
-            Web.req[indexClnt] = Request();
             Web.recs[indexClnt] = Record();
+            Web.req[indexClnt] = Request();
             Web.recs[indexClnt].time = std::time(NULL);
         }
     }
@@ -200,7 +198,6 @@ int main(int ac, char *arv[])
         {
             if (poll(&Web.fds[0], Web.fds.size(), 30000) == -1)
             {
-               
                 for (size_t i = 0; i < Web.fds.size(); i++)
                 {
                     if (Web.statusFd[i] == "active")
@@ -217,7 +214,7 @@ int main(int ac, char *arv[])
                         size_t indexClnt = Web.server[Web.s].serverPort[Web.t].index_Client[Web.i];
 
                         if (Web.statusFd[indexClnt] == "close" || Web.typeFd[indexClnt] == "pipe")
-                            continue ;
+                            continue;
 
                         if (sList.checkIfNotNull())
                             sList.checkLimitSessions();
@@ -233,13 +230,13 @@ int main(int ac, char *arv[])
                                 {
                                     Web.recs[indexClnt].pi = true;
                                     Web.recs[indexClnt].cgiData.status = 504;
-                                    
-                                    std::vector<int>::iterator it = std::find(Web.indexPid.begin(),Web.indexPid.end(),Web.recs[indexClnt].cgiData.pid);
+
+                                    std::vector<int>::iterator it = std::find(Web.cgiPid.begin(), Web.cgiPid.end(), Web.recs[indexClnt].cgiData.pid);
                                     int index = 0;
-                                    if (it != Web.indexPid.end())
-                                        index = std::distance(Web.indexPid.begin(), it);
+                                    if (it != Web.cgiPid.end())
+                                        index = std::distance(Web.cgiPid.begin(), it);
+                                    Web.cgiPid.erase(Web.cgiPid.begin() + index);
                                     Web.indexPid.erase(Web.indexPid.begin() + index);
-                                    Web.yous.erase(Web.yous.begin() + index);
                                 }
                             }
                             else
@@ -262,23 +259,23 @@ int main(int ac, char *arv[])
                             Web.server[Web.s].serverPort[Web.t].sendRespond(Web, indexClnt);
                         }
                     }
-                    for (size_t i = 0; i < Web.indexPid.size(); )
+                    for (size_t i = 0; i < Web.cgiPid.size();)
                     {
                         int status;
-                        int ret = waitpid(Web.indexPid[i], &status, WNOHANG);
+                        int ret = waitpid(Web.cgiPid[i], &status, WNOHANG);
                         if (ret > 0)
                         {
-                            Web.recs[Web.yous[i]].pi = true;
+                            Web.recs[Web.indexPid[i]].pi = true;
                             if (WIFEXITED(status))
                             {
                                 if (WEXITSTATUS(status) > 0)
-                                    Web.recs[Web.yous[i]].cgiData.status = 500;
+                                    Web.recs[Web.indexPid[i]].cgiData.status = 500;
                             }
                             else if (WIFSIGNALED(status))
-                                Web.recs[Web.yous[i]].cgiData.status = 500;
-                                
+                                Web.recs[Web.indexPid[i]].cgiData.status = 500;
+
+                            Web.cgiPid.erase(Web.cgiPid.begin() + i);
                             Web.indexPid.erase(Web.indexPid.begin() + i);
-                            Web.yous.erase(Web.yous.begin() + i);
                         }
                         else
                             i++;
