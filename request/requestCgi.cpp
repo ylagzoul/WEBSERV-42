@@ -158,8 +158,11 @@ void getBody(CgiHandler &cgiData)
     {
         if (write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length()) == -1)
             return (returnedInternalError(cgiData));
-        cgiData.fullLine.clear();
-        return;
+        else
+        {
+            cgiData.fullLine.clear();
+            return;
+        }
     }
     if (isFound)
     {
@@ -167,13 +170,15 @@ void getBody(CgiHandler &cgiData)
         std::string d = cgiData.fullLine.substr(0, sizePa);
         if (write(cgiData.fd, d.c_str(), sizePa) == -1)
             return (returnedInternalError(cgiData));
-        cgiData.getEndFile = true;
+        else
+            cgiData.getEndFile = true;
     }
     if (isFound == false)
     {
         if (write(cgiData.fd, cgiData.fullLine.c_str(), cgiData.fullLine.length()) == -1)
-                return (returnedInternalError(cgiData));
-        cgiData.fullLine.clear();
+            return (returnedInternalError(cgiData));
+        else
+            cgiData.fullLine.clear();
     }
 }
 
@@ -209,16 +214,22 @@ bool getChunked(CgiHandler &cgiData)
         {
             if (write(cgiData.fd, chunkData.c_str(), cgiData.chunkSize) == -1)
                 return (returnedInternalError(cgiData), true);
-            cgiData.fullLine.erase(0, endTxt + 2);
-            cgiData.getEndFile = true;
-            return (true);
+            else
+            {
+                cgiData.fullLine.erase(0, endTxt + 2);
+                cgiData.getEndFile = true;
+                return (true);
+            }
         }
         if (chunkData.length() < cgiData.chunkSize)
             return (returnedBadError(cgiData), true);
         if (write(cgiData.fd, chunkData.c_str(), cgiData.chunkSize) == -1)
             return (returnedInternalError(cgiData), true);
-        cgiData.fullLine.erase(0, endTxt + 2);
-        endNum = cgiData.fullLine.find("\r\n");
+        else
+        {
+            cgiData.fullLine.erase(0, endTxt + 2);
+            endNum = cgiData.fullLine.find("\r\n");
+        }
         if (endNum != std::string::npos)
         {
             std::string tmp = cgiData.fullLine.substr(0, endNum + 2);

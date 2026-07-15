@@ -1,18 +1,18 @@
 NAME = webserv
 
-CFLAGS = -Wextra -Wall -Werror -std=c++98 -g3# -fsanitize=address -g3
+CFLAGS = -Wextra -Wall -Werror -std=c++98
 CC = c++
 
-SRC = 		server/server.cpp						\
-			server/Record.cpp						\
-			request/Request.cpp						\
-			request/Sessions.cpp					\
-			request/SessionsList.cpp				\
-			request/requestCgi.cpp					\
-			response/Response.cpp					\
-			config_file/config_file.cpp				\
-			config_file/listen.cpp					\
-			config_file/Directives.cpp				\
+SRC = 		server/server.cpp				\
+			server/Record.cpp				\
+			request/Request.cpp				\
+			request/Sessions.cpp			\
+			request/SessionsList.cpp		\
+			request/requestCgi.cpp			\
+			response/Response.cpp			\
+			config_file/config_file.cpp		\
+			config_file/listen.cpp			\
+			config_file/Directives.cpp		\
 			response/CgiHandler.cpp
 
 SRC_H = 	server/server.hpp				\

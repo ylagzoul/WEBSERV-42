@@ -135,14 +135,12 @@ bool postBody(Record &log)
         log.data.statusCode = 500;
         return true;
     }
-    int wrBytes = write(log.fd, buff, bytes);
-    if (wrBytes >= 0);
-    else
+    if ((write(log.fd, buff, bytes)) == -1)
     {
         log.data.statusCode = 500;
         return true;
     }
-    if (bytes == 0)
+    else if (bytes == 0)
     {
         log.status = CLOSED_RS;
         log.method = NONE_RS;
@@ -327,7 +325,7 @@ bool postFilesList(Record &log)
         buffLength += buff.length();
         if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
             return true;
-        if (buffLength > RDWR_SIZE)
+        else if (buffLength > RDWR_SIZE)
         {
             log.status = ACTIVE_RS;
             log.method = POST_LIST_RS;
@@ -339,8 +337,11 @@ bool postFilesList(Record &log)
         "</html>\n";
     if ((write(log.fileFd, buff.c_str(), buff.length())) == -1)
         return true;
-    log.method = GET_LIST_RS;
-    log.status = ACTIVE_RS;
+    else
+    {
+        log.method = GET_LIST_RS;
+        log.status = ACTIVE_RS;
+    }
     struct stat info;
     if (stat(log.fileName.c_str(), &info) == -1)
         return true;
@@ -376,7 +377,7 @@ bool autoIndex(Record &log, PlayloadData &data)
         std::remove(log.fileName.c_str());
         return true;
     }
-    if (postFilesList(log))
+    else if (postFilesList(log))
     {
         std::remove(log.fileName.c_str());
         return true;

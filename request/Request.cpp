@@ -26,13 +26,6 @@ bool isHoldSpace(const std::string& str)
     return (true);
 }
 
-std::string toStr(int nb)
-{
-    std::stringstream ss;
-    ss << nb;
-    return (ss.str());
-}
-
 std::string trim(const std::string& str)
 {
     size_t start = 0;
@@ -354,9 +347,12 @@ bool getChunkedBody(Request &req)
         {
             if (write(req.bodyFd, chunkData.c_str(), req.chunkSize) == -1)
                 return (returnedInternalError(req), true);
-            req.fullLine.erase(0, endTxt + 2);
-            req.getEndFile = true;
-            close(req.bodyFd);
+            else
+            {
+                req.fullLine.erase(0, endTxt + 2);
+                req.getEndFile = true;
+                close(req.bodyFd);
+            }
             return (true);
         }
         if (chunkData.length() < (size_t)req.chunkSize)
@@ -366,9 +362,12 @@ bool getChunkedBody(Request &req)
             return (true);
         }
         if (write(req.bodyFd, chunkData.c_str(), req.chunkSize) == -1)
-                return (returnedInternalError(req), true);
-        req.fullLine.erase(0, endTxt + 2);
-        endNum = req.fullLine.find("\r\n");
+            return (returnedInternalError(req), true);
+        else
+        {
+            req.fullLine.erase(0, endTxt + 2);
+            endNum = req.fullLine.find("\r\n");
+        }
         if (endNum != std::string::npos)
         {
             std::string tmp = req.fullLine.substr(0, endNum + 2);
@@ -406,7 +405,8 @@ void getFixedBody(Request &req)
         {
             if (write(req.bodyFd, req.fullLine.c_str(), req.fullLine.length()) == -1)
                 return (returnedInternalError(req));
-            req.fullLine.clear();
+            else
+                req.fullLine.clear();
         }
         return ;
     }
@@ -415,8 +415,11 @@ void getFixedBody(Request &req)
 
     if (write(req.bodyFd, d.c_str(), sizePa) == -1)
         return (returnedInternalError(req));
-    close(req.bodyFd);
-    req.getEndFile = true;
+    else
+    {
+        close(req.bodyFd);
+        req.getEndFile = true;
+    }
 }
 
 std::string getEmail(char *buff)
