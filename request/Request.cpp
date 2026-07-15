@@ -437,6 +437,7 @@ void    generateCookies(Request &req, SessionsList &sList, PlayloadData &pdata)
     {
         if (pdata.redirectTokens[i] == req.path && req.method == "POST")
         {
+            std::cout << req.path << std::endl;
             char buff[SIZESR];
             int fd = open(req.bodyPath.c_str(), O_RDONLY);
             if (fd == -1)

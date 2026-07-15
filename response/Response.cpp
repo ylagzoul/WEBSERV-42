@@ -842,7 +842,7 @@ void generateRetResponse(PlayloadData &data, std::string &ret_resp, Request &req
     res << "Location: " << data.retPath << "\r\n";
     if (req.firstTime == true)
     {
-        res << "Set-Cookie: session_id=" << req.cookies["session_id"] << "; path=/" << "\r\n";
+        res << "Set-Cookie: session_id=" << req.cookies["session_id"] << "\r\n";
         req.firstTime = false;
     }
     res << "Connection: " << data.connection << "\r\n";
